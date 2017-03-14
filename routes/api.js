@@ -3,17 +3,15 @@ const MongoClient = require('mongodb').MongoClient;
 const f = require("util").format;
 let app = express.Router();
 
-let authCred = {
-	user: "express",
-	password: "express"
-};
-let mongoURL = f("mongodb://%s:%s@localhost:27017/express_api_test", authCred.user, authCred.password);
-
-// let testData;
-let testData = require("../test-data.json");
+let mongoURL = f("mongodb://%s:%s@%s/%s", process.env.mongo_user, process.env.mongo_pass, process.env.mongo_server, process.env.mongo_db_name);
 
 app.get("/", function(req, res){
 	res.send("<p>Welcome to the API Endpoint. Please refer to the documentation for its usage.</p>");
+});
+
+app.get("*", function(req, res, next){
+	res.header("Access-Control-Allow-Origin", "*");
+	next();
 });
 
 app.get("/:collection", function (req, res){
@@ -28,7 +26,6 @@ app.get("/:collection", function (req, res){
 
 		db.close();
 	});
-	// res.json(testData);
 });
 
 app.get("/:collection/:name/:value", function(req, res){
