@@ -119,6 +119,11 @@ var tasks = function(gulp, taskOp, plugins){
 			.pipe(gulp.dest(taskOp.outDir + "images"));
 	});
 
+	gulp.task("copy-static", function(){
+		return gulp.src(taskOp.dir + "404.*")
+			.pipe(gulp.dest(taskOp.outDir));
+	});
+
 	// Server
 	gulp.task("server", ["default"], function(){
 		browserSync.init({
@@ -135,6 +140,7 @@ var tasks = function(gulp, taskOp, plugins){
 	    gulp.watch(taskOp.dir + "src/views/**/*", ["handlebars"]);
 
 	    gulp.watch(taskOp.dir + "images/**/*", ["copy-images"]);
+	    gulp.watch(taskOp.dir + "404.*", ["copy-static"]);
 
 	    gulp.watch(taskOp.outDir + "*.html").on("change", browserSync.reload);
 	    gulp.watch(taskOp.outDir + "javascripts/**/*").on("change", browserSync.reload);
@@ -158,7 +164,7 @@ var tasks = function(gulp, taskOp, plugins){
 		});
 	});
 
-	gulp.task("static-files", ["copy-libraries-js", "copy-css", "copy-images"]);
+	gulp.task("static-files", ["copy-libraries-js", "copy-css", "copy-images", "copy-static"]);
 	gulp.task("default", ["handlebars", "stylesheets", "javascripts", "static-files"]);
 	gulp.task("deploy", ["deploy:dev"]);
 };
