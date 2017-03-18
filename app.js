@@ -7,6 +7,7 @@ const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
 const _ = require("lodash");
 const exphbs  = require('express-handlebars');
+const lessMiddleware = require('less-middleware');
 
 let index = require("./routes/index");
 let admin = require("./routes/admin");
@@ -26,6 +27,9 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
+
+app.use("/static", lessMiddleware(path.join(__dirname, "static", "src")));
+app.use("/static", express.static(path.join(__dirname, "static")));
 
 app.use("/api", api);
 app.use("/admin", admin);

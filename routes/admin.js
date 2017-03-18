@@ -1,9 +1,17 @@
-var express = require("express");
-var router = express.Router();
-var session = require("express-session");
-var bodyParser = require("body-parser");
-var bcrypt = require("bcrypt");
-var path = require("path");
+const express = require("express");
+const router = express.Router();
+const session = require("express-session");
+const bodyParser = require("body-parser");
+const bcrypt = require("bcrypt");
+const path = require("path");
+const f = require("util").format;
+const MongoStore = require('connect-mongo')(session);
+
+// Custom middleware
+var restrict = require("./restrict.js");
+var authenticate = require("./auth.js");
+
+let mongoURL = f("mongodb://%s:%s@%s/%s", process.env.mongo_user, process.env.mongo_pass, process.env.mongo_server, process.env.mongo_db_name);
 
 var currentPath = "/admin";
 router.use(bodyParser.urlencoded({
@@ -13,7 +21,8 @@ router.use(bodyParser.urlencoded({
 router.use(session({
     resave: false, // don't save session if unmodified
     saveUninitialized: false, // don't create session until something stored
-    secret: "shhhh, very secret" // used to maintain session, revoking one will invalidate all sessions
+    secret: ["shhhh, very secret"], // used to maintain session, revoking one will invalidate all sessions
+    store: new MongoStore({ url: mongoURL })
 }));
 
 router.use(function(req, res, next){
@@ -27,64 +36,17 @@ router.use(function(req, res, next){
 	next();
 });
 
-//-----------Fake sign up----------------------------------------------------
-var users = {
-  tj: { name: "tj" }
-};
-
-// when you create a user, generate a salt
-// and hash the password ("foobar" is the pass here)
-
-bcrypt.hash("foobar", 10, function (err, hash) {
-	if (err) throw err;
-
-	users.tj.hash = hash;
-});
-//---------------------------------------------------------------------------
-
-
-function authenticate(name, pass, fn) {
-	// If not called by another module
-	if (!module.parent) console.log("authenticating %s:%s", name, pass);
-
-	// query the db for the given username
-	var user = users[name];
-	if (!user) return fn(new Error("cannot find user"));
-
-	// apply the same algorithm to the POSTed password, applying
-	// the hash against the pass / salt, if there is a match we
-	// found the user
-	bcrypt.compare(pass, user.hash, function(err, res) {
-		if (err) return fn(err);
-	    if(res === true){
-	    	return fn(null, user);
-	    }else{
-		    fn(new Error("invalid password"));
-		}
-	});
-}
-
-function restrict(req, res, next) {
-	if (req.session.user) {
-		next();
-	} else {
-		req.session.error = "Access denied!";
-		res.redirect(path.join(currentPath + "/login"));
-	}
-}
-
-
-router.get("/", function(req, res) {
-    res.redirect(path.join(currentPath + "/login"));
+router.get("/", restrict, function(req, res) {
+    res.render("index", {title: "Express"});
 });
 
+// User the "restrict" middleware to handle routes not meant for unauthorised access
 router.get("/restricted", restrict, function(req, res){
 	res.send("Wahoo! restricted area, click to <a href=\"/admin/logout\">logout</a>");
 });
 
+// Logout by destroying the session
 router.get("/logout", function(req, res){
-	// destroy the user's session to log them out
-	// will be re-created next request
 	req.session.destroy(function(){
 		res.redirect(path.join(currentPath + "/"));
 	});
