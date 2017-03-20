@@ -23,7 +23,7 @@ if(argv.f){
 }else{
 	gulp.task("server", ["default"], function(){
 		nodemon({
-			verbose: argv.v || false,
+			verbose: argv.verbose || false,
 			script: "./bin/www",
 			ignore: ["frontend/**/*", "public/**/*", "static/**/*"]
 		});

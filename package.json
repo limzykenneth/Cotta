@@ -21,7 +21,8 @@
     "mongodb": "^2.2.24",
     "morgan": "~1.7.0",
     "serve-favicon": "~2.3.0",
-    "smark": "~2.0.0"
+    "smark": "~2.0.0",
+    "whatwg-fetch": "^2.0.3"
   },
   "devDependencies": {
     "browser-sync": "^2.18.8",

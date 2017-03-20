@@ -1,7 +1,7 @@
 var $ = require("jquery");
 var _ = require("lodash/core");
 _.template = require("lodash/template");
-// var _ = require("underscore");
+require('whatwg-fetch');
 
 $(document).ready(function() {
 	$("#page-content").on("click", ".schema-definition .schema-add", function(e) {
