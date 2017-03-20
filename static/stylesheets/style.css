@@ -1,0 +1,26 @@
+#page-header {
+  padding: 10px 20px;
+  width: 100vw;
+  height: 50px;
+  background-color: black;
+  color: white;
+}
+#page-header a {
+  color: white;
+}
+* {
+  box-sizing: border-box;
+}
+.sidebar {
+  width: 20%;
+  height: 80vh;
+  float: left;
+}
+.right {
+  float: right;
+}
+.center-container {
+  margin: 0 auto;
+  width: 80%;
+  max-width: 1000px;
+}

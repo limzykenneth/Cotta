@@ -3,12 +3,16 @@
 <head>
     <meta charset="utf-8">
     <title>{{title}}</title>
-    <link rel="stylesheet" type="text/css" href="./static/stylesheets/normalize.min.css">
-    <link rel="stylesheet" type="text/css" href="./static/stylesheets/style.css">
+
+    {{> include }}
 </head>
 <body>
+	{{> header }}
+
+	{{> sidebar }}
 
     {{{body}}}
 
+    <script src="/static/javascripts/main.js"></script>
 </body>
 </html>
