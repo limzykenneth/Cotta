@@ -27,12 +27,27 @@ router.post("/edit/:collection", function(req, res){
 	res.send("Not implemented yet...");
 });
 
-router.get("/:collection", function(req, res){
+router.get("/:collection", function(req, res, next){
 	connect.then(function(db){
 		db.collection("_schema").find().toArray(function(err, results){
 			if(err) throw err;
 
-			res.render("models", {collectionName: "(Pending...)"});
+			var schema = _.find(results, function(el){
+				return el.collectionSlug == req.params.collection;
+			});
+
+			if(typeof schema == "undefined") {
+				next();
+			}else{
+				db.collection(schema.collectionSlug).find().toArray(function(err, models){
+					if(err) throw err;
+
+					res.render("models", {
+						collectionName: schema.collectionName,
+						data: models
+					});
+				});
+			}
 		});
 	}).catch(function(err){
 		concole.log(err);
