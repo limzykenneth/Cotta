@@ -3,9 +3,8 @@ const express = require("express");
 const router = express.Router();
 const path = require("path");
 const f = require("util").format;
-const MongoClient = require('mongodb').MongoClient;
 
-let mongoURL = f("mongodb://%s:%s@%s/%s", process.env.mongo_user, process.env.mongo_pass, process.env.mongo_server, process.env.mongo_db_name);
+let connect = require("../database.js");
 
 router.post("/new", function(req, res){
 	let data = req.body;
@@ -29,17 +28,15 @@ router.post("/new", function(req, res){
 		el.slug = el.name.toLowerCase().replace(" ", "_");
 	});
 
-	MongoClient.connect(mongoURL, function(err, db){
-		if(err) throw err;
-
+	connect.then(function(db){
 		db.collection("_schema").find({collectionSlug: data.collectionSlug}).toArray(function(err, result){
 			if(err) throw err;
+
 			if(result.length > 0){
 				res.json({
 					status: "failed",
 					reason: "Collection with that name already exist."
 				});
-				db.close();
 			}else{
 				db.collection("_schema").insertOne(data, function(err){
 					if(err) throw err;
@@ -47,7 +44,6 @@ router.post("/new", function(req, res){
 					res.json({
 						status: "success"
 					});
-					db.close();
 				});
 			}
 		});

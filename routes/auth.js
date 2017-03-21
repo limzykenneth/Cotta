@@ -1,16 +1,12 @@
 const bcrypt = require("bcrypt");
-const MongoClient = require('mongodb').MongoClient;
-const f = require("util").format;
 
-let mongoURL = f("mongodb://%s:%s@%s/%s", process.env.mongo_user, process.env.mongo_pass, process.env.mongo_server, process.env.mongo_db_name);
+let connect = require("./database.js");
 
 var authenticate = function(name, pass, fn) {
 	// If not called by another module
 	if (!module.parent) console.log("authenticating %s:%s", name, pass);
 
-	MongoClient.connect(mongoURL, function (err, db) {
-		if (err) throw err;
-
+	connect.then(function(db){
 		db.collection("users_auth").find({"username": name}).toArray(function (err, result) {
 			if (err) throw err;
 			if (result.length > 1) throw "More than one entries found, PANIC!";
@@ -26,8 +22,6 @@ var authenticate = function(name, pass, fn) {
 				}
 			});
 		});
-
-		db.close();
 	});
 };
 

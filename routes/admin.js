@@ -7,7 +7,6 @@ const bcrypt = require("bcrypt");
 const path = require("path");
 const f = require("util").format;
 const MongoStore = require('connect-mongo')(session);
-const MongoClient = require('mongodb').MongoClient;
 
 // Custom middleware
 var restrict = require("./restrict.js");

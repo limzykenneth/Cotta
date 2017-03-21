@@ -4,7 +4,7 @@ var path = require("path");
 
 var currentPath = "/admin";
 
-restrict = function(req, res, next){
+var restrict = function(req, res, next){
 	if (req.session.user) {
 		next();
 	} else {
