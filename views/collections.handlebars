@@ -1,53 +1,22 @@
 <div id="page-content">
-	<section class="collection-creation">
+	<section class="collections-container">
 		<h1>Collections</h1>
 
-		<h2>New Collections</h2>
-
-		<form class="schema-definition">
-			Collection Name: <input type="text" name="collection-name">
-
-			<legend>
-			<span>Name</span><span>Type</span>
-			</legend>
-
-			<div class="field">
-				<span><input class="name-field" name="name-1" type="text"></span>
-				<span><select class="type-field" name="type-1">
-					<option value="wysiwyg">WYSIWYG</option>
-					<option value="text">Text</option>
-					<option value="email">Email</option>
-					<option value="checkbox">Checkbox</option>
-					<option value="radio">Radio buttons</option>
-					<option value="image">Image</option>
-				</select></span>
-				<span><i class="fa fa-plus-circle schema-add" aria-hidden="true"></i></span>
-			</div>
-			<p class="submit"><input type="submit" value="Save"></p>
-		</form>
-
-		<div class="error-msg"></div>
+		<div class="collections">
+			{{#each data}}
+				<div class="collection">
+					<h2><a href="collections/{{collectionSlug}}">{{collectionName}}</a></h2>
+					<ul>
+					<h3>Fields</h3>
+					{{#each fields}}
+						<li>{{name}}: {{type}}</li>
+					{{/each}}
+					</il>
+					<p><a href="collections/edit/{{collectionSlug}}">Edit</a></p>
+				</div>
+			{{else}}
+				<p>No collections created yet. Perhaps you want to click <a href="collections/new">here</a> to create a new collection?</p>
+			{{/each}}
+		</div>
 	</section>
 </div>
-
-<script id="schema-creation-template" type="text/template">
-	<div class="field">
-		<span><input class="name-field" name="name-" type="text"></span>
-		<span><select class="type-field" name="type-">
-			<option value="wysiwyg">WYSIWYG</option>
-			<option value="text">Text</option>
-			<option value="email">Email</option>
-			<option value="checkbox">Checkbox</option>
-			<option value="radio">Radio buttons</option>
-			<option value="image">Image</option>
-		</select></span>
-		<span><i class="fa fa-plus-circle schema-add" aria-hidden="true"></i></span>
-		<span><i class="fa fa-minus-circle schema-remove" aria-hidden="true"></i></span>
-	</div>
-</script>
-
-<script id="checkbox-options-template" type="text/template">
-	<div class="choices">
-		<textarea rows="5" columns="50"></textarea>
-	</div>
-</script>

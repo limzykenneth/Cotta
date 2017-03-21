@@ -16,7 +16,7 @@ router.post("/new", function(req, res){
 		});
 		return;
 	}
-	data.collectionSlug = data.collectionName.toLowerCase();
+	data.collectionSlug = data.collectionName.toLowerCase().replace(" ", "_");
 
 	_.each(data.fields, function(el, i){
 		if(!validateIncoming(el.name)){

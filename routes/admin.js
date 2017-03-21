@@ -69,7 +69,8 @@ router.post("/login", function(req, res){
 	});
 });
 
-// User the "restrict" middleware to handle routes not meant for unauthorised access
+// Use the "restrict" middleware to handle routes not meant for unauthorised access
+// Everything registered after this line must have auth cookies
 router.use(restrict, function(req, res, next){
 	next();
 });
