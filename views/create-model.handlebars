@@ -1,0 +1,17 @@
+<section class="model-creation main-content">
+	<h1>New {{ collectionName }}</h1>
+
+	<form method="post" action="/admin/collections/{{collectionSlug}}/new" class="model-form">
+		{{#each fields}}
+			<label for="{{slug}}">{{name}}</label><br>
+			{{#ifEquals type "text" }}
+				<input type="text" name="{{slug}}">
+			{{/ifEquals}}
+			{{#ifEquals type "wysiwyg"}}
+				<textarea name="{{slug}}" class="wysiwyg-editor"></textarea>
+			{{/ifEquals}}
+		{{/each}}
+
+		<p class="submit"><input type="submit" value="Save"></p>
+	</form>
+</section>

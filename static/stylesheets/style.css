@@ -11,10 +11,19 @@
 * {
   box-sizing: border-box;
 }
-.sidebar {
+#page-content {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+}
+#page-content .sidebar {
   width: 20%;
-  height: 80vh;
+  height: calc(100vh - 50px);
   float: left;
+  background-color: grey;
+}
+#page-content .main-content {
+  margin: 1rem;
 }
 .right {
   float: right;

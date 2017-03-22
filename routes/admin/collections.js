@@ -44,6 +44,7 @@ router.get("/:collection", function(req, res, next){
 
 					res.render("models", {
 						collectionName: schema.collectionName,
+						collectionSlug: schema.collectionSlug,
 						data: models
 					});
 				});
@@ -55,11 +56,28 @@ router.get("/:collection", function(req, res, next){
 });
 
 router.get("/:collection/new", function(req, res){
-	res.send("Not implemented yet...");
+	connect.then(function(db){
+		db.collection("_schema").findOne({collectionSlug: req.params.collection}, function(err, result){
+			res.render("create-model", result);
+		});
+	});
 });
 
 router.post("/:collection/new", function(req, res){
-	res.send("Not implemented yet...");
+	var data = {};
+
+	_.each(req.body, function(el){
+		data[el.name] = el.value;
+	});
+	connect.then(function(db){
+		db.collection(req.params.collection).insertOne(data, function(err){
+			if(err) throw err;
+
+			res.json({
+				status: "success"
+			});
+		});
+	});
 });
 
 module.exports = router;

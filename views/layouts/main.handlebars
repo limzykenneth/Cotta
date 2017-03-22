@@ -9,9 +9,11 @@
 <body>
 	{{> header }}
 
-	{{> sidebar }}
+	<div id="page-content">
+		{{> sidebar }}
 
-    {{{body}}}
+	    {{{body}}}
+    </div>
 
     <script src="/static/javascripts/main.js"></script>
 </body>

@@ -79,7 +79,7 @@ $(document).ready(function() {
 			headers: {
 				'Accept': 'application/json',
 				'Content-Type': 'application/json'
-		    },
+		    }
 		}).then(function(res){
 			return res.json();
 		}).then(function(data){
@@ -88,6 +88,35 @@ $(document).ready(function() {
 				console.log("redirect");
 			}else{
 				$("#page-content .collection-creation .error-msg").text(data.reason).show().delay(2000).fadeOut(500);
+				$submitBtn.attr("value", "Save").prop("disabled", false);
+			}
+		});
+	});
+
+	$(".wysiwyg-editor").trumbowyg();
+
+	$("#page-content .model-creation .model-form").submit(function(e) {
+		e.preventDefault();
+
+		var $submitBtn = $(this).find(".submit input");
+		$submitBtn.attr("value", "Saving...").prop("disabled", true);
+
+		var req = $(this).serializeArray();
+		fetch($(this).attr("action"), {
+			method: "post",
+			body: JSON.stringify(req),
+			credentials: "include",
+			headers: {
+				'Accept': 'application/json',
+				'Content-Type': 'application/json'
+		    }
+		}).then(function(res){
+			return res.json();
+		}).then(function(data){
+			if(data.status == "success"){
+				console.log("success");
+				$submitBtn.attr("value", "Save").prop("disabled", false);
+			}else{
 				$submitBtn.attr("value", "Save").prop("disabled", false);
 			}
 		});

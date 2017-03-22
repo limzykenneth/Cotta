@@ -1,13 +1,11 @@
-<div id="page-content">
-	<section class="models-container">
-		<h1>Models</h1>
+<section class="models-container main-content">
+	<h1>Models</h1>
 
-		<div class="models">
-			<h2>{{collectionName}}<h2>
-			{{#each data}}
-			{{else}}
-				<p>No models created yet. Perhaps you want to click <a href="{{collectionSlug}}/new">here</a> to create a new model?</p>
-			{{/each}}
-		</div>
-	</section>
-</div>
+	<div class="models">
+		<h2>{{collectionName}}<h2>
+		{{#each data}}
+		{{else}}
+			<p>No models created yet. Perhaps you want to click <a href="{{collectionSlug}}/new">here</a> to create a new model?</p>
+		{{/each}}
+	</div>
+</section>
