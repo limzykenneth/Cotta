@@ -30,7 +30,7 @@ $(document).ready(function() {
 
 		var rawData = $(this).serializeArray();
 		var req = {
-			collectionName: rawData[0].value,
+			collectionName: $(this).attr("data-collection-name") || rawData[0].value,
 			fields: []
 		};
 
@@ -39,7 +39,7 @@ $(document).ready(function() {
 			choices.push($(this).val());
 		});
 		var choicesIndex = 0;
-		for(var i = 1; i < rawData.length; i = i + 2){
+		for(var i = rawData.length % 2; i < rawData.length; i = i + 2){
 			var buffer = {};
 			buffer.name = rawData[i].value;
 			buffer.type = rawData[i+1].value;
@@ -72,7 +72,7 @@ $(document).ready(function() {
 
 		var $submitBtn = $(this).find(".submit input");
 		$submitBtn.attr("value", "Saving...").prop("disabled", true);
-		fetch("/admin/schema/new", {
+		fetch($(this).attr("action"), {
 			method: "post",
 			body: JSON.stringify(req),
 			credentials: "include",
@@ -85,7 +85,7 @@ $(document).ready(function() {
 		}).then(function(data){
 			if(data.status == "success"){
 				// redirect somewhere else
-				console.log("redirect");
+				window.location.href("/admin/collections");
 			}else{
 				$("#page-content .collection-creation .error-msg").text(data.reason).show().delay(2000).fadeOut(500);
 				$submitBtn.attr("value", "Save").prop("disabled", false);

@@ -50,6 +50,40 @@ router.post("/new", function(req, res){
 	});
 });
 
+router.post("/edit/:collection", function(req, res){
+	let data = req.body;
+	if(!validateIncoming(data.collectionName)){
+		res.json({
+			status: "failed",
+			reason: "Collection names should only contain alphanumeric characters, underscore and spaces."
+		});
+		return;
+	}
+	data.collectionSlug = data.collectionName.toLowerCase().replace(" ", "_");
+
+	_.each(data.fields, function(el, i){
+		if(!validateIncoming(el.name)){
+			res.json({
+				status: "failed",
+				reason: "Field names should only contain alphanumeric characters, underscore and spaces."
+			});
+			return false;
+		}
+		el.slug = el.name.toLowerCase().replace(" ", "_");
+	});
+
+	connect.then(function(db){
+		db.collection("_schema").updateOne({collectionSlug: data.collectionSlug}, data, null, function(err){
+			if(err) throw err;
+
+			console.log(data);
+			res.json({
+				status: "success"
+			});
+		});
+	});
+});
+
 // Utils
 function validateIncoming(string){
 	let regexp = /^[a-zA-Z0-9-_ ]+$/;

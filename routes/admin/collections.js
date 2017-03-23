@@ -20,11 +20,11 @@ router.get("/new", function(req, res){
 });
 
 router.get("/edit/:collection", function(req, res){
-	res.send("Not implemented yet...");
-});
-
-router.post("/edit/:collection", function(req, res){
-	res.send("Not implemented yet...");
+	connect.then(function(db){
+		db.collection("_schema").findOne({collectionSlug: req.params.collection}, function(err, result){
+			res.render("edit-collection", result);
+		});
+	});
 });
 
 router.get("/:collection", function(req, res, next){
@@ -81,3 +81,13 @@ router.post("/:collection/new", function(req, res){
 });
 
 module.exports = router;
+
+// Utils
+function validateIncoming(string){
+	let regexp = /^[a-zA-Z0-9-_ ]+$/;
+	if (string.search(regexp) == -1){
+		return false;
+	}else{
+		return true;
+	}
+}
