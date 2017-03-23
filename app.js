@@ -24,6 +24,13 @@ app.engine("handlebars", exphbs({
         	}else{
 		        return opts.inverse(this);
 		    }
+        },
+        lenEq: function(json, num, opts){
+        	if(Object.keys(json).length == num+1){
+        		return opts.fn(this);
+        	}else{
+        		return opts.inverse(this);
+        	}
         }
 	}
 }));
@@ -61,6 +68,7 @@ app.use(function(err, req, res, next) {
 	// set locals, only providing error in development
 	res.locals.message = err.message;
 	res.locals.error = req.app.get("env") === "development" ? err : {};
+	console.log(res.locals.error);
 
 	// render the error page
 	res.status(err.status || 500);

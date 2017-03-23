@@ -2,8 +2,18 @@ const _ = require("lodash");
 const express = require("express");
 const router = express.Router();
 const path = require("path");
+const randomstring = require("randomstring");
 const multer  = require('multer');
-const upload = multer({ dest: 'uploads/' });
+const upload = multer({
+	storage: multer.diskStorage({
+		destination: function (req, file, cb) {
+			cb(null, "./uploads");
+		},
+		filename: function (req, file, cb) {
+			cb(null, path.basename(file.originalname, path.extname(file.originalname)) + '-' + randomstring.generate(10) + path.extname(file.originalname));
+		}
+	})
+});
 
 let connect = require("../database.js");
 
@@ -65,15 +75,15 @@ router.get("/:collection/new", function(req, res){
 	});
 });
 
-router.post("/:collection/new", upload.single("avatar"), function(req, res){
-	var data = {};
+router.post("/:collection/new", dynamicSchema, function(req, res){
+	var data = req.body;
 
-	_.each(req.body, function(el){
-		data[el.name] = el.value;
+	_.each(req.files, function(el, i){
+		data[el[0].fieldname] = el[0].path;
 	});
 
 	connect.then(function(db){
-		db.collection(req.params.collection).insertOne(req.body, function(err){
+		db.collection(req.params.collection).insertOne(data, function(err){
 			if(err) throw err;
 
 			res.json({
@@ -82,6 +92,22 @@ router.post("/:collection/new", upload.single("avatar"), function(req, res){
 		});
 	});
 });
+
+function dynamicSchema(req, res, next){
+	connect.then(function(db){
+		db.collection("_schema").findOne({collectionSlug: req.params.collection}, function(err, result){
+			if(err) throw err;
+
+			var fields = [];
+			_.each(result.fields, function(el, i){
+				if(el.type == "image"){
+					fields.push({name: el.slug, maxCount: 1});
+				}
+			});
+			upload.fields(fields)(req, res, next);
+		});
+	});
+}
 
 module.exports = router;
 

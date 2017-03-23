@@ -9,7 +9,7 @@
 		</legend>
 
 		{{#each fields}}
-			<div class="field">
+		<div class="field">
 			<span><input class="name-field" name="name-{{@index}}" type="text" value="{{name}}"></span>
 			<span><select class="type-field" name="type-{{@index}}">
 				<option {{#ifEquals type "wysiwyg"}}selected{{/ifEquals}} value="wysiwyg">WYSIWYG</option>
@@ -21,6 +21,16 @@
 			</select></span>
 			<span><i class="fa fa-plus-circle schema-add" aria-hidden="true"></i></span>
 			<span><i class="fa fa-minus-circle schema-remove" aria-hidden="true"></i></span>
+			{{#ifEquals type "checkbox"}}
+			<div class="choices">
+				<textarea rows="5" columns="50">{{#each properties.choices}}{{@key}}:{{this}}{{#lenEq ../properties.choices @index}}{{else}}&#13;&#10;{{/lenEq}}{{/each}}</textarea>
+			</div>
+			{{/ifEquals}}
+			{{#ifEquals type "radio"}}
+			<div class="choices">
+				<textarea rows="5" columns="50">{{#each properties.choices}}{{@key}}:{{this}}{{#lenEq ../properties.choices @index}}{{else}}&#13;&#10;{{/lenEq}}{{/each}}</textarea>
+			</div>
+			{{/ifEquals}}
 		</div>
 		{{/each}}
 		<p class="submit"><input type="submit" value="Save"></p>

@@ -3,6 +3,7 @@
 
 	<form method="post" action="/admin/collections/{{collectionSlug}}/new" class="model-form" enctype="multipart/form-data">
 		{{#each fields}}
+			<p>
 			<label for="{{slug}}">{{name}}</label><br>
 			{{#ifEquals type "text" }}
 				<input type="text" name="{{slug}}">
@@ -31,6 +32,7 @@
 			{{#ifEquals type "image"}}
 				<input type="file" name="{{slug}}">
 			{{/ifEquals}}
+			</p>
 		{{/each}}
 
 		<p class="submit"><input type="submit" value="Save"></p>
