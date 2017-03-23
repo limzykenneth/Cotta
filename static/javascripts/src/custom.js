@@ -96,20 +96,16 @@ $(document).ready(function() {
 	$(".wysiwyg-editor").trumbowyg();
 
 	$("#page-content .model-creation .model-form").submit(function(e) {
+		var formData = new FormData($(this)[0]);
 		e.preventDefault();
 
 		var $submitBtn = $(this).find(".submit input");
 		$submitBtn.attr("value", "Saving...").prop("disabled", true);
 
-		var req = $(this).serializeArray();
 		fetch($(this).attr("action"), {
 			method: "post",
-			body: JSON.stringify(req),
-			credentials: "include",
-			headers: {
-				'Accept': 'application/json',
-				'Content-Type': 'application/json'
-		    }
+			body: formData,
+			credentials: "include"
 		}).then(function(res){
 			return res.json();
 		}).then(function(data){

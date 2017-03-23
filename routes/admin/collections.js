@@ -2,6 +2,8 @@ const _ = require("lodash");
 const express = require("express");
 const router = express.Router();
 const path = require("path");
+const multer  = require('multer');
+const upload = multer({ dest: 'uploads/' });
 
 let connect = require("../database.js");
 
@@ -63,14 +65,15 @@ router.get("/:collection/new", function(req, res){
 	});
 });
 
-router.post("/:collection/new", function(req, res){
+router.post("/:collection/new", upload.single("avatar"), function(req, res){
 	var data = {};
 
 	_.each(req.body, function(el){
 		data[el.name] = el.value;
 	});
+
 	connect.then(function(db){
-		db.collection(req.params.collection).insertOne(data, function(err){
+		db.collection(req.params.collection).insertOne(req.body, function(err){
 			if(err) throw err;
 
 			res.json({
