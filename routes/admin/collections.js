@@ -2,20 +2,8 @@ const _ = require("lodash");
 const express = require("express");
 const router = express.Router();
 const path = require("path");
-const randomstring = require("randomstring");
-const multer  = require('multer');
-const upload = multer({
-	storage: multer.diskStorage({
-		destination: function (req, file, cb) {
-			cb(null, "./uploads");
-		},
-		filename: function (req, file, cb) {
-			cb(null, path.basename(file.originalname, path.extname(file.originalname)) + '-' + randomstring.generate(10) + path.extname(file.originalname));
-		}
-	})
-});
-
-let connect = require("../database.js");
+const connect = require("../database.js");
+const uploadSchemas = require("../upload.js");
 
 router.get("/", function(req, res){
 	connect.then(function(db){
@@ -75,7 +63,7 @@ router.get("/:collection/new", function(req, res){
 	});
 });
 
-router.post("/:collection/new", dynamicSchema, function(req, res){
+router.post("/:collection/new", uploadSchemas, function(req, res){
 	var data = req.body;
 
 	_.each(req.files, function(el, i){
@@ -104,7 +92,7 @@ function dynamicSchema(req, res, next){
 					fields.push({name: el.slug, maxCount: 1});
 				}
 			});
-			upload.fields(fields)(req, res, next);
+			uploadImage.fields(fields)(req, res, next);
 		});
 	});
 }

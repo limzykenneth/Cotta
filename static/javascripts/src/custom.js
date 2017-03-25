@@ -111,10 +111,11 @@ $(document).ready(function() {
 		}).then(function(data){
 			if(data.status == "success"){
 				console.log("success");
-				$submitBtn.attr("value", "Save").prop("disabled", false);
-			}else{
-				$submitBtn.attr("value", "Save").prop("disabled", false);
 			}
+			$submitBtn.attr("value", "Save").prop("disabled", false);
+		}).catch(function(err){
+			console.log(JSON.stringify(err));
+			$submitBtn.attr("value", "Save").prop("disabled", false);
 		});
 	});
 });
