@@ -81,22 +81,6 @@ router.post("/:collection/new", uploadSchemas, function(req, res){
 	});
 });
 
-function dynamicSchema(req, res, next){
-	connect.then(function(db){
-		db.collection("_schema").findOne({collectionSlug: req.params.collection}, function(err, result){
-			if(err) throw err;
-
-			var fields = [];
-			_.each(result.fields, function(el, i){
-				if(el.type == "image"){
-					fields.push({name: el.slug, maxCount: 1});
-				}
-			});
-			uploadImage.fields(fields)(req, res, next);
-		});
-	});
-}
-
 module.exports = router;
 
 // Utils
