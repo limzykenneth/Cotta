@@ -10,7 +10,9 @@ router.get("/", function(req, res){
 		db.collection("_schema").find().toArray(function(err, results){
 			if(err) throw err;
 
-			res.render("collections", {data: results});
+			res.render("collections", {
+				data: results
+			});
 		});
 	});
 });
@@ -22,6 +24,8 @@ router.get("/new", function(req, res){
 router.get("/edit/:collection", function(req, res){
 	connect.then(function(db){
 		db.collection("_schema").findOne({collectionSlug: req.params.collection}, function(err, result){
+			var obj = result;
+			obj[schemas] = res.locals.schemas;
 			res.render("edit-collection", result);
 		});
 	});

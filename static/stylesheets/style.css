@@ -1,3 +1,21 @@
+* {
+  box-sizing: border-box;
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+  margin-top: 0;
+}
+html {
+  font-size: 14px;
+}
+body {
+  overflow: hidden;
+}
 #page-header {
   padding: 10px 20px;
   width: 100vw;
@@ -8,22 +26,43 @@
 #page-header a {
   color: white;
 }
-* {
-  box-sizing: border-box;
-}
 #page-content {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
+  overflow: hidden;
 }
 #page-content .sidebar {
+  overflow-y: scroll;
   width: 20%;
   height: calc(100vh - 50px);
   float: left;
   background-color: grey;
+  padding: 2rem;
+}
+#page-content .sidebar .sidebar-items {
+  margin-bottom: 0.5rem;
+}
+#page-content .sidebar .sidebar-title {
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
 }
 #page-content .main-content {
-  margin: 1rem;
+  overflow-y: scroll;
+  padding: 2rem;
+}
+#page-content .main-content .collections .collection {
+  margin-bottom: 3rem;
+}
+#page-content .main-content .collections .collection h3 {
+  margin: 0;
+}
+#page-content .main-content .collections .collection ul {
+  padding: 0;
+  list-style: none;
+}
+#page-content .main-content .collections .collection .edit-link {
+  margin-top: 0.5rem;
 }
 .right {
   float: right;

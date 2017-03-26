@@ -7,6 +7,7 @@ const bcrypt = require("bcrypt");
 const path = require("path");
 const f = require("util").format;
 const MongoStore = require('connect-mongo')(session);
+const connect = require("./database.js");
 
 // Custom middleware
 var restrict = require("./restrict.js");
@@ -35,6 +36,18 @@ router.use(function(req, res, next){
 	if (err) res.locals.message = "<p class=\"msg error\">" + err + "</p>";
 	if (msg) res.locals.message = "<p class=\"msg success\">" + msg + "</p>";
 	next();
+});
+
+// Setting data to be used for all routes
+router.use(function(req, res, next){
+	connect.then(function(db){
+		db.collection("_schema").find().toArray(function(err, results){
+			if(err) throw err;
+
+			res.locals.schemas = results;
+			next();
+		});
+	});
 });
 
 // Logout by destroying the session

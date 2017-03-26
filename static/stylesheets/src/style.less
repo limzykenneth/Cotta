@@ -1,24 +1,44 @@
-@import "header.less";
+@import "variables.less";
 
+// My own normalization preference
 *{
 	box-sizing: border-box;
 }
 
+h1, h2, h3, h4, h5, h6, p{
+	margin-top: 0;
+}
+
+// Custom
+html{
+	font-size: @base-font-size;
+}
+
+body{
+	overflow: hidden;
+}
+
+a{
+
+}
+
+@import "header.less";
+
 #page-content{
 	display: flex;
+	overflow: hidden;
 
-	.sidebar{
-		width: 20%;
-		height: ~"calc(100vh - 50px)";
-		float: left;
-		background-color: grey;
-	}
+	@import "sidebar.less";
 
 	.main-content{
-		margin: 1rem;
+		overflow-y: scroll;
+		padding: 2rem;
+
+		@import "collections-list.less";
 	}
 }
 
+// Heplers
 .right{
 	float: right;
 }
