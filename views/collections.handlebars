@@ -4,14 +4,14 @@
 	<div class="collections">
 		{{#each data}}
 			<div class="collection">
-				<h2><a href="{{collectionSlug}}">{{collectionName}}</a></h2>
+				<h2><a href="/admin/collections/{{collectionSlug}}">{{collectionName}}</a></h2>
 				<ul>
 				<h3>Fields</h3>
 				{{#each fields}}
 					<li>{{name}}: {{type}}</li>
 				{{/each}}
 				</il>
-				<p class="edit-link"><a href="edit/{{collectionSlug}}">Edit</a></p>
+				<p class="edit-link"><a href="/admin/collections/edit/{{collectionSlug}}">Edit</a></p>
 			</div>
 		{{else}}
 			<p>No collections created yet. Perhaps you want to click <a href="collections/new">here</a> to create a new collection?</p>
