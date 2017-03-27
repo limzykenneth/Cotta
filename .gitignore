@@ -100,3 +100,4 @@ test-data.json
 .env
 insertData.js
 uploads
+db_backup
