@@ -97,4 +97,10 @@ router.use("/collections", collections);
 let schema = require("./admin/schema.js");
 router.use("/schema", schema);
 
+let users = require("./admin/users.js");
+router.use("/users", users);
+
+let configuration = require("./admin/config.js");
+router.use("/config", configuration);
+
 module.exports = router;
