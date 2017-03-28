@@ -19,8 +19,12 @@ $(document).ready(function() {
 
 	$("#page-content").on("change", ".schema-definition .field .type-field", function(){
 		$(this).parent().siblings(".choices").remove();
+
+		var index = $(this).attr("name").replace(/^type-(\d+?)$/, "$1");
+		choicesTemplate = _.template($("#checkbox-options-template").html());
+
 		if($(this).val() == "checkbox" || $(this).val() == "radio"){
-			$(this).parents(".field").append($("#checkbox-options-template").html());
+			$(this).parents(".field").append(choicesTemplate({index: index}));
 		}
 	});
 
@@ -29,6 +33,7 @@ $(document).ready(function() {
 		e.preventDefault();
 
 		var formData = new FormData($(this)[0]);
+		console.log(formData);
 		var $submitBtn = $(this).find(".submit input");
 		$submitBtn.attr("value", "Saving...").prop("disabled", true);
 		fetch($(this).attr("action"), {
@@ -40,7 +45,7 @@ $(document).ready(function() {
 		}).then(function(data){
 			if(data.status == "success"){
 				// redirect somewhere else
-				window.location.replace("/admin/collections");
+				// window.location.replace("/admin/collections");
 			}else{
 				$("#page-content .collection-creation .error-msg").text(data.reason).show().delay(2000).fadeOut(500);
 			}

@@ -23,12 +23,12 @@
 			<span><i class="fa fa-minus-circle schema-remove" aria-hidden="true"></i></span>
 			{{#ifEquals type "checkbox"}}
 			<div class="choices">
-				<textarea rows="5" columns="50">{{#each properties.choices}}{{@key}}:{{this}}{{#lenEq ../properties.choices @index}}{{else}}&#13;&#10;{{/lenEq}}{{/each}}</textarea>
+				<textarea name="option-{{@index}}" rows="5" columns="50">{{#each properties.choices}}{{@key}}:{{this}}{{#lenEq ../properties.choices @index}}{{else}}&#13;&#10;{{/lenEq}}{{/each}}</textarea>
 			</div>
 			{{/ifEquals}}
 			{{#ifEquals type "radio"}}
 			<div class="choices">
-				<textarea rows="5" columns="50">{{#each properties.choices}}{{@key}}:{{this}}{{#lenEq ../properties.choices @index}}{{else}}&#13;&#10;{{/lenEq}}{{/each}}</textarea>
+				<textarea name="option-{{@index}}" rows="5" columns="50">{{#each properties.choices}}{{@key}}:{{this}}{{#lenEq ../properties.choices @index}}{{else}}&#13;&#10;{{/lenEq}}{{/each}}</textarea>
 			</div>
 			{{/ifEquals}}
 		</div>
