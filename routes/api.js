@@ -12,6 +12,14 @@ app.get("*", function(req, res, next){
 	next();
 });
 
+app.get("/:collection", function(req, res, next){
+	if(req.params.collection.substr(0, 1) == "_"){
+		res.status(403).send({error: "Collection name may not start with _"});
+	}else{
+		next();
+	}
+});
+
 app.get("/:collection", function (req, res){
 	var collection = req.params.collection;
 

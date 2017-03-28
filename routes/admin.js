@@ -24,7 +24,11 @@ router.use(session({
     resave: false, // don't save session if unmodified
     saveUninitialized: false, // don't create session until something stored
     secret: ["shhhh, very secret"], // used to maintain session, revoking one will invalidate all sessions
-    store: new MongoStore({ url: mongoURL })
+    store: new MongoStore({
+    	url: mongoURL,
+    	collection: "_sessions",
+    	ttl: 14 * 24 * 60 * 60
+    })
 }));
 
 router.use(function(req, res, next){

@@ -11,7 +11,7 @@ router.post("/new", function(req, res){
 	if(!validateIncoming(data.collectionName)){
 		res.json({
 			status: "failed",
-			reason: "Collection names should only contain alphanumeric characters, underscore and spaces."
+			reason: "Collection names should start with alphanumeric characters and contain only alphanumeric characters, underscores and spaces."
 		});
 		return;
 	}
@@ -87,7 +87,7 @@ router.post("/edit/:collection", function(req, res){
 // Utils
 function validateIncoming(string){
 	let regexp = /^[a-zA-Z0-9-_ ]+$/;
-	if (string.search(regexp) == -1){
+	if (string.search(regexp) == -1 || string.substr(0, 1) == "_"){
 		return false;
 	}else{
 		return true;

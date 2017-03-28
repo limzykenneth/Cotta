@@ -7,7 +7,7 @@ var authenticate = function(name, pass, fn) {
 	if (!module.parent) console.log("authenticating %s:%s", name, pass);
 
 	connect.then(function(db){
-		db.collection("users_auth").find({"username": name}).toArray(function (err, result) {
+		db.collection("_users_auth").find({"username": name}).toArray(function (err, result) {
 			if (err) throw err;
 			if (result.length > 1) throw "More than one entries found, PANIC!";
 
