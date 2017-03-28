@@ -28,68 +28,23 @@ $(document).ready(function() {
 	$("#page-content .schema-definition").submit(function(e) {
 		e.preventDefault();
 
-		var rawData = $(this).serializeArray();
-		var req = {
-			collectionName: $(this).attr("data-collection-name") || rawData[0].value,
-			fields: []
-		};
-
-		var choices = [];
-		$(this).find("textarea").each(function(i){
-			choices.push($(this).val());
-		});
-		var choicesIndex = 0;
-		for(var i = rawData.length % 2; i < rawData.length; i = i + 2){
-			var buffer = {};
-			buffer.name = rawData[i].value;
-			buffer.type = rawData[i+1].value;
-			if(buffer.type == "checkbox" || buffer.type == "radio"){
-				buffer.properties = {};
-				var choiceList = choices[choicesIndex].split("\n");
-				var choiceObject = {};
-
-				// Extras to allow custom definitions of options values
-				_.each(choiceList, function(el, i){
-					var reg = [/^"(.+?)":"(.+?)"$/g, /^"(.+?)":(.+?)$/g, /^(.+?):"(.+?)"$/g, /^(.+?):(.+?)$/g];
-					if(reg[0].test(el)){
-						choiceObject[el.replace(reg[0], "$1")] = el.replace(reg[0], "$2");
-					}else if(reg[1].test(el)){
-						choiceObject[el.replace(reg[1], "$1")] = el.replace(reg[1], "$2");
-					}else if(reg[2].test(el)){
-						choiceObject[el.replace(reg[2], "$1")] = el.replace(reg[2], "$2");
-					}else if(reg[3].test(el)){
-						choiceObject[el.replace(reg[3], "$1")] = el.replace(reg[3], "$2");
-					}else{
-						choiceObject[el] = el;
-					}
-				});
-
-				buffer.properties.choices = choiceObject;
-				choicesIndex++;
-			}
-			req.fields.push(buffer);
-		}
-
+		var formData = new FormData($(this)[0]);
 		var $submitBtn = $(this).find(".submit input");
 		$submitBtn.attr("value", "Saving...").prop("disabled", true);
 		fetch($(this).attr("action"), {
 			method: "post",
-			body: JSON.stringify(req),
-			credentials: "include",
-			headers: {
-				'Accept': 'application/json',
-				'Content-Type': 'application/json'
-		    }
+			body: formData,
+			credentials: "include"
 		}).then(function(res){
 			return res.json();
 		}).then(function(data){
 			if(data.status == "success"){
 				// redirect somewhere else
-				window.location.href("/admin/collections");
+				window.location.replace("/admin/collections");
 			}else{
 				$("#page-content .collection-creation .error-msg").text(data.reason).show().delay(2000).fadeOut(500);
-				$submitBtn.attr("value", "Save").prop("disabled", false);
 			}
+			$submitBtn.attr("value", "Save").prop("disabled", false);
 		});
 	});
 

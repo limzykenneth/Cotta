@@ -3,11 +3,14 @@ const express = require("express");
 const router = express.Router();
 const path = require("path");
 const f = require("util").format;
+const multer = require('multer');
+const upload = multer({dest: "uploads/"});
 
 let connect = require("../database.js");
 
-router.post("/new", function(req, res){
-	let data = req.body;
+router.post("/new", upload.none(), function(req, res){
+	let data = {};
+	data.collectionName = req.body["collection-name"];
 	if(!validateIncoming(data.collectionName)){
 		res.json({
 			status: "failed",
@@ -16,17 +19,26 @@ router.post("/new", function(req, res){
 		return;
 	}
 	data.collectionSlug = data.collectionName.toLowerCase().replace(" ", "_");
+	data.exposeToAPI = req.body["expose-to-api"] ? true : false;
 
-	_.each(data.fields, function(el, i){
-		if(!validateIncoming(el.name)){
-			res.json({
-				status: "failed",
-				reason: "Field names should only contain alphanumeric characters, underscore and spaces."
-			});
-			return false;
+	delete req.body["collection-name"];
+	delete req.body["expose-to-api"];
+
+	// Form fields data into key value pairs
+	data.fields = {};
+	let regName = /^name-(\d+)?$/;
+	let regType = /^type-(\d+?)$/;
+	_.each(req.body, function(el, key){
+		if(regName.test(key)){
+			let index = key.replace(regName, "$1");
+			data.fields[el] = req.body["type-" + index];
 		}
-		el.slug = el.name.toLowerCase().replace(" ", "_");
 	});
+
+	// For debugging
+	// res.json({
+	// 	status: "success"
+	// });
 
 	connect.then(function(db){
 		db.collection("_schema").find({collectionSlug: data.collectionSlug}).toArray(function(err, result){
