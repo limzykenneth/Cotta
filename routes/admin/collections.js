@@ -5,6 +5,7 @@ const path = require("path");
 const connect = require("../database.js");
 const uploadSchemas = require("../upload.js");
 
+// List all collections and their schemas
 router.get("/", function(req, res){
 	connect.then(function(db){
 		db.collection("_schema").find().toArray(function(err, results){
@@ -17,10 +18,12 @@ router.get("/", function(req, res){
 	});
 });
 
+// Render page to create new collection
 router.get("/new", function(req, res){
 	res.render("create-collections");
 });
 
+// Render page to edit existing collection
 router.get("/edit/:collection", function(req, res){
 	connect.then(function(db){
 		db.collection("_schema").findOne({collectionSlug: req.params.collection}, function(err, result){
@@ -31,6 +34,7 @@ router.get("/edit/:collection", function(req, res){
 	});
 });
 
+// List all models under the specified collection
 router.get("/:collection", function(req, res, next){
 	connect.then(function(db){
 		db.collection("_schema").find().toArray(function(err, results){
@@ -59,6 +63,7 @@ router.get("/:collection", function(req, res, next){
 	});
 });
 
+// Render page to create new model under specified collection
 router.get("/:collection/new", function(req, res){
 	connect.then(function(db){
 		db.collection("_schema").findOne({collectionSlug: req.params.collection}, function(err, result){
@@ -67,6 +72,7 @@ router.get("/:collection/new", function(req, res){
 	});
 });
 
+// Create new model under specified collection
 router.post("/:collection/new", uploadSchemas, function(req, res){
 	var data = req.body;
 
@@ -83,6 +89,21 @@ router.post("/:collection/new", uploadSchemas, function(req, res){
 			});
 		});
 	});
+});
+
+// Render page showing data of specified model
+router.get("/:collection/:id", function(req, res){
+	res.send("Not yet implemented...");
+});
+
+// Render page to edit data of specified model
+router.get("/:collection/:id/edit", function(req, res){
+	res.send("Not yet implemented...");
+});
+
+// Edit data of specified model
+router.post("/:collection/:id/edit", function(req, res){
+	res.send("Not yet implemented...");
 });
 
 module.exports = router;

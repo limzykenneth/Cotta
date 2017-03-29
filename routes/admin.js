@@ -107,4 +107,7 @@ router.use("/users", users);
 let configuration = require("./admin/config.js");
 router.use("/config", configuration);
 
+let account = require("./admin/account.js");
+router.use("/account", account);
+
 module.exports = router;

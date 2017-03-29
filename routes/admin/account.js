@@ -8,11 +8,7 @@ router.get("/", function(req, res){
 	res.send("Not yet implemented...");
 });
 
-router.get("/:id", function(req, res){
-	res.send("Not yet implemented...");
-});
-
-router.post("/:id", function(req, res){
+router.post("/", function(req, res){
 	res.send("Not yet implemented...");
 });
 
