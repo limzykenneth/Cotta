@@ -13,9 +13,6 @@ p {
 html {
   font-size: 14px;
 }
-body {
-  overflow: hidden;
-}
 #page-header {
   padding: 10px 20px;
   width: 100vw;
@@ -30,7 +27,7 @@ body {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
-  overflow: hidden;
+  height: calc(100vh - 50px);
 }
 #page-content .sidebar {
   overflow-y: auto;
@@ -71,4 +68,7 @@ body {
   margin: 0 auto;
   width: 80%;
   max-width: 1000px;
+}
+.hidden {
+  display: none;
 }

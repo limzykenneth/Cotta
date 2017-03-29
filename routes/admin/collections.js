@@ -28,7 +28,7 @@ router.get("/edit/:collection", function(req, res){
 	connect.then(function(db){
 		db.collection("_schema").findOne({collectionSlug: req.params.collection}, function(err, result){
 			var obj = result;
-			obj[schemas] = res.locals.schemas;
+			obj.schemas = res.locals.schemas;
 			res.render("edit-collection", result);
 		});
 	});
@@ -81,11 +81,13 @@ router.post("/:collection/new", uploadSchemas, function(req, res){
 	});
 
 	connect.then(function(db){
-		db.collection(req.params.collection).insertOne(data, function(err){
-			if(err) throw err;
+		db.collection(req.params.collection).ensureIndex("_uid", function(err){
+			db.collection(req.params.collection).insertOne(data, function(err){
+				if(err) throw err;
 
-			res.json({
-				status: "success"
+				res.json({
+					status: "success"
+				});
 			});
 		});
 	});

@@ -4,6 +4,7 @@
 	<h2>Edit {{collectionName}}</h2>
 
 	<form method="post" action="/admin/schema/edit/{{collectionSlug}}" class="schema-definition"  enctype="multipart/form-data" data-collection-name="{{collectionName}}">
+		<span class="hidden"><input type="text" name="collection-name" value="{{collectionName}}"></span>
 		<legend>
 			<span>Name</span><span>Type</span>
 		</legend>

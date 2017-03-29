@@ -34,6 +34,7 @@ function parseRequest(req, res, next){
 			let index = key.replace(regName, "$1");
 			buffer.properties = {};
 			buffer.name = req.body["name-" + index];
+			buffer.slug = buffer.name.toLowerCase().replace(" ", "_");
 			buffer.type = req.body["type-" + index];
 			if(buffer.type == "checkbox" || buffer.type == "radio"){
 				let choices = req.body["option-" + index].split(/\r?\n/);
