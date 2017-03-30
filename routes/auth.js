@@ -1,8 +1,9 @@
 const bcrypt = require("bcrypt");
-
 let connect = require("./database.js");
 
-var authenticate = function(name, pass, fn) {
+let auth = {};
+
+auth.authenticate = function(name, pass, fn) {
 	// If not called by another module
 	if (!module.parent) console.log("authenticating %s:%s", name, pass);
 
@@ -25,4 +26,25 @@ var authenticate = function(name, pass, fn) {
 	});
 };
 
-module.exports = authenticate;
+auth.signup = function(name, pass, fn){
+	bcrypt.hash(pass, 10, function(err, hash){
+		if(err) throw err;
+
+		connect.then(function(db){
+			db.collection("_users_auth").createIndex({"username": 1}, {unique: true}, function(err){
+				if(err) throw err;
+
+				db.collection("_users_auth").insertOne({
+					"username": name,
+					"hash": hash
+				}, function(err){
+					if(err) return fn(err);
+
+					return fn(null);
+				});
+			});
+		});
+	});
+};
+
+module.exports = auth;

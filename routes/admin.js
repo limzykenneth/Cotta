@@ -11,7 +11,7 @@ const connect = require("./database.js");
 
 // Custom middleware
 var restrict = require("./restrict.js");
-var authenticate = require("./auth.js");
+var auth = require("./auth.js");
 
 let mongoURL = f("mongodb://%s:%s@%s/%s", process.env.mongo_user, process.env.mongo_pass, process.env.mongo_server, process.env.mongo_db_name);
 
@@ -54,7 +54,7 @@ router.get("/login", function(req, res){
 });
 
 router.post("/login", function(req, res){
-	authenticate(req.body.username, req.body.password, function(err, user){
+	auth.authenticate(req.body.username, req.body.password, function(err, user){
 	    if (user) {
 			// Regenerate session when signing in
 			// to prevent fixation
@@ -74,11 +74,24 @@ router.post("/login", function(req, res){
 });
 
 router.get("/signup", function(req, res){
-	res.send("Not yet implemented......");
+	res.render("signup");
 });
 
 router.post("/signup", function(req, res){
-	res.send("Not yet implemented......");
+	auth.signup(req.body.username, req.body.password, function(err){
+		if(err){
+			if(err.name == "MongoError" && err.code == 11000){
+				// Enumeration risk, should be changed once email system is setup
+				res.json({
+					status: "failed",
+					message: "Username exist."
+				});
+			}
+			throw err;
+		}
+
+		res.json({status: "success"});
+	});
 });
 
 // Use the "restrict" middleware to handle routes not meant for unauthorised access
