@@ -42,18 +42,6 @@ router.use(function(req, res, next){
 	next();
 });
 
-// Setting data to be used for all routes
-router.use(function(req, res, next){
-	connect.then(function(db){
-		db.collection("_schema").find().toArray(function(err, results){
-			if(err) throw err;
-
-			res.locals.schemas = results;
-			next();
-		});
-	});
-});
-
 // Logout by destroying the session
 router.get("/logout", function(req, res){
 	req.session.destroy(function(){
@@ -85,10 +73,30 @@ router.post("/login", function(req, res){
 	});
 });
 
+router.get("/signup", function(req, res){
+	res.send("Not yet implemented......");
+});
+
+router.post("/signup", function(req, res){
+	res.send("Not yet implemented......");
+});
+
 // Use the "restrict" middleware to handle routes not meant for unauthorised access
 // Everything registered after this line must have auth cookies
 router.use(restrict, function(req, res, next){
 	next();
+});
+
+// Setting data to be used for all authorised routes
+router.use(function(req, res, next){
+	connect.then(function(db){
+		db.collection("_schema").find().toArray(function(err, results){
+			if(err) throw err;
+
+			res.locals.schemas = results;
+			next();
+		});
+	});
 });
 
 router.get("/", function(req, res) {
