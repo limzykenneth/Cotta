@@ -1,0 +1,12 @@
+<section class="model-container main-content">
+	<h1>{{collectionName}} ID: {{_uid}}</h1>
+
+	<article class="model">
+		{{#each fields}}
+			<article>
+				<h4>{{@key}}</h4>
+				<div>{{{this}}}</div>
+			</article>
+		{{/each}}
+	</article>
+</section>

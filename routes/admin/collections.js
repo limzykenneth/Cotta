@@ -100,7 +100,23 @@ router.post("/:collection/new", uploadSchemas, function(req, res){
 
 // Render page showing data of specified model
 router.get("/:collection/:id", function(req, res){
-	res.send("Not yet implemented...");
+	connect.then(function(db){
+		db.collection(req.params.collection).findOne({"_uid": parseInt(req.params.id)}, function(err, result){
+			if(err) throw err;
+
+			var data = {};
+			data._uid = result._uid;
+			data.fields = {};
+			// Need to convert that
+			data.collectionName = req.params.collection;
+			_.each(result, function(el, key){
+				if(key.substr(0,1) !== "_"){
+					data.fields[key] = el;
+				}
+			});
+			res.render("model", data);
+		});
+	});
 });
 
 // Render page to edit data of specified model
