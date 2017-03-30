@@ -84,8 +84,12 @@ router.post("/:collection/new", uploadSchemas, function(req, res){
 	connect.then(function(db){
 		autoIncrement.setDefaults({collection: "_counters"});
 		autoIncrement.getNextSequence(db, req.params.collection, function(err, autoIndex){
+			if(err) throw err;
+
 			data._uid = autoIndex;
 			db.collection(req.params.collection).createIndex({"_uid": 1}, {unique: true}, function(err){
+				if(err) throw err;
+
 				db.collection(req.params.collection).insertOne(data, function(err){
 					if(err) throw err;
 
