@@ -39,9 +39,9 @@ const uploadFile = multer({
 	}
 });
 
-var uploadSchemas = generator(uploadImage, uploadFile);
+var uploadSchemas = generator(uploadImage);
 
-function generator(multerSetting){
+function generator(){
 	var multerSettings = Array.prototype.slice.call(arguments);
 	var newFunctions = [];
 

@@ -4,6 +4,7 @@ const router = express.Router();
 const path = require("path");
 const connect = require("../database.js");
 const uploadSchemas = require("../upload.js");
+const autoIncrement = require("mongodb-autoincrement");
 
 // List all collections and their schemas
 router.get("/", function(req, res){
@@ -81,12 +82,16 @@ router.post("/:collection/new", uploadSchemas, function(req, res){
 	});
 
 	connect.then(function(db){
-		db.collection(req.params.collection).ensureIndex("_uid", function(err){
-			db.collection(req.params.collection).insertOne(data, function(err){
-				if(err) throw err;
+		autoIncrement.setDefaults({collection: "_counters"});
+		autoIncrement.getNextSequence(db, req.params.collection, function(err, autoIndex){
+			data._uid = autoIndex;
+			db.collection(req.params.collection).createIndex({"_uid": 1}, {unique: true}, function(err){
+				db.collection(req.params.collection).insertOne(data, function(err){
+					if(err) throw err;
 
-				res.json({
-					status: "success"
+					res.json({
+						status: "success"
+					});
 				});
 			});
 		});
