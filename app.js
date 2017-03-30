@@ -31,6 +31,13 @@ app.engine("handlebars", exphbs({
         	}else{
         		return opts.inverse(this);
         	}
+        },
+        ifContains: function(collection, item, opts){
+        	if(_.includes(collection, item)){
+				return opts.fn(this);
+        	}else{
+        		return opts.inverse(this);
+        	}
         }
 	}
 }));

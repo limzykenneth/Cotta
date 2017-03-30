@@ -33,7 +33,6 @@ $(document).ready(function() {
 		e.preventDefault();
 
 		var formData = new FormData($(this)[0]);
-		console.log(formData);
 		var $submitBtn = $(this).find(".submit input");
 		$submitBtn.attr("value", "Saving...").prop("disabled", true);
 		fetch($(this).attr("action"), {
@@ -55,7 +54,7 @@ $(document).ready(function() {
 
 	$(".wysiwyg-editor").trumbowyg();
 
-	$("#page-content .model-creation .model-form").submit(function(e) {
+	$("#page-content .model-form").submit(function(e) {
 		var formData = new FormData($(this)[0]);
 		e.preventDefault();
 
@@ -70,7 +69,8 @@ $(document).ready(function() {
 			return res.json();
 		}).then(function(data){
 			if(data.status == "success"){
-				console.log("success");
+				// redirect somewhere else
+				// window.location.replace("/admin/collections");
 			}
 			$submitBtn.attr("value", "Save").prop("disabled", false);
 		}).catch(function(err){

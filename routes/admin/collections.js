@@ -121,12 +121,49 @@ router.get("/:collection/:id", function(req, res){
 
 // Render page to edit data of specified model
 router.get("/:collection/:id/edit", function(req, res){
-	res.send("Not yet implemented...");
+	connect.then(function(db){
+		db.collection(req.params.collection).findOne({"_uid": parseInt(req.params.id)}, function(err, result){
+			var fieldValues = {};
+			_.each(result, function(el, key){
+				if(key.substr(0,1) !== "_"){
+					fieldValues[key] = el;
+				}
+			});
+
+			db.collection("_schema").findOne({collectionSlug: req.params.collection}, function(err, schema){
+				var data = {};
+				data._uid = result._uid;
+				data.collectionName = req.params.collection;
+				data.collectionSlug = req.params.collection;
+				data.schema = schema;
+				_.each(data.schema.fields, function(field, key){
+					field.value = fieldValues[field.slug];
+				});
+				res.render("edit-model", data);
+			});
+		});
+	});
 });
 
 // Edit data of specified model
-router.post("/:collection/:id/edit", function(req, res){
-	res.send("Not yet implemented...");
+router.post("/:collection/:id/edit", uploadSchemas, function(req, res){
+	var data = req.body;
+
+	_.each(req.files, function(el, i){
+		data[el[0].fieldname] = el[0].path;
+	});
+
+	connect.then(function(db){
+		data._uid = parseInt(req.params.id);
+		// Probably don't want to use $set
+		db.collection(req.params.collection).updateOne({"_uid": parseInt(req.params.id)}, {$set: data}, function(err){
+			if(err) throw err;
+
+			res.json({
+				status: "success"
+			});
+		});
+	});
 });
 
 module.exports = router;
