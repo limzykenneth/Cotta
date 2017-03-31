@@ -46,4 +46,22 @@ auth.signup = function(name, pass, fn){
 	});
 };
 
+auth.changePassword = function(name, currentPassword, newPassword, fn){
+	this.authenticate(name, currentPassword, function(err, result){
+		if(err) throw err;
+
+		bcrypt.hash(newPassword, 10, function(err, hash){
+			connect.then(function(db){
+				db.collection("_users_auth").updateOne({"username": name}, {$set: {"hash": hash}}, function(err){
+					if(err) {
+						fn(err);
+					}else{
+						fn(null, result);
+					}
+				});
+			});
+		});
+	});
+};
+
 module.exports = auth;
