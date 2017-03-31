@@ -8,11 +8,10 @@ auth.authenticate = function(name, pass, fn) {
 	if (!module.parent) console.log("authenticating %s:%s", name, pass);
 
 	connect.then(function(db){
-		db.collection("_users_auth").find({"username": name}).toArray(function (err, result) {
+		db.collection("_users_auth").findOne({"username": name}, function(err, result){
 			if (err) throw err;
-			if (result.length > 1) throw "More than one entries found, PANIC!";
 
-			var hash = result[0].hash;
+			var hash = result.hash;
 
 			bcrypt.compare(pass, hash, function(err, res) {
 				if (err) return fn(err);

@@ -102,6 +102,8 @@ router.use(restrict, function(req, res, next){
 
 // Setting data to be used for all authorised routes
 router.use(function(req, res, next){
+	res.locals.currentUsername = req.session.user.username;
+
 	connect.then(function(db){
 		db.collection("_schema").find().toArray(function(err, results){
 			if(err) throw err;
