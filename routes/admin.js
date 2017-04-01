@@ -45,7 +45,7 @@ router.use(function(req, res, next){
 // Logout by destroying the session
 router.get("/logout", function(req, res){
 	req.session.destroy(function(){
-		res.redirect(path.join(currentPath + "/"));
+		res.redirect(currentPath);
 	});
 });
 
@@ -64,7 +64,7 @@ router.post("/login", function(req, res){
 				// or in this case the entire user object
 				req.session.user = user;
 				req.session.success = "Authenticated as " + user.name + " click to <a href=\"/admin/logout\">logout</a>. You may now access <a href=\"/restricted\">/restricted</a>.";
-				res.redirect(path.join(currentPath + "/"));
+				res.redirect(currentPath);
 			});
 		} else {
 			req.session.error = "Authentication failed, please check your username and password. (use \"tj\" and \"foobar\")";
