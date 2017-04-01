@@ -1,18 +1,19 @@
-var gulp = require("gulp");
-var rename = require("gulp-rename");
-var nodemon = require("gulp-nodemon");
-var plumber = require("gulp-plumber");
-var browserify = require("browserify"),
-	source = require("vinyl-source-stream"),
-    buffer = require("vinyl-buffer"),
-    uglifyjs = require("gulp-uglify");
+const gulp = require("gulp");
+const rename = require("gulp-rename");
+const nodemon = require("gulp-nodemon");
+const plumber = require("gulp-plumber");
+const browserify = require("browserify"),
+	  source = require("vinyl-source-stream"),
+      buffer = require("vinyl-buffer"),
+      uglifyjs = require("gulp-uglify");
+const mocha = require("gulp-mocha");
 
-var less = require("gulp-less"),
+const less = require("gulp-less"),
 	cleanCSS = require("gulp-clean-css"),
     autoprefixer = require("gulp-autoprefixer");
 
-var path = require("path");
-var minimist = require("minimist");
+const path = require("path");
+const minimist = require("minimist");
 var argv = minimist(process.argv.slice(2));
 
 if(argv.f){
@@ -75,6 +76,11 @@ if(argv.f){
 			.pipe(cleanCSS(cleanCSSOptions))
 			.pipe(rename("style.min.css"))
 			.pipe(gulp.dest(path.join(__dirname, "static/stylesheets")));
+	});
+
+	gulp.task("test", function(){
+		return gulp.src("./test")
+			.pipe(mocha({reporter: "nyan"}));
 	});
 
 	gulp.task("default", ["stylesheets", "javascripts"]);
