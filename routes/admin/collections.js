@@ -82,10 +82,11 @@ router.post("/:collection/new", uploadSchemas, function(req, res){
 		data[el[0].fieldname] = el[0].path;
 	});
 
-	// Data structure need rethink
-	data._owner = req.session.user.username;
-	data._date_created = moment.utc().format();
-	data._date_modified = moment.utc().format();
+	data._metadata = {
+		created_by: req.session.user.username,
+		date_created: moment.utc().format(),
+		date_modified: moment.utc().format()
+	};
 	connect.then(function(db){
 		autoIncrement.setDefaults({collection: "_counters"});
 		autoIncrement.getNextSequence(db, req.params.collection, function(err, autoIndex){
@@ -164,7 +165,7 @@ router.post("/:collection/:id/edit", uploadSchemas, function(req, res){
 
 	connect.then(function(db){
 		data._uid = parseInt(req.params.id);
-		data._date_modified = moment.utc().format();
+		data._metadata.date_modified = moment.utc().format();
 		// Probably don't want to use $set
 		db.collection(req.params.collection).updateOne({"_uid": parseInt(req.params.id)}, {$set: data}, function(err){
 			if(err) throw err;
