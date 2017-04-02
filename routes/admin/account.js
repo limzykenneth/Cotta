@@ -13,7 +13,6 @@ router.get("/", function(req, res){
 
 // Must be the current signed in user
 router.post("/", upload.none(), function(req, res, next){
-	console.log(req.body.username, req.session.user.username);
 	if(req.body.username == req.session.user.username){
 		next();
 	}else{
