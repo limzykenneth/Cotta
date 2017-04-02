@@ -108,20 +108,19 @@ router.post("/:collection/new", uploadSchemas, function(req, res){
 // Render page showing data of specified model
 router.get("/:collection/:id", function(req, res){
 	connect.then(function(db){
-		db.collection(req.params.collection).findOne({"_uid": parseInt(req.params.id)}, function(err, result){
+		db.collection("_schema").findOne({collectionSlug: req.params.collection}, function(err, schema){
 			if(err) throw err;
 
-			var data = {};
-			data._uid = result._uid;
-			data.fields = {};
-			// Need to convert that
-			data.collectionName = req.params.collection;
-			_.each(result, function(el, key){
-				if(key.substr(0,1) !== "_"){
-					data.fields[key] = el;
-				}
+			db.collection(req.params.collection).findOne({"_uid": parseInt(req.params.id)}, function(err, result){
+				if(err) throw err;
+
+				var data = schema;
+				data._uid = result._uid;
+				_.each(schema.fields, function(field, i){
+					field.value = result[field.slug];
+				});
+				res.render("model", data);
 			});
-			res.render("model", data);
 		});
 	});
 });

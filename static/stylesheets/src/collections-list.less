@@ -1,18 +1,21 @@
-.collections{
-	.collection{
-		margin-bottom: 3rem;
+&.collections-container{
+	.collections{
+		display: flex;
 
-		h3{
-			margin: 0;
-		}
+		.collection{
+			.card(30%);
 
-		ul{
-			padding: 0;
-			list-style: none;
-		}
+			.edit-link{
+				margin-top: 0.5rem;
+			}
 
-		.edit-link{
-			margin-top: 0.5rem;
+			.schema{
+				.reduced-list;
+
+				h3{
+					margin: 0;
+				}
+			}
 		}
 	}
 }

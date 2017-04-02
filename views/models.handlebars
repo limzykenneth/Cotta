@@ -1,16 +1,16 @@
 <section class="models-container main-content">
-	<h1>Models</h1>
+	<h1>Models <a class="new-btn" href="/admin/collections/{{collectionSlug}}/new">New</a></h1>
 
 	<ul class="models">
 		<h2>{{collectionName}}</h2>
 
 		{{#each data}}
-			<li><a href="/admin/collections/{{../collectionSlug}}/{{_uid}}">
+			<a href="/admin/collections/{{../collectionSlug}}/{{_uid}}"><li class="model">
 				<span class="model-id">{{_uid}}</span>
 				<span class="created-by">Created by: {{_metadata.created_by}}</span>
-				<spam class="date-created">Date created: {{_metadata.date_created}}</span>
+				<span class="date-created">Date created: {{_metadata.date_created}}</span>
 				<span class="date-modified">Last modified: {{_metadata.date_modified}}</span>
-			</a></li>
+			</li></a>
 		{{else}}
 			<p>No models created yet. Perhaps you want to click <a href="collections/{{collectionSlug}}/new">here</a> to create a new model?</p>
 		{{/each}}

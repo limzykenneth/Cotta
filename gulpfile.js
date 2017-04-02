@@ -7,6 +7,7 @@ const browserify = require("browserify"),
       buffer = require("vinyl-buffer"),
       uglifyjs = require("gulp-uglify");
 const mocha = require("gulp-mocha");
+const gutil = require("gulp-util");
 
 const less = require("gulp-less"),
 	cleanCSS = require("gulp-clean-css"),

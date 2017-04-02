@@ -1,4 +1,5 @@
 @import "variables.less";
+@import "mixins.less";
 
 // My own normalization preference
 *{
@@ -9,17 +10,27 @@ h1, h2, h3, h4, h5, h6, p{
 	margin-top: 0;
 }
 
-// Custom
-html{
+h1{
+	font-size: @large-font-size;
+}
+
+h4{
+	font-size: @medium-font-size;
+}
+
+h5{
 	font-size: @base-font-size;
 }
 
-body{
-	// overflow: hidden;
+// Custom
+html{
+	font-size: @base-font-size;
+	font-family: "Helvetica", sans-serif;
+	width: 100vw;
 }
 
 a{
-
+	text-decoration: none;
 }
 
 @import "header.less";
@@ -27,6 +38,7 @@ a{
 #page-content{
 	display: flex;
 	height: ~"calc(100vh - 50px)";
+	width: 100%;
 
 	@import "sidebar.less";
 
@@ -35,11 +47,22 @@ a{
 		padding: 2rem;
 		width: 80%;
 
+		.new-btn{
+			font-size: @medium-font-size;
+		}
+
 		@import "collections-list.less";
+		@import "models-list.less";
+		@import "users-list.less";
+		@import "model.less";
 	}
 }
 
 // Heplers
+.left{
+	float: left;
+}
+
 .right{
 	float: right;
 }

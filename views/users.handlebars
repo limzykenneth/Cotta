@@ -1,11 +1,9 @@
 <section class="users-container main-content">
 	<h1>Users</h1>
 
-	<div class="users">
-		<ul class="users-list">
-		{{#each users}}
-			<li>{{username}}</li>
-		{{/each}}
-		</ul>
-	</div>
+	<ul class="users">
+	{{#each users}}
+		<li class="user">{{username}}</li>
+	{{/each}}
+	</ul>
 </section>

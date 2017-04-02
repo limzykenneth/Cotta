@@ -1,12 +1,36 @@
 <section class="model-container main-content">
-	<h1>{{collectionName}} ID: {{_uid}}</h1>
+	<h1>{{collectionName}} - Model ID: {{_uid}}</h1>
 
 	<article class="model">
 		{{#each fields}}
-			<article>
-				<h4>{{@key}}</h4>
-				<div>{{{this}}}</div>
-			</article>
+			<div class="field">
+				<h5 class="field-name">{{this.name}}</h5>
+				<div class="field-value">
+				{{#ifEquals this.type "wysiwyg"}}
+					{{{this.value}}}
+				{{/ifEquals}}
+
+				{{#ifEquals this.type "text"}}
+					{{this.value}}
+				{{/ifEquals}}
+
+				{{#ifEquals this.type "email"}}
+					{{this.value}}
+				{{/ifEquals}}
+
+				{{#ifEquals this.type "radio"}}
+					{{this.value}}
+				{{/ifEquals}}
+
+				{{#ifEquals this.type "checkbox"}}
+					<ul class="checkbox-value">
+					{{#each this.value}}
+						<li>{{this}}</li>
+					{{/each}}
+					</ul>
+				{{/ifEquals}}
+				</div>
+			</div>
 		{{/each}}
 	</article>
 </section>
