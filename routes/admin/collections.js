@@ -39,12 +39,8 @@ router.get("/edit/:collection", function(req, res){
 // List all models under the specified collection
 router.get("/:collection", function(req, res, next){
 	connect.then(function(db){
-		db.collection("_schema").find().toArray(function(err, results){
+		db.collection("_schema").findOne({collectionSlug: req.params.collection}, function(err, schema){
 			if(err) throw err;
-
-			var schema = _.find(results, function(el){
-				return el.collectionSlug == req.params.collection;
-			});
 
 			if(typeof schema == "undefined") {
 				next();
@@ -55,6 +51,7 @@ router.get("/:collection", function(req, res, next){
 					res.render("models", {
 						collectionName: schema.collectionName,
 						collectionSlug: schema.collectionSlug,
+						schema: schema,
 						data: models
 					});
 				});
