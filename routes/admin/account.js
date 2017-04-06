@@ -2,10 +2,10 @@ const _ = require("lodash");
 const express = require("express");
 const router = express.Router();
 const path = require("path");
-const connect = require("../database.js");
-const auth = require("../auth.js");
+const connect = require("../../utils/database.js");
+const auth = require("../../utils/auth.js");
 const multer = require('multer');
-const upload = multer({dest: "uploads/"});
+const upload = multer();
 
 router.get("/", function(req, res){
 	res.render("account");

@@ -2,8 +2,8 @@ const _ = require("lodash");
 const express = require("express");
 const router = express.Router();
 const path = require("path");
-const connect = require("../database.js");
-const uploadSchemas = require("../upload.js");
+const connect = require("../../utils/database.js");
+const uploadSchemas = require("../../utils/middlewares/upload.js");
 const autoIncrement = require("mongodb-autoincrement");
 const moment = require("moment");
 

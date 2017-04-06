@@ -4,9 +4,8 @@ const router = express.Router();
 const path = require("path");
 const f = require("util").format;
 const multer = require('multer');
-const upload = multer({dest: "uploads/"});
-
-let connect = require("../database.js");
+const upload = multer();
+const connect = require("../../utils/database.js");
 
 function parseRequest(req, res, next){
 	let data = {};

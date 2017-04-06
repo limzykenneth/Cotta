@@ -1,5 +1,5 @@
 const bcrypt = require("bcrypt");
-let connect = require("./database.js");
+const connect = require("./database.js");
 
 let auth = {};
 

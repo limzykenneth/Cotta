@@ -1,7 +1,7 @@
 const express = require("express");
-let app = express.Router();
+const connect = require("../utils/database.js");
 
-let connect = require("./database.js");
+let app = express.Router();
 
 app.get("/", function(req, res){
 	res.send("<p>Welcome to the API Endpoint. Please refer to the documentation for its usage.</p>");

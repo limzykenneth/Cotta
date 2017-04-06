@@ -7,11 +7,11 @@ const bcrypt = require("bcrypt");
 const path = require("path");
 const f = require("util").format;
 const MongoStore = require('connect-mongo')(session);
-const connect = require("./database.js");
+const connect = require("../utils/database.js");
 
 // Custom middleware
-var restrict = require("./restrict.js");
-var auth = require("./auth.js");
+var restrict = require("../utils/middlewares/restrict.js");
+var auth = require("../utils/auth.js");
 
 let mongoURL = f("mongodb://%s:%s@%s/%s", process.env.mongo_user, process.env.mongo_pass, process.env.mongo_server, process.env.mongo_db_name);
 

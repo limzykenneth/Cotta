@@ -1,7 +1,7 @@
 const _ = require("lodash");
 const multer  = require('multer');
 const path = require("path");
-const connect = require("./database.js");
+const connect = require("../database.js");
 const randomstring = require("randomstring");
 
 const uploadImage = multer({
