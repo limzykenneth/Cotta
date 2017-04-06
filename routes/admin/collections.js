@@ -105,50 +105,30 @@ router.post("/:collection/new", uploadSchemas, function(req, res){
 	});
 });
 
+// Prepare data for model rendering
+router.get("/:collection/:id/?*", function(req, res, next){
+	connect.getSchemaModel(req.params.collection, req.params.id).then(function(r){
+		var data = r.schema;
+		data._uid = r.model._uid;
+		_.each(r.schema.fields, function(field, i){
+			field.value = r.model[field.slug];
+		});
+
+		req.modelData = data;
+		next();
+	}).catch(function(err){
+		throw err;
+	});
+});
+
 // Render page showing data of specified model
 router.get("/:collection/:id", function(req, res){
-	connect.then(function(db){
-		db.collection("_schema").findOne({collectionSlug: req.params.collection}, function(err, schema){
-			if(err) throw err;
-
-			db.collection(req.params.collection).findOne({"_uid": parseInt(req.params.id)}, function(err, result){
-				if(err) throw err;
-
-				var data = schema;
-				data._uid = result._uid;
-				_.each(schema.fields, function(field, i){
-					field.value = result[field.slug];
-				});
-				res.render("model", data);
-			});
-		});
-	});
+	res.render("model", req.modelData);
 });
 
 // Render page to edit data of specified model
 router.get("/:collection/:id/edit", function(req, res){
-	connect.then(function(db){
-		db.collection(req.params.collection).findOne({"_uid": parseInt(req.params.id)}, function(err, result){
-			var fieldValues = {};
-			_.each(result, function(el, key){
-				if(key.substr(0,1) !== "_"){
-					fieldValues[key] = el;
-				}
-			});
-
-			db.collection("_schema").findOne({collectionSlug: req.params.collection}, function(err, schema){
-				var data = {};
-				data._uid = result._uid;
-				data.collectionName = req.params.collection;
-				data.collectionSlug = req.params.collection;
-				data.schema = schema;
-				_.each(data.schema.fields, function(field, key){
-					field.value = fieldValues[field.slug];
-				});
-				res.render("edit-model", data);
-			});
-		});
-	});
+	res.render("edit-model", req.modelData);
 });
 
 // Edit data of specified model

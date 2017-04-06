@@ -2,7 +2,7 @@
 	<h1>Edit {{ collectionName }} ID {{_uid}}</h1>
 
 	<form method="post" action="/admin/collections/{{collectionSlug}}/{{_uid}}/edit" class="model-form" enctype="multipart/form-data">
-		{{#each schema.fields}}
+		{{#each fields}}
 			<p>
 			<label for="{{slug}}">{{name}}</label><br>
 			{{#ifEquals type "text" }}

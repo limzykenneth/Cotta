@@ -13,4 +13,28 @@ let connection = new Promise(function(resolve, reject){
 	});
 });
 
+connection.getSchemaModel = function(collectionSlug, modelID){
+	return new Promise(function(resolve, reject){
+		connection.then(function(db){
+			db.collection("_schema").findOne({collectionSlug: collectionSlug}, function(err, schema){
+				if (err) {
+					reject(err);
+				}else{
+					db.collection(collectionSlug).findOne({"_uid": parseInt(modelID)}, function(err, model){
+						if(err){
+							reject(err);
+						}else{
+							resolve({
+								schema: schema,
+								model: model,
+								db: db
+							});
+						}
+					});
+				}
+			});
+		});
+	});
+};
+
 module.exports = connection;
