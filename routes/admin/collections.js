@@ -15,14 +15,8 @@ router.use(function(req, res, next){
 
 // List all collections and their schemas
 router.get("/", function(req, res){
-	connect.then(function(db){
-		db.collection("_schema").find().toArray(function(err, results){
-			if(err) throw err;
-
-			res.render("collections", {
-				data: results
-			});
-		});
+	res.render("collections", {
+		data: res.locals.schemas
 	});
 });
 

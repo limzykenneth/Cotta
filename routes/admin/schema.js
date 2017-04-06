@@ -42,6 +42,8 @@ router.post("/edit/:collection", function(req, res){
 	});
 });
 
+module.exports = router;
+
 // Utils
 function validateIncoming(string){
 	let regexp = /^[a-zA-Z0-9-_ ]+$/;
@@ -52,7 +54,6 @@ function validateIncoming(string){
 	}
 }
 
-module.exports = router;
 
 // Shared middlewares
 function parseRequest(req, res, next){

@@ -108,6 +108,8 @@ router.use(function(req, res, next){
 		db.collection("_schema").find().toArray(function(err, results){
 			if(err) throw err;
 
+			// Fetch schema preemptively to simplify latter parts
+			// Models and users should not be fetched as that might take up way too much RAM
 			res.locals.schemas = results;
 			next();
 		});
