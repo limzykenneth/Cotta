@@ -5,7 +5,7 @@ const path = require("path");
 const multerNone = require('multer')().none();
 const connect = require("../../utils/database.js");
 
-router.post(/new|edit\/:collection/, multerNone, parseRequest);
+router.use(multerNone, parseRequest);
 
 router.post("/new", function(req, res){
 	connect.then(function(db){
