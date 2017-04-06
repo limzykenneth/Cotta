@@ -4,15 +4,14 @@ const router = express.Router();
 const path = require("path");
 const connect = require("../../utils/database.js");
 const auth = require("../../utils/auth.js");
-const multer = require('multer');
-const upload = multer();
+const multerNone = require('multer')().none();
 
 router.get("/", function(req, res){
 	res.render("account");
 });
 
 // Must be the current signed in user
-router.post("/", upload.none(), function(req, res, next){
+router.post("/", multerNone, function(req, res, next){
 	if(req.body.username == req.session.user.username){
 		next();
 	}else{

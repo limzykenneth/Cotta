@@ -2,11 +2,59 @@ const _ = require("lodash");
 const express = require("express");
 const router = express.Router();
 const path = require("path");
-const f = require("util").format;
-const multer = require('multer');
-const upload = multer();
+const multerNone = require('multer')().none();
 const connect = require("../../utils/database.js");
 
+router.post(/new|edit\/:collection/, multerNone, parseRequest);
+
+router.post("/new", function(req, res){
+	connect.then(function(db){
+		db.collection("_schema").find({collectionSlug: req.formData.collectionSlug}).toArray(function(err, result){
+			if(err) throw err;
+
+			if(result.length > 0){
+				res.json({
+					status: "failed",
+					reason: "Collection with that name already exist."
+				});
+			}else{
+				db.collection("_schema").insertOne(req.formData, function(err){
+					if(err) throw err;
+
+					res.json({
+						status: "success"
+					});
+				});
+			}
+		});
+	});
+});
+
+router.post("/edit/:collection", function(req, res){
+	connect.then(function(db){
+		db.collection("_schema").updateOne({collectionSlug: req.formData.collectionSlug}, req.formData, null, function(err){
+			if(err) throw err;
+
+			res.json({
+				status: "success"
+			});
+		});
+	});
+});
+
+// Utils
+function validateIncoming(string){
+	let regexp = /^[a-zA-Z0-9-_ ]+$/;
+	if (string.search(regexp) == -1 || string.substr(0, 1) == "_"){
+		return false;
+	}else{
+		return true;
+	}
+}
+
+module.exports = router;
+
+// Shared middlewares
 function parseRequest(req, res, next){
 	let data = {};
 	data.collectionName = req.body["collection-name"];
@@ -67,50 +115,3 @@ function parseRequest(req, res, next){
 	// 	status: "success"
 	// });
 }
-
-router.post("/new", upload.none(), parseRequest, function(req, res){
-	connect.then(function(db){
-		db.collection("_schema").find({collectionSlug: req.formData.collectionSlug}).toArray(function(err, result){
-			if(err) throw err;
-
-			if(result.length > 0){
-				res.json({
-					status: "failed",
-					reason: "Collection with that name already exist."
-				});
-			}else{
-				db.collection("_schema").insertOne(req.formData, function(err){
-					if(err) throw err;
-
-					res.json({
-						status: "success"
-					});
-				});
-			}
-		});
-	});
-});
-
-router.post("/edit/:collection", upload.none(), parseRequest, function(req, res){
-	connect.then(function(db){
-		db.collection("_schema").updateOne({collectionSlug: req.formData.collectionSlug}, req.formData, null, function(err){
-			if(err) throw err;
-
-			res.json({
-				status: "success"
-			});
-		});
-	});
-});
-
-// Utils
-function validateIncoming(string){
-	let regexp = /^[a-zA-Z0-9-_ ]+$/;
-	if (string.search(regexp) == -1 || string.substr(0, 1) == "_"){
-		return false;
-	}else{
-		return true;
-	}
-}
-
-module.exports = router;
