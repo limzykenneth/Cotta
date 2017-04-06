@@ -6,6 +6,12 @@ const connect = require("../../utils/database.js");
 const auth = require("../../utils/auth.js");
 const multerNone = require('multer')().none();
 
+// Setting locals
+router.use(function(req, res, next){
+	res.locals.title = "My Account";
+	next();
+});
+
 router.get("/", function(req, res){
 	res.render("account");
 });

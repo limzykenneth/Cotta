@@ -7,6 +7,12 @@ const uploadSchemas = require("../../utils/middlewares/upload.js");
 const autoIncrement = require("mongodb-autoincrement");
 const moment = require("moment");
 
+// Setting locals
+router.use(function(req, res, next){
+	res.locals.title = "Collections";
+	next();
+});
+
 // List all collections and their schemas
 router.get("/", function(req, res){
 	connect.then(function(db){
@@ -34,6 +40,13 @@ router.get("/edit/:collection", function(req, res){
 			res.render("edit-collection", result);
 		});
 	});
+});
+
+// Models ----------------------------------------------------------------------------
+// Setting locals
+router.use(function(req, res, next){
+	res.locals.title = "Models";
+	next();
 });
 
 // List all models under the specified collection

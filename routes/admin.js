@@ -102,7 +102,7 @@ router.use(restrict, function(req, res, next){
 
 // Setting data to be used for all authorised routes
 router.use(function(req, res, next){
-	res.locals.currentUsername = req.session.user.username;
+	res.locals.title = "Express";
 
 	connect.then(function(db){
 		db.collection("_schema").find().toArray(function(err, results){
@@ -115,7 +115,8 @@ router.use(function(req, res, next){
 });
 
 router.get("/", function(req, res) {
-    res.render("index", {title: "Express"});
+	res.locals.title = "Express";
+    res.render("index");
 });
 
 let collections = require("./admin/collections.js");
