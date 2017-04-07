@@ -78,4 +78,12 @@ $(document).ready(function() {
 			$submitBtn.attr("value", "Save").prop("disabled", false);
 		});
 	});
+
+	setTimeout(function(){
+		$(".message-box").addClass("hide");
+
+		setTimeout(function(){
+			$(".message-box").removeClass("hide").find(".msg").html("");
+		}, 501);
+	}, 2000);
 });

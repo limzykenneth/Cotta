@@ -175,6 +175,28 @@ a {
   max-width: 500px;
   height: auto;
 }
+.message-box {
+  position: fixed;
+  bottom: 0px;
+  left: 20%;
+  margin: 1rem 2rem;
+  width: calc(80% - 4rem);
+  background-color: #deffd9;
+  opacity: 1;
+  -webkit-transition: all 0.5s ease;
+  transition: all 0.5s ease;
+}
+.message-box.hide {
+  opacity: 0;
+  pointer-events: none;
+}
+.message-box .msg {
+  padding: 10px;
+  margin: 0;
+}
+.message-box .msg:empty {
+  padding: 0;
+}
 .left {
   float: left;
 }

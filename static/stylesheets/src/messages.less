@@ -1,0 +1,24 @@
+.message-box{
+	position: fixed;
+	bottom: 0px;
+	left: 20%;
+	margin: 1rem 2rem;
+	width: ~"calc(80% - 4rem)";
+	background-color: @light-green;
+	opacity: 1;
+	transition: all 0.5s ease;
+
+	&.hide{
+		opacity: 0;
+		pointer-events: none;
+	}
+
+	.msg{
+		padding: 10px;
+		margin: 0;
+
+		&:empty{
+			padding: 0;
+		}
+	}
+}

@@ -37,15 +37,15 @@ router.use(function(req, res, next){
 	delete req.session.error;
 	delete req.session.success;
 	res.locals.message = "";
-	if (err) res.locals.message = "<p class=\"msg error\">" + err + "</p>";
-	if (msg) res.locals.message = "<p class=\"msg success\">" + msg + "</p>";
+	if (err) res.locals.message = err;
+	if (msg) res.locals.message = msg;
 	next();
 });
 
 // Logout by destroying the session
 router.get("/logout", function(req, res){
 	req.session.destroy(function(){
-		res.redirect(currentPath);
+		res.redirect(path.join(currentPath + "/login"));
 	});
 });
 
@@ -63,11 +63,11 @@ router.post("/login", function(req, res){
 				// in the session store to be retrieved,
 				// or in this case the entire user object
 				req.session.user = user;
-				req.session.success = "Authenticated as " + user.name + " click to <a href=\"/admin/logout\">logout</a>. You may now access <a href=\"/restricted\">/restricted</a>.";
+				req.session.success = `Welcome ${req.body.username}!`;
 				res.redirect(currentPath);
 			});
 		} else {
-			req.session.error = "Authentication failed, please check your username and password. (use \"tj\" and \"foobar\")";
+			req.session.error = "Authentication failed, please check your username and password.";
 			res.redirect(path.join(currentPath + "/login"));
 	    }
 	});
