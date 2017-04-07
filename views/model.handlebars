@@ -1,5 +1,10 @@
 <section class="model-container main-content">
-	<h1>{{collectionName}} - Model ID: {{_uid}} <a class="edit-btn" href="/admin/collections/{{collectionSlug}}/{{_uid}}/edit">Edit</a> <a class="delete-btn" href="">Delete</a></h1>
+	<h1>{{collectionName}} - Model ID: {{_uid}} <a class="edit-btn" href="/admin/collections/{{collectionSlug}}/{{_uid}}/edit">Edit</a>
+
+	<form class="delete-form" action="/admin/collections/{{collectionSlug}}/{{_uid}}" method="post">
+		<input type="hidden" name="_method" value="delete" />
+		<input class="delete-btn" type="submit" name="delete" value="Delete">
+	</form>
 
 	<article class="model">
 		{{#each fields}}

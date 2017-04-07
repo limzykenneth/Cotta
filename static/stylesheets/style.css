@@ -73,7 +73,10 @@ a {
 #page-content .main-content .edit-btn {
   font-size: 1.5rem;
 }
-#page-content .main-content .delete-btn {
+#page-content .main-content .delete-form {
+  display: inline-block;
+}
+#page-content .main-content .delete-form .delete-btn {
   font-size: 1.5rem;
   color: #f00;
 }

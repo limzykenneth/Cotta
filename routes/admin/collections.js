@@ -169,4 +169,19 @@ router.post("/:collection/:id/edit", uploadSchemas, function(req, res){
 	});
 });
 
+// Delete specified model from database
+router.post("/:collection/:id", function(req, res, next){
+	if(req.body._method === "delete"){
+		connect.then(function(db){
+			db.collection(req.params.collection).deleteOne({"_uid": parseInt(req.params.id)}, function(err){
+				if(err) throw err;
+
+				res.redirect("/admin");
+			});
+		});
+	}else{
+		next();
+	}
+});
+
 module.exports = router;
