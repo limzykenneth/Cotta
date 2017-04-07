@@ -83,7 +83,7 @@ router.post("/:collection/new", uploadSchemas, function(req, res){
 	var data = req.body;
 
 	_.each(req.files, function(el, i){
-		data[el[0].fieldname] = el[0].path;
+		data[el[0].fieldname] = path.join(el[0].path);
 	});
 
 	data._metadata = {
@@ -140,21 +140,30 @@ router.get("/:collection/:id/edit", function(req, res){
 
 // Edit data of specified model
 router.post("/:collection/:id/edit", uploadSchemas, function(req, res){
-	var data = req.body;
-
-	_.each(req.files, function(el, i){
-		data[el[0].fieldname] = el[0].path;
-	});
-
 	connect.then(function(db){
-		data._uid = parseInt(req.params.id);
-		data._metadata.date_modified = moment.utc().format();
-		// Probably don't want to use $set
-		db.collection(req.params.collection).updateOne({"_uid": parseInt(req.params.id)}, {$set: data}, function(err){
+		db.collection(req.params.collection).findOne({"_uid": parseInt(req.params.id)}, function(err, model){
 			if(err) throw err;
 
-			res.json({
-				status: "success"
+			var data = req.body;
+
+			_.each(req.files, function(el, i){
+				data[el[0].fieldname] = el[0].path;
+			});
+
+			data._uid = parseInt(req.params.id);
+			data._metadata = {
+				created_by: req.session.user.username,
+				date_created: model._metadata.date_created,
+				date_modified: moment.utc().format()
+			};
+
+			// Probably don't want to use $set
+			db.collection(req.params.collection).updateOne({"_uid": parseInt(req.params.id)}, {$set: data}, function(err){
+				if(err) throw err;
+
+				res.json({
+					status: "success"
+				});
 			});
 		});
 	});

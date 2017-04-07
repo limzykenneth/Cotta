@@ -70,6 +70,13 @@ a {
 #page-content .main-content .new-btn {
   font-size: 1.5rem;
 }
+#page-content .main-content .edit-btn {
+  font-size: 1.5rem;
+}
+#page-content .main-content .delete-btn {
+  font-size: 1.5rem;
+  color: #f00;
+}
 #page-content .main-content.collections-container .collections {
   display: -webkit-box;
   display: -ms-flexbox;
@@ -156,6 +163,14 @@ a {
 }
 #page-content .main-content.model-container .model .field .field-value .checkbox-value {
   padding-left: 1.3rem;
+}
+#page-content .main-content.model-container .model .field .field-value .image-value {
+  max-width: 500px;
+  height: auto;
+}
+#page-content .main-content.edit-model .model-form .image-value {
+  max-width: 500px;
+  height: auto;
 }
 .left {
   float: left;

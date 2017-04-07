@@ -1,5 +1,5 @@
 <section class="model-container main-content">
-	<h1>{{collectionName}} - Model ID: {{_uid}}</h1>
+	<h1>{{collectionName}} - Model ID: {{_uid}} <a class="edit-btn" href="/admin/collections/{{collectionSlug}}/{{_uid}}/edit">Edit</a> <a class="delete-btn" href="">Delete</a></h1>
 
 	<article class="model">
 		{{#each fields}}
@@ -28,6 +28,11 @@
 						<li>{{this}}</li>
 					{{/each}}
 					</ul>
+				{{/ifEquals}}
+
+				{{#ifEquals this.type "image"}}
+					<img class="image-value" src="{{../rootURL}}{{this.value}}">
+					<br>URL: {{{../rootURL}}}{{{this.value}}}
 				{{/ifEquals}}
 				</div>
 			</div>

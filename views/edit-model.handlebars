@@ -31,6 +31,7 @@
 
 			{{#ifEquals type "image"}}
 				<input type="file" name="{{slug}}" accept="image/gif,image/jpeg,image/png,.jpg,.jpeg,.png,.gif">
+				<br><img class="image-value" src="{{../rootURL}}{{this.value}}">
 			{{/ifEquals}}
 			</p>
 		{{/each}}

@@ -53,6 +53,12 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/static", express.static(path.join(__dirname, "static")));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+app.use(function(req, res, next){
+	res.locals.rootURL = `${req.protocol}://${req.get("host")}/`;
+	next();
+});
 
 app.use("/api", api);
 app.use("/admin", admin);
