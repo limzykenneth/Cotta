@@ -50,6 +50,7 @@ router.get("/logout", function(req, res){
 });
 
 router.get("/login", function(req, res){
+	res.locals.title = "Login";
 	res.render("login");
 });
 

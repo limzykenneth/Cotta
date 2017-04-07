@@ -175,6 +175,12 @@ a {
   max-width: 500px;
   height: auto;
 }
+#page-content .main-content .login-container {
+  text-align: center;
+}
+#page-content .main-content .login-container .login-form {
+  display: inline-block;
+}
 .message-box {
   position: fixed;
   bottom: 0px;
