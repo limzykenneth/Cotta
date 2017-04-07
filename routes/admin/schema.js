@@ -5,8 +5,32 @@ const path = require("path");
 const multerNone = require('multer')().none();
 const connect = require("../../utils/database.js");
 
+// Delete specified collection
+router.post("/delete/:collection", function(req, res){
+	connect.then(function(db){
+		var deletion = [];
+		deletion.push(db.collection("_schema").deleteOne({collectionSlug: req.params.collection}));
+		deletion.push(db.collection(req.params.collection).drop());
+		deletion.push(db.collection("_counters").deleteOne({"_id": req.params.collection}));
+
+		Promise.all(deletion).then(function(err){
+			if(err) throw err;
+
+			res.redirect("/admin");
+		}).catch(function(err){
+			if(err.errmsg == "ns not found") {
+				res.redirect("/admin");
+			}else{
+				throw err;
+			}
+		});
+	});
+});
+
+// Pasrse incoming data for following routes
 router.use(multerNone, parseRequest);
 
+// Create new collection
 router.post("/new", function(req, res){
 	connect.then(function(db){
 		db.collection("_schema").find({collectionSlug: req.formData.collectionSlug}).toArray(function(err, result){
@@ -30,6 +54,7 @@ router.post("/new", function(req, res){
 	});
 });
 
+// Edit specified collection's schema
 router.post("/edit/:collection", function(req, res){
 	connect.then(function(db){
 		db.collection("_schema").updateOne({collectionSlug: req.formData.collectionSlug}, req.formData, null, function(err){

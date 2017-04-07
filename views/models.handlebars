@@ -1,5 +1,11 @@
 <section class="models-container main-content">
-	<h1>Models <a class="new-btn" href="/admin/collections/{{collectionSlug}}/new">New</a></h1>
+	<h1>Models <a class="new-btn" href="/admin/collections/{{collectionSlug}}/new">New</a>
+
+	<form class="delete-form" action="/admin/schema/delete/{{collectionSlug}}" method="post">
+		<input type="hidden" name="_method" value="delete" />
+		<input class="delete-btn" type="submit" name="delete" value="Delete">
+	</form>
+	</h1>
 
 	<ul class="models">
 		<h2>{{collectionName}}</h2>
