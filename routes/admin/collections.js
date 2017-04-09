@@ -179,10 +179,20 @@ router.post("/:collection/:id/edit", uploadSchemas, function(req, res){
 router.post("/:collection/:id", function(req, res, next){
 	if(req.body._method === "delete"){
 		connect.then(function(db){
-			db.collection(req.params.collection).deleteOne({"_uid": parseInt(req.params.id)}, function(err){
+			db.collection(req.params.collection).findOne({"_uid": parseInt(req.params.id)}, function(err, model){
 				if(err) throw err;
 
-				res.redirect("/admin");
+				db.collection(req.params.collection).deleteOne({"_uid": parseInt(req.params.id)}, function(err){
+					if(err) throw err;
+
+					db.collection("_users_auth").updateOne({username: model._metadata.created_by},
+						{$pull:{models: `${req.params.collection}.${req.params.id}`}},
+						function(err){
+						if(err) throw err;
+
+						res.redirect("/admin");
+				   });
+				});
 			});
 		});
 	}else{
