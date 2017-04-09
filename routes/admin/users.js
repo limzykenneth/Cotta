@@ -10,18 +10,41 @@ router.use(function(req, res, next){
 	next();
 });
 
+// Render list of all users
 router.get("/", function(req, res){
 	connect.then(function(db){
-		db.collection("_users_auth").find().toArray(function(err, results){
-			res.render("users", {users: results});
+		db.collection("_users_auth").find().toArray(function(err, users){
+			_.each(users, function(user, i){
+				user.modelsCount = user.models.length;
+			});
+			res.render("users", {users: users});
 		});
 	});
 });
 
+// Render info of user with specified ID
 router.get("/:id", function(req, res){
-	res.send("Not yet implemented...");
+	connect.then(function(db){
+		db.collection("_users_auth").findOne({username: req.params.id}, function(err, user){
+			var data = user;
+			user.modelLinks = [];
+			_.each(user.models, function(el, i){
+				var col = el.replace(/^(.+?)\.(.+?)$/, "$1");
+				var id = el.replace(/^(.+?)\.(.+?)$/, "$2");
+				user.modelLinks[i] = {
+					name: `Collection: ${col}, ID: ${id}`,
+					link: `/admin/collections/${col}/${id}`,
+					collectionSlug: col,
+					_uid: id
+				};
+			});
+
+			res.render("user", data);
+		});
+	});
 });
 
+// Edit info of user with specified ID
 router.post("/:id", function(req, res){
 	res.send("Not yet implemented...");
 });

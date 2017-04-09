@@ -103,8 +103,14 @@ router.post("/:collection/new", uploadSchemas, function(req, res){
 				db.collection(req.params.collection).insertOne(data, function(err){
 					if(err) throw err;
 
-					res.json({
-						status: "success"
+					db.collection("_users_auth").updateOne({username: req.session.user.username},
+						{$addToSet:{models: `${req.params.collection}.${data._uid}`}},
+						function(err){
+						if(err) throw err;
+
+						res.json({
+							status: "success"
+						});
 					});
 				});
 			});

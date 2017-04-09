@@ -1,0 +1,21 @@
+<section class="user-container main-content">
+	<h1>User info</h1>
+
+	<div class="user">
+		<h2>{{username}}</h2>
+
+		<ul class="model-list">
+			<h5 class="subtitle">Created Models</h5>
+		{{#each modelLinks}}
+			<li>
+				<a href="{{this.link}}">{{this.name}}</a> <a href="/admin/collections/{{collectionSlug}}/{{_uid}}/edit">Edit</a>
+
+				<form class="delete-form" action="/admin/collections/{{collectionSlug}}/{{_uid}}" method="post">
+					<input type="hidden" name="_method" value="delete" />
+					<input class="delete-btn" type="submit" name="delete" value="Delete">
+				</form>
+			</li>
+		{{/each}}
+		</ul>
+	</div>
+</section>
