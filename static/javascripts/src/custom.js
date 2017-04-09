@@ -44,7 +44,7 @@ $(document).ready(function() {
 		}).then(function(data){
 			if(data.status == "success"){
 				// redirect somewhere else
-				// window.location.replace("/admin/collections");
+				window.location.replace("/admin/collections");
 			}else{
 				$("#page-content .collection-creation .error-msg").text(data.reason).show().delay(2000).fadeOut(500);
 			}
@@ -70,7 +70,7 @@ $(document).ready(function() {
 		}).then(function(data){
 			if(data.status == "success"){
 				// redirect somewhere else
-				// window.location.replace("/admin/collections");
+				window.location.replace("/admin/collections");
 			}
 			$submitBtn.attr("value", "Save").prop("disabled", false);
 		}).catch(function(err){
