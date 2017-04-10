@@ -4,9 +4,10 @@ const router = express.Router();
 const path = require("path");
 const multerNone = require('multer')().none();
 const connect = require("../../utils/database.js");
+const restricted = require("../../utils/middlewares/restrict.js");
 
 // Delete specified collection
-router.post("/delete/:collection", function(req, res){
+router.post("/delete/:collection", restricted.toEditor, function(req, res){
 	connect.then(function(db){
 		var deletion = [];
 		deletion.push(db.collection("_schema").deleteOne({collectionSlug: req.params.collection}));
@@ -28,7 +29,7 @@ router.post("/delete/:collection", function(req, res){
 });
 
 // Pasrse incoming data for following routes
-router.use(multerNone, parseRequest);
+router.use(restricted.toEditor, multerNone, parseRequest);
 
 // Create new collection
 router.post("/new", function(req, res){

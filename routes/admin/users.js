@@ -3,12 +3,15 @@ const express = require("express");
 const router = express.Router();
 const path = require("path");
 const connect = require("../../utils/database.js");
+const restricted = require("../../utils/middlewares/restrict.js");
 
 // Setting locals
 router.use(function(req, res, next){
 	res.locals.title = "Users";
 	next();
 });
+
+router.use(restricted.toAdministrator);
 
 // Render list of all users
 router.get("/", function(req, res){

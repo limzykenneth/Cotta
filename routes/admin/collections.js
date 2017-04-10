@@ -4,6 +4,7 @@ const router = express.Router();
 const path = require("path");
 const connect = require("../../utils/database.js");
 const uploadSchemas = require("../../utils/middlewares/upload.js");
+const restricted = require("../../utils/middlewares/restrict.js");
 const autoIncrement = require("mongodb-autoincrement");
 const moment = require("moment");
 
@@ -21,12 +22,12 @@ router.get("/", function(req, res){
 });
 
 // Render page to create new collection
-router.get("/new", function(req, res){
+router.get("/new", restricted.toEditor, function(req, res){
 	res.render("create-collections");
 });
 
 // Render page to edit existing collection
-router.get("/edit/:collection", function(req, res){
+router.get("/edit/:collection", restricted.toEditor, function(req, res){
 	connect.then(function(db){
 		db.collection("_schema").findOne({collectionSlug: req.params.collection}, function(err, result){
 			var obj = result;
@@ -182,17 +183,29 @@ router.post("/:collection/:id", function(req, res, next){
 			db.collection(req.params.collection).findOne({"_uid": parseInt(req.params.id)}, function(err, model){
 				if(err) throw err;
 
-				db.collection(req.params.collection).deleteOne({"_uid": parseInt(req.params.id)}, function(err){
-					if(err) throw err;
+				// You can only delete models belonging to you unless you are editor or admin
+				if(req.session.user.username == model._metadata.created_by ||
+					req.session.user.role == "administrator" ||
+					req.session.user.role == "editor"){
 
-					db.collection("_users_auth").updateOne({username: model._metadata.created_by},
-						{$pull:{models: `${req.params.collection}.${req.params.id}`}},
-						function(err){
+					db.collection(req.params.collection).deleteOne({"_uid": parseInt(req.params.id)}, function(err){
 						if(err) throw err;
 
-						res.redirect("/admin");
-				   });
-				});
+						db.collection("_users_auth").updateOne({username: model._metadata.created_by},
+							{$pull:{models: `${req.params.collection}.${req.params.id}`}},
+							function(err){
+							if(err) throw err;
+
+							res.redirect(`/admin/${req.params.collection}`);
+					   });
+					});
+				}else{
+					res.locals.message = "Not allowed";
+					res.json({
+						status: "error",
+						message: "Not allowed"
+					});
+				}
 			});
 		});
 	}else{

@@ -11,6 +11,10 @@ auth.authenticate = function(name, pass, fn) {
 		db.collection("_users_auth").findOne({"username": name}, function(err, result){
 			if (err) throw err;
 
+			if(!result){
+				return fn(new Error("invalid password"));
+			}
+
 			var hash = result.hash;
 
 			bcrypt.compare(pass, hash, function(err, res) {
