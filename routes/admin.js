@@ -105,6 +105,7 @@ router.use(restrict, function(req, res, next){
 router.use(function(req, res, next){
 	res.locals.title = "Express";
 	res.locals.currentUsername = req.session.user.username;
+	res.locals.currentUserRole = req.session.user.role;
 
 	connect.then(function(db){
 		db.collection("_schema").find().toArray(function(err, results){

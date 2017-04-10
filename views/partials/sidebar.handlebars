@@ -1,7 +1,11 @@
 <section class="sidebar">
+	{{#if currentUsername}}
 	<div class="sidebar-items"><a href="/admin/collections">Collections</a></div>
+	{{/if}}
+	{{#ifEquals "administrator" currentUserRole }}
 	<div class="sidebar-items"><a href="/admin/users">Users</a></div>
 	<div class="sidebar-items"><a href="/admin/config">Configurations</a></div>
+	{{/ifEquals}}
 
 	<h5 class="sidebar-title">All Collections</h5>
 	{{#each schemas}}
