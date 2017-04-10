@@ -15,7 +15,11 @@ router.get("/", function(req, res){
 	connect.then(function(db){
 		db.collection("_users_auth").find().toArray(function(err, users){
 			_.each(users, function(user, i){
-				user.modelsCount = user.models.length;
+				if(typeof user.models == "undefined" || typeof user.models.length == "undefined"){
+					user.modelsCount = 0;
+				}else{
+					user.modelsCount = user.models.length;
+				}
 			});
 			res.render("users", {users: users});
 		});
