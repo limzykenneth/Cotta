@@ -17,5 +17,20 @@
 			</li>
 		{{/each}}
 		</ul>
+
+		<form class="edit-role" action="/admin/users/{{username}}" method="post">
+			<h5 class="subtitle">Role</h5>
+			<select name="user_role">
+				<option value="administrator" {{#ifEquals "administrator" role}}selected{{/ifEquals}}>Administrator</option>
+				<option value="editor" {{#ifEquals "editor" role}}selected{{/ifEquals}}>Editor</option>
+				<option value="author" {{#ifEquals "author" role}}selected{{/ifEquals}}>Author</option>
+			</select>
+			<input type="submit" name="submit" value="Edit Role">
+		</form>
+
+		<form class="delete-form" action="/admin/users/{{username}}" method="post">
+			<input type="hidden" name="_method" value="delete" />
+			<input class="delete-btn" type="submit" name="delete" value="Delete User">
+		</form>
 	</div>
 </section>

@@ -1,5 +1,6 @@
 const bcrypt = require("bcrypt");
 const connect = require("./database.js");
+const moment = require("moment");
 
 let auth = {};
 
@@ -39,7 +40,9 @@ auth.signup = function(name, pass, fn){
 
 				db.collection("_users_auth").insertOne({
 					"username": name,
-					"hash": hash
+					"hash": hash,
+					"role": "author",
+					"date_created": moment.utc().format()
 				}, function(err){
 					if(err) return fn(err);
 

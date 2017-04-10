@@ -158,14 +158,20 @@ a {
 #page-content .main-content.users-container .users .user:hover {
   color: #666;
 }
+#page-content .main-content.user-container .user .subtitle {
+  margin-bottom: 0.2rem;
+}
 #page-content .main-content.user-container .user .model-list {
   padding-left: 0;
   list-style: none;
 }
-#page-content .main-content.user-container .user .model-list .subtitle {
-  margin-bottom: 0.2rem;
-}
 #page-content .main-content.user-container .user .model-list .delete-form .delete-btn {
+  font-size: 1rem;
+}
+#page-content .main-content.user-container .user .edit-role {
+  margin-bottom: 2rem;
+}
+#page-content .main-content.user-container .user .delete-form .delete-btn {
   font-size: 1rem;
 }
 #page-content .main-content.model-container .model .field {
