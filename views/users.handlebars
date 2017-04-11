@@ -3,7 +3,17 @@
 
 	<ul class="users">
 	{{#each users}}
-		<li class="user"><a href="/admin/users/{{username}}">Username: {{username}} Models created: {{modelsCount}} Role: {{role}}</a></li>
+		<a href="/admin/users/{{username}}"><li class="user">
+			<span class="flex-item username">
+				Username: {{username}}
+			</span>
+			<span class="flex-item models-count">
+				Models created: {{modelsCount}}
+			</span>
+			<span class="flex-item user-role">
+				Role: {{role}}
+			</span>
+		</li></a>
 	{{/each}}
 	</ul>
 </section>

@@ -154,9 +154,21 @@ a {
   padding: 1rem 1.5rem;
   width: 100%;
   color: #000;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
 }
 #page-content .main-content.users-container .users .user:hover {
   color: #666;
+}
+#page-content .main-content.users-container .users .user .flex-item.username {
+  width: 40%;
+}
+#page-content .main-content.users-container .users .user .flex-item.models-count {
+  width: 40%;
+}
+#page-content .main-content.users-container .users .user .flex-item.user-role {
+  width: 20%;
 }
 #page-content .main-content.user-container .user .subtitle {
   margin-bottom: 0.2rem;
