@@ -197,6 +197,12 @@ a {
 #page-content .main-content .login-container .login-form {
   display: inline-block;
 }
+#page-content .main-content.account-container .account {
+  margin-bottom: 2rem;
+}
+#page-content .main-content.account-container .delete-form .delete-btn {
+  font-size: 1rem;
+}
 .message-box {
   position: fixed;
   bottom: 0px;

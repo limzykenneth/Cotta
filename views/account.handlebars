@@ -8,4 +8,9 @@
 
 		<input type="submit" name="submit" value="Save">
 	</form>
+
+	<form class="delete-form" action="/admin/users/{{currentUsername}}" method="post">
+		<input type="hidden" name="_method" value="delete" />
+		<input class="delete-btn" type="submit" name="delete" value="Delete Account">
+	</form>
 </section>
