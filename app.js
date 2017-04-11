@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require("express");
+const socketIO = require("socket.io");
 const path = require("path");
 const favicon = require("serve-favicon");
 const logger = require("morgan");
@@ -12,7 +13,18 @@ let index = require("./routes/index");
 let admin = require("./routes/admin");
 let api = require("./routes/api");
 
+// Express
 let app = express();
+
+// Socket.io
+let io = socketIO();
+app.io = io;
+let socket = new Promise(function(resolve, reject){
+	require("./utils/messaging.js")(io).on("connection", function(soc){
+		resolve(soc);
+	});
+});
+app.set("messaging", socket);
 
 // view engine setup
 app.engine("handlebars", exphbs({

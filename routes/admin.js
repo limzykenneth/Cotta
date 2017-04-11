@@ -8,10 +8,8 @@ const path = require("path");
 const f = require("util").format;
 const MongoStore = require('connect-mongo')(session);
 const connect = require("../utils/database.js");
-
-// Custom middleware
-var restrict = require("../utils/middlewares/restrict.js");
-var auth = require("../utils/auth.js");
+const restrict = require("../utils/middlewares/restrict.js");
+const auth = require("../utils/auth.js");
 
 let mongoURL = f("mongodb://%s:%s@%s/%s", process.env.mongo_user, process.env.mongo_pass, process.env.mongo_server, process.env.mongo_db_name);
 
@@ -39,6 +37,11 @@ router.use(function(req, res, next){
 	res.locals.message = "";
 	if (err) res.locals.message = err;
 	if (msg) res.locals.message = msg;
+	next();
+});
+
+router.use(function(req, res, next){
+	req.charMessaging = req.app.get("messaging");
 	next();
 });
 

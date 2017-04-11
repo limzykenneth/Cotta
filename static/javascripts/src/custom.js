@@ -2,6 +2,7 @@ var $ = require("jquery");
 var _ = require("lodash/core");
 _.template = require("lodash/template");
 require('whatwg-fetch');
+require("./char-messaging.js")();
 
 $(document).ready(function() {
 	$("#page-content").on("click", ".schema-definition .schema-add", function(e) {

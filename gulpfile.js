@@ -43,7 +43,7 @@ if(argv.f){
 	gulp.task("browser-sync", ["nodemon"], function(){
 		browserSync.init({
 			proxy: "http://localhost:8080",
-			files: ["static/!(src)/*"],
+			files: ["static/!(src)/*", "views/**/*"],
 			port: "3000"
 		});
 	});
