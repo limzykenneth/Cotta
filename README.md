@@ -1,33 +1,33 @@
-# (Insert smart, cool, appropriate and memorable name here)
+# Char (working title)
 
-(Project Name) is a Express.js based API creation framework designed to be used by both beginners and advanced users: you can get started easily creating a basic API, while still have access to the knitty gritty details that can help you create a full featured API.
+Char is a Express.js based API creation framework designed to be used by both beginners and advanced users: you can get started easily creating a basic API, while still have access to the knitty gritty details that can help you create a full featured API.
 
 The project is still in development and not considered to be in alpha yet. **Do not deploy this in a production server!** Any help with this project is extremely welcomed!
 
-(Project Name) is based on Express.js, using its route definitions and middlewares, (Project Name) makes creating forms for publishing data easy while automatically making those data available through an API. (Project Name) is meant to be a website or app's back end, although you can serve a static website through it, it is not recommended to render the front end with (Project Name). Any front end that goes with (Project Name) should consume its API (including when serving static websites through (Project Name)).
+Char is based on Express.js, using its route definitions and middlewares, Char makes creating forms for publishing data easy while automatically making those data available through an API. Char is meant to be a website or app's back end, although you can serve a static website through it, it is not recommended to render the front end with Char. Any front end that goes with Char should consume its API (including when serving static websites through Char).
 
-##### What (Project Name) is NOT:
+##### What Char is NOT:
 - A full-stack framework
 - A highly opinionated framework
 - Trying to invent new concepts
 
-##### What (Project Name) is:
+##### What Char is:
 - A quick an easy way to setup data structures that will be available through an API
-- An Express server (if you know Express, you know (Project Name))
+- An Express server (if you know Express, you know Char)
 
 ## Features
-(Project Name) by default exposes an API under the `/api/` route, a control panel under the `/admin/` route and whatever is under the `public` directory under the `/` route (where you should put your static site if you with to serve it with (Project Name)).
+Char by default exposes an API under the `/api/` route, a control panel under the `/admin/` route and whatever is under the `public` directory under the `/` route (where you should put your static site if you with to serve it with Char).
 
-The default database is MongoDB. *Future plans are to make (Project Name) relatively database agnostic.* (Project Name) does render a front end but it is meant to be the control panel only and not supposed to be public facing. The default rendering engine is Handlebars.
+The default database is MongoDB. *Future plans are to make Char relatively database agnostic.* Char does render a front end but it is meant to be the control panel only and not supposed to be public facing. The default rendering engine is Handlebars.
 
 The control panel provides utilities for easy creation of HTML fields including text, radio boxes, checkboxes, file/image upload, etc.
 
-(Project Name) is highly configurable, you can swap out parts of the package and use your own.
+Char is highly configurable, you can swap out parts of the package and use your own.
 - Swap Less.js for Sass
 - Swap Handlebars for Pug
 - Swap WYSIWYG for Markdown
 
-(Project Name) uses a MVC-like structure inspired by backbone.js. Each piece of data (document in MongoDB, model in backbone.js) is a model, a set of models are grouped under a collection and a collection are defined by its schema which the models adhere to. There is no view layer.
+Char uses a MVC-like structure inspired by backbone.js. Each piece of data (document in MongoDB, model in backbone.js) is a model, a set of models are grouped under a collection and a collection are defined by its schema which the models adhere to. There is no view layer.
 
 ## Usage
 Setup a MongoDB database and include your database credentials and information as follows into a `.env` file at the root of the project:
@@ -66,7 +66,7 @@ If you think this is something that resonates with you and you want to help out 
 Routes for control panel:
 
 | Method | Route                                     | Description
-| ------ | ----------------------------------------- | ---------------------------------------------------------
+| ------ | ----------------------------------------- | -----------------------------------------
 | GET    | `/admin`                                  | Home page
 | GET    | `/admin/login`                            | Login page
 | POST   | `/admin/login`                            | Login
