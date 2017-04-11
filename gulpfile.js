@@ -1,6 +1,7 @@
 const gulp = require("gulp");
 const rename = require("gulp-rename");
-const nodemon = require("gulp-nodemon");
+const nodemon = require("gulp-nodemon"),
+	  browserSync = require('browser-sync');
 const plumber = require("gulp-plumber");
 const browserify = require("browserify"),
 	  source = require("vinyl-source-stream"),
@@ -10,8 +11,8 @@ const mocha = require("gulp-mocha");
 const gutil = require("gulp-util");
 
 const less = require("gulp-less"),
-	cleanCSS = require("gulp-clean-css"),
-    autoprefixer = require("gulp-autoprefixer");
+	  cleanCSS = require("gulp-clean-css"),
+      autoprefixer = require("gulp-autoprefixer");
 
 const path = require("path");
 const minimist = require("minimist");
@@ -23,17 +24,36 @@ if(argv.f){
 		outDir: "./public/"
 	});
 }else{
-	gulp.task("server", ["default"], function(){
-		nodemon({
+	// Run server
+	gulp.task("nodemon", function(cb){
+		var started = false;
+
+		return nodemon({
 			verbose: argv.verbose || false,
 			script: "./bin/www",
 			ignore: ["frontend/**/*", "public/**/*", "static/**/*"]
+		}).on("start", function(){
+			if(!started){
+				cb();
+				started = true;
+			}
 		});
+	});
 
+	gulp.task("browser-sync", ["nodemon"], function(){
+		browserSync.init({
+			proxy: "http://localhost:8080",
+			files: ["static/!(src)/*"],
+			port: "3000"
+		});
+	});
+
+	gulp.task("server", ["default", "browser-sync"], function(){
 		gulp.watch("./static/stylesheets/src/*", ["stylesheets"]);
 		gulp.watch("./static/javascripts/src/*", ["javascripts"]);
 	});
 
+	// Build static source
 	gulp.task("javascripts", function(){
 		var uglifyOptions = {
 			mangle: {
@@ -76,7 +96,8 @@ if(argv.f){
 			.pipe(gulp.dest(path.join(__dirname, "static/stylesheets")))
 			.pipe(cleanCSS(cleanCSSOptions))
 			.pipe(rename("style.min.css"))
-			.pipe(gulp.dest(path.join(__dirname, "static/stylesheets")));
+			.pipe(gulp.dest(path.join(__dirname, "static/stylesheets")))
+			.pipe(browserSync.stream());
 	});
 
 	gulp.task("test", function(){
