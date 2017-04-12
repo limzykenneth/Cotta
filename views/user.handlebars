@@ -19,7 +19,7 @@
 		</ul>
 
 		<form class="edit-role" action="/admin/users/{{username}}" method="post">
-			<h5 class="subtitle">Role</h5>
+			<h3 class="subtitle">Role</h3>
 			<select name="user_role">
 				<option value="administrator" {{#ifEquals "administrator" role}}selected{{/ifEquals}}>Administrator</option>
 				<option value="editor" {{#ifEquals "editor" role}}selected{{/ifEquals}}>Editor</option>
