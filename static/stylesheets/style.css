@@ -27,6 +27,9 @@ html {
 a {
   text-decoration: none;
 }
+label {
+  display: inline-block;
+}
 #page-header {
   padding: 0 10px;
   width: 100%;
@@ -68,17 +71,20 @@ a {
   width: 80%;
 }
 #page-content .main-content .new-btn {
-  font-size: 1.5rem;
+  font-size: 15px;
 }
 #page-content .main-content .edit-btn {
-  font-size: 1.5rem;
+  font-size: 15px;
 }
 #page-content .main-content .delete-form {
   display: inline-block;
 }
 #page-content .main-content .delete-form .delete-btn {
-  font-size: 1.5rem;
+  font-size: 15px;
   color: #f00;
+}
+#page-content .main-content.collections-container .new-btn {
+  font-size: 1.5rem;
 }
 #page-content .main-content.collections-container .collections {
   display: -webkit-box;
@@ -106,6 +112,92 @@ a {
 }
 #page-content .main-content.collections-container .collections .collection .schema h3 {
   margin: 0;
+}
+#page-content .main-content.collection-creation .schema-definition .collection-name-container {
+  margin-bottom: 1rem;
+  font-weight: bold;
+}
+#page-content .main-content.collection-creation .schema-definition .collection-name-container .collection-name-label {
+  width: 150px;
+}
+#page-content .main-content.collection-creation .schema-definition .field-subtitle {
+  margin-bottom: 0.5rem;
+}
+#page-content .main-content.collection-creation .schema-definition .field-label-container {
+  margin-bottom: 0.2rem;
+}
+#page-content .main-content.collection-creation .schema-definition .field-label-container .field-name-label,
+#page-content .main-content.collection-creation .schema-definition .field-label-container .field-type-label {
+  text-align: center;
+  width: 150px;
+  font-weight: bold;
+}
+#page-content .main-content.collection-creation .schema-definition .field {
+  margin-bottom: 0.1rem;
+}
+#page-content .main-content.collection-creation .schema-definition .field .name-field,
+#page-content .main-content.collection-creation .schema-definition .field .type-field {
+  width: 150px;
+}
+#page-content .main-content.collection-creation .schema-definition .field .choices {
+  margin-top: 0.1rem;
+}
+#page-content .main-content.collection-creation .schema-definition .field .choices textarea {
+  width: 300px;
+  resize: vertical;
+}
+#page-content .main-content.collection-creation .schema-definition .expose-to-api {
+  margin-top: 0.5rem;
+  margin-bottom: 2rem;
+}
+#page-content .main-content.collection-creation .schema-definition .submit {
+  margin-top: 1rem;
+}
+#page-content .main-content.edit-collection .schema-definition .collection-name-container {
+  margin-bottom: 1rem;
+  font-weight: bold;
+}
+#page-content .main-content.edit-collection .schema-definition .collection-name-container .collection-name-label {
+  width: 150px;
+}
+#page-content .main-content.edit-collection .schema-definition .field-subtitle {
+  margin-bottom: 0.5rem;
+}
+#page-content .main-content.edit-collection .schema-definition .field-label-container {
+  margin-bottom: 0.2rem;
+}
+#page-content .main-content.edit-collection .schema-definition .field-label-container .field-name-label,
+#page-content .main-content.edit-collection .schema-definition .field-label-container .field-type-label {
+  text-align: center;
+  width: 150px;
+  font-weight: bold;
+}
+#page-content .main-content.edit-collection .schema-definition .field {
+  margin-bottom: 0.1rem;
+}
+#page-content .main-content.edit-collection .schema-definition .field .name-field,
+#page-content .main-content.edit-collection .schema-definition .field .type-field {
+  width: 150px;
+}
+#page-content .main-content.edit-collection .schema-definition .field .choices {
+  margin-top: 0.1rem;
+}
+#page-content .main-content.edit-collection .schema-definition .field .choices textarea {
+  width: 300px;
+  resize: vertical;
+}
+#page-content .main-content.edit-collection .schema-definition .expose-to-api {
+  margin-top: 0.5rem;
+  margin-bottom: 2rem;
+}
+#page-content .main-content.edit-collection .schema-definition .submit {
+  margin-top: 1rem;
+}
+#page-content .main-content.models-container .new-btn {
+  font-size: 1.5rem;
+}
+#page-content .main-content.models-container .delete-btn {
+  font-size: 1.5rem;
 }
 #page-content .main-content.models-container .models {
   padding-left: 0;
@@ -211,6 +303,10 @@ a {
 }
 #page-content .main-content.account-container .account {
   margin-bottom: 2rem;
+}
+#page-content .main-content.account-container .account label {
+  display: inline-block;
+  width: 150px;
 }
 #page-content .main-content.account-container .delete-form .delete-btn {
   font-size: 1rem;

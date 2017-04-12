@@ -16,3 +16,56 @@
 	width: @width;
 	color: @black;
 }
+
+.schema-form(){
+	.schema-definition{
+		.collection-name-container{
+			margin-bottom: 1rem;
+			font-weight: bold;
+
+			.collection-name-label{
+				width: 150px;
+			}
+		}
+
+		.field-subtitle{
+			margin-bottom: 0.5rem;
+		}
+
+		.field-label-container{
+			margin-bottom: 0.2rem;
+
+			.field-name-label, .field-type-label{
+				text-align: center;
+				width: 150px;
+				font-weight: bold;
+			}
+		}
+
+		.field{
+			margin-bottom: 0.1rem;
+
+			.name-field, .type-field{
+				width: 150px;
+			}
+
+			.choices{
+				margin-top: 0.1rem;
+
+				textarea{
+					width: 300px;
+					resize: vertical;
+				}
+			}
+		}
+
+		.expose-to-api{
+			margin-top: 0.5rem;
+			margin-bottom: 2rem;
+		}
+
+		.submit{
+			margin-top: 1rem;
+		}
+	}
+}
