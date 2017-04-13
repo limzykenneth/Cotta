@@ -1,5 +1,6 @@
 const express = require("express");
 const connect = require("../utils/database.js");
+const _ = require("lodash");
 
 let app = express.Router();
 
@@ -12,7 +13,7 @@ app.get("*", function(req, res, next){
 	next();
 });
 
-app.get("/:collection", function(req, res, next){
+app.get("/:collection*", function(req, res, next){
 	if(req.params.collection.substr(0, 1) == "_"){
 		res.status(403).send({error: "Collection name may not start with _"});
 	}else{
