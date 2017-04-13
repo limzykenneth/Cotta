@@ -28,9 +28,6 @@ app.get("/:collection", function (req, res){
 		db.collection(collection).find().toArray(function (err, result) {
 			if (err) throw err;
 
-			_.each(result, function(el){
-				delete el._metadata;
-			});
 			res.json(result);
 		});
 	});
@@ -45,9 +42,6 @@ app.get("/:collection/:name/:value", function(req, res){
 		db.collection(collection).find(obj).toArray(function (err, result) {
 			if (err) throw err;
 
-			_.each(result, function(el){
-				delete el._metadata;
-			});
 			res.json(result);
 		});
 	});
@@ -62,9 +56,6 @@ app.get("/:collection/filter\\[:name\]=:value", function(req, res){
 		db.collection(collection).find(obj).toArray(function (err, result) {
 			if (err) throw err;
 
-			_.each(result, function(el){
-				delete el._metadata;
-			});
 			res.json(result);
 		});
 	});
