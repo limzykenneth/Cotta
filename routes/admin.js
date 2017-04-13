@@ -103,7 +103,7 @@ router.use(restrict, function(req, res, next){
 
 // Setting data to be used for all authorised routes
 router.use(function(req, res, next){
-	res.locals.title = "Express";
+	res.locals.title = "Char";
 	res.locals.currentUsername = req.session.user.username;
 	res.locals.currentUserRole = req.session.user.role;
 
@@ -120,7 +120,6 @@ router.use(function(req, res, next){
 });
 
 router.get("/", function(req, res) {
-	res.locals.title = "Express";
     res.render("index");
 });
 
