@@ -63,9 +63,9 @@ input[type="submit"],
 input[type="button"],
 input[type="reset"],
 .button {
-  background: #659ab0;
-  background-image: -webkit-linear-gradient(top, #659ab0, #4d8095);
-  background-image: linear-gradient(to bottom, #659ab0, #4d8095);
+  background: #235076;
+  background-image: -webkit-linear-gradient(top, #235076, #17354f);
+  background-image: linear-gradient(to bottom, #235076, #17354f);
   border-radius: 3px;
   color: #ffffff;
   padding: 5px 15px 5px 15px;
@@ -77,18 +77,18 @@ input[type="submit"]:hover,
 input[type="button"]:hover,
 input[type="reset"]:hover,
 .button:hover {
-  background: #76a5b8;
-  background-image: -webkit-linear-gradient(top, #87b0c1, #568ea6);
-  background-image: linear-gradient(to bottom, #87b0c1, #568ea6);
+  background: #295d8a;
+  background-image: -webkit-linear-gradient(top, #2f6b9d, #1d4362);
+  background-image: linear-gradient(to bottom, #2f6b9d, #1d4362);
 }
 button:active,
 input[type="submit"]:active,
 input[type="button"]:active,
 input[type="reset"]:active,
 .button:active {
-  background: #4d8095;
-  background-image: -webkit-linear-gradient(top, #4d8095, #3c6373);
-  background-image: linear-gradient(to bottom, #4d8095, #3c6373);
+  background: #17354f;
+  background-image: -webkit-linear-gradient(top, #17354f, #0c1b27);
+  background-image: linear-gradient(to bottom, #17354f, #0c1b27);
 }
 button.delete-btn,
 input[type="submit"].delete-btn,
@@ -156,7 +156,7 @@ a.button {
   overflow-y: auto;
   width: 20%;
   height: calc(100vh - 50px);
-  background-color: #659ab0;
+  background-color: #a9c6d2;
   padding: 2rem;
 }
 #page-content .sidebar .sidebar-items {
