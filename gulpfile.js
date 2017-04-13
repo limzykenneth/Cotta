@@ -44,7 +44,7 @@ if(argv.f){
 		browserSync.init({
 			proxy: "http://localhost:8080",
 			files: ["static/!(src)/*"],
-			port: "3000"
+			port: "8888"
 		});
 	});
 
