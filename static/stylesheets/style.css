@@ -357,8 +357,32 @@ a.button {
   padding-left: 0;
   list-style: none;
 }
-#page-content .main-content.user-container .user .model-list .delete-form .delete-btn {
+#page-content .main-content.user-container .user .model-list .user-model {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+}
+#page-content .main-content.user-container .user .model-list .user-model .model-name {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  line-height: 1.9rem;
+  -webkit-box-flex: 2;
+      -ms-flex-positive: 2;
+          flex-grow: 2;
+}
+#page-content .main-content.user-container .user .model-list .user-model .model-name span {
+  width: 40%;
+}
+#page-content .main-content.user-container .user .model-list .user-model .button {
+  -webkit-transform: translateY(0);
+          transform: translateY(0);
+}
+#page-content .main-content.user-container .user .model-list .user-model .delete-form .delete-btn {
   font-size: 1rem;
+  -webkit-transform: translateY(0);
+          transform: translateY(0);
+  margin-left: 0.5rem;
 }
 #page-content .main-content.user-container .user .edit-role {
   margin-bottom: 2rem;

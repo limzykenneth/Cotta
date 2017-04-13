@@ -7,8 +7,13 @@
 		<ul class="model-list">
 			<h3 class="subtitle">Created Models</h3>
 		{{#each modelLinks}}
-			<li>
-				<a href="{{this.link}}">{{this.name}}</a> <a class="button edit-btn" href="/admin/collections/{{collectionSlug}}/{{_uid}}/edit">Edit</a>
+			<li class="user-model card">
+				<a class="model-name" href="/admin/collections/{{collectionSlug}}/{{_uid}}">
+					<span>Collection: {{collectionName}}</span>
+					<span>ID: {{_uid}}</span>
+				</a>
+
+				<a class="button edit-btn" href="/admin/collections/{{collectionSlug}}/{{_uid}}/edit">Edit</a>
 
 				<form class="delete-form" action="/admin/collections/{{collectionSlug}}/{{_uid}}" method="post">
 					<input type="hidden" name="_method" value="delete" />

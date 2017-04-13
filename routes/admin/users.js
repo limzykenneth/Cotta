@@ -39,14 +39,15 @@ router.get("/:id", function(req, res){
 
 			_.each(user.models, function(el, i){
 				// Get collection name
-				var col = el.replace(/^(.+?)\.(.+?)$/, "$1");
+				var slug = el.replace(/^(.+?)\.(.+?)$/, "$1");
 				// Get model ID
 				var id = el.replace(/^(.+?)\.(.+?)$/, "$2");
 
+				var col = _.find(res.locals.schemas, {collectionSlug: slug}).collectionName;
+
 				user.modelLinks[i] = {
-					name: `Collection: ${col}, ID: ${id}`,
-					link: `/admin/collections/${col}/${id}`,
-					collectionSlug: col,
+					collectionSlug: slug,
+					collectionName: col,
 					_uid: id
 				};
 			});
