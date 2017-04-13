@@ -1,5 +1,5 @@
 <section class="models-container main-content">
-	<h1>{{collectionName}} <a class="new-btn" href="/admin/collections/{{collectionSlug}}/new">New</a>
+	<h1>{{collectionName}} <a class="new-btn button" href="/admin/collections/{{collectionSlug}}/new">New</a>
 
 	<form class="delete-form" action="/admin/schema/delete/{{collectionSlug}}" method="post">
 		<input type="hidden" name="_method" value="delete" />
@@ -9,7 +9,7 @@
 
 	<ul class="models">
 		{{#each data}}
-			<a href="/admin/collections/{{../collectionSlug}}/{{_uid}}"><li class="model">
+			<a href="/admin/collections/{{../collectionSlug}}/{{_uid}}"><li class="model card">
 				<span class="model-id">{{_uid}}</span>
 				<span class="created-by">Created by: {{_metadata.created_by}}</span>
 				<span class="date-created">Date created: {{_metadata.date_created}}</span>
