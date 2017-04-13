@@ -97,9 +97,9 @@ router.post("/signup", function(req, res){
 			}else{
 				throw err;
 			}
+		}else{
+			res.json({status: "success"});
 		}
-
-		res.json({status: "success"});
 	});
 });
 
