@@ -1,6 +1,7 @@
 const request = require("supertest");
 const assert = require("chai").assert;
 const app = require("../app.js");
+const connect = require("../utils/database.js");
 
 // Public front end ------------------------------------------------
 describe("GET /", function(){
@@ -101,37 +102,75 @@ describe("While unauthorised", function(){
 	});
 
 	describe("POST /admin/signup", function(){
-		// it("should sign the user up and redirect to /admin/login, login cred should work", function(done){
-		// 	request(app)
-		// 		.post("/admin/signup")
-		// 		.type("form")
-		// 		.send({
-		// 			"username": "root",
-		// 			"password": "root"
-		// 		})
-		// 		.expect(302)
-		// 		.end(function(err, res){
-		// 			assert.equal(res.body.status, "success", "Implementation not complete");
+		it("should sign the user up and redirect to /admin/login, login cred should work", function(done){
+			request(app)
+				.post("/admin/signup")
+				.type("form")
+				.send({
+					"username": "test_username",
+					"password": "test_password"
+				})
+				.expect(302)
+				.end(function(err, res){
+					assert.equal(res.body.status, "success", "Success message returned");
 
-		// 			// Try logging in with new credentials
-		// 			request(app)
-		// 				.post("/admin/login")
-		// 				.type("form")
-		// 				.send({
-		// 					"username": "root",
-		// 					"password": "root"
-		// 				})
-		// 				.expect(200)
-		// 				.end(function(err, res){
-		// 					assert.equal(res.headers.location, "/admin", "Redirected to /admin");
+					// Try logging in with new credentials
+					request(app)
+						.post("/admin/login")
+						.type("form")
+						.send({
+							"username": "root",
+							"password": "root"
+						})
+						.expect(200)
+						.end(function(err, res){
+							assert.equal(res.headers.location, "/admin/login", "Redirected to /admin/login");
 
-		// 					// Clean up, delete new credentials
-		// 					// Implementation pending
-		// 					done();
-		// 				});
-		// 		});
-		// });
+							// Clean up (should be somewhere else)
+							connect.then(function(db){
+								db.collection("_users_auth").deleteOne({username: "test_username"}, function(err){
+									if(err) throw err;
+									done();
+								});
+							});
+						});
+				});
+		});
 
-		it("should not allow duplicate usernames");
+		it("should not allow duplicate usernames", function(done){
+			request(app)
+				.post("/admin/signup")
+				.type("form")
+				.send({
+					"username": "test_username",
+					"password": "test_password"
+				})
+				.expect(302)
+				.end(function(err, res){
+					assert.equal(res.body.status, "success", "Success message returned");
+
+					// Try signing up with the same username
+					request(app)
+						.post("/admin/signup")
+						.type("form")
+						.send({
+							"username": "test_username",
+							"password": "test_password"
+						})
+						.expect(302)
+						.end(function(err, res){
+							assert.equal(res.body.status, "failed", "Failure message returned");
+							assert.equal(res.body.message, "Username exist.", "Failure reason returned");
+
+							// Clean up (should be somewhere else)
+							connect.then(function(db){
+								db.collection("_users_auth").deleteOne({username: "test_username"}, function(err){
+									if(err) throw err;
+									done();
+								});
+							});
+						});
+				});
+		});
 	});
 });

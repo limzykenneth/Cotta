@@ -85,6 +85,7 @@ router.post("/login", function(req, res){
 
 // Render sign up page
 router.get("/signup", function(req, res){
+	res.locals.title = "Sign Up";
 	res.render("signup");
 });
 
@@ -102,9 +103,9 @@ router.post("/signup", function(req, res){
 			}else{
 				throw err;
 			}
+		}else{
+			res.json({status: "success"});
 		}
-
-		res.json({status: "success"});
 	});
 });
 
