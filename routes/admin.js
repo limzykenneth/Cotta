@@ -80,6 +80,7 @@ router.post("/login", function(req, res){
 
 // Render sign up page
 router.get("/signup", function(req, res){
+	res.locals.title = "Sign Up";
 	res.render("signup");
 });
 
