@@ -1,38 +1,6 @@
 @import "variables.less";
 @import "mixins.less";
-
-// My own normalization preference
-*{
-	box-sizing: border-box;
-}
-
-h1, h2, h3, h4, h5, h6, p{
-	margin-top: 0;
-}
-
-h1{
-	font-size: @large-font-size;
-}
-
-h4{
-	font-size: @medium-font-size;
-}
-
-h5{
-	font-size: @base-font-size;
-}
-
-// Custom
-html{
-	font-size: @base-font-size;
-	font-family: "Helvetica", sans-serif;
-	width: 100vw;
-}
-
-a{
-	text-decoration: none;
-}
-
+@import "defaults.less";
 @import "header.less";
 
 #page-content{
@@ -48,23 +16,34 @@ a{
 		width: 80%;
 
 		.new-btn{
-			font-size: @medium-font-size;
+			font-size: @base-font-size;
+
+			&:hover{
+				color: @white;
+			}
 		}
 
 		.edit-btn{
-			font-size: @medium-font-size;
+			font-size: @base-font-size;
+
+			&:hover{
+				color: @white;
+			}
 		}
 
 		.delete-form{
 			display: inline-block;
 
 			.delete-btn{
-				font-size: @medium-font-size;
-				color: @red;
+				font-size: @base-font-size;
+				display: inline-block;
+				transform: translateY(-5px);
 			}
 		}
 
 		@import "collections-list.less";
+		@import "create-collection.less";
+		@import "edit-collection.less";
 		@import "models-list.less";
 		@import "users-list.less";
 		@import "user.less";

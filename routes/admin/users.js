@@ -9,16 +9,17 @@ const restricted = require("../../utils/middlewares/restrict.js");
 router.use(function(req, res, next){
 	res.locals.title = "Users";
 	next();
-});
-
-router.use(restricted.toAdministrator);
+// Managing users is restricted to administrators only
+}, restricted.toAdministrator);
 
 // Render list of all users
 router.get("/", function(req, res){
 	connect.then(function(db){
 		db.collection("_users_auth").find().toArray(function(err, users){
+			// Find number of registered users
 			_.each(users, function(user, i){
-				if(typeof user.models == "undefined" || typeof user.models.length == "undefined"){
+				if(typeof user.models == "undefined" ||
+				   typeof user.models.length == "undefined"){
 					user.modelsCount = 0;
 				}else{
 					user.modelsCount = user.models.length;
@@ -33,32 +34,43 @@ router.get("/", function(req, res){
 router.get("/:id", function(req, res){
 	connect.then(function(db){
 		db.collection("_users_auth").findOne({username: req.params.id}, function(err, user){
-			var data = user;
+			// Create array to store model data
 			user.modelLinks = [];
+
 			_.each(user.models, function(el, i){
-				var col = el.replace(/^(.+?)\.(.+?)$/, "$1");
+				// Get collection name
+				var slug = el.replace(/^(.+?)\.(.+?)$/, "$1");
+				// Get model ID
 				var id = el.replace(/^(.+?)\.(.+?)$/, "$2");
+
+				var col = _.find(res.locals.schemas, {collectionSlug: slug}).collectionName;
+
 				user.modelLinks[i] = {
-					name: `Collection: ${col}, ID: ${id}`,
-					link: `/admin/collections/${col}/${id}`,
-					collectionSlug: col,
+					collectionSlug: slug,
+					collectionName: col,
 					_uid: id
 				};
 			});
 
-			res.render("user", data);
+			res.render("user", user);
 		});
 	});
 });
 
 // Delete user with specified ID
 router.post("/:id", function(req, res, next){
+	// HTML forms don't support DELETE action, this is a workaround
 	if(req.body._method == "delete"){
+		// Users are not allowed to delete themselves here
 		if(req.params.id !== req.session.user.username){
 			connect.then(function(db){
+
+				// Delete user entry in database, counter is maintained to not messed up model ownership
 				db.collection("_users_auth").deleteOne({username: req.params.id}, function(err){
 					if(err) throw err;
 
+					// Move ownership of existing models under the user to admin
+					// Rethink required: provide option to delete, or transfer ownership and update user model list
 					db.listCollections().toArray(function(err, result){
 						result = _.filter(result, function(el){
 							return !/^_/.test(el.name);
@@ -92,6 +104,7 @@ router.post("/:id", function(req, res, next){
 
 // Edit info of user with specified ID
 router.post("/:id", function(req, res, next){
+	// Change user role
 	if(req.body.user_role){
 		connect.then(function(db){
 			db.collection("_users_auth").updateOne({username: req.params.id}, {$set: {role: req.body.user_role}},function(err){

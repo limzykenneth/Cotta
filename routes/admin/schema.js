@@ -6,9 +6,13 @@ const multerNone = require('multer')().none();
 const connect = require("../../utils/database.js");
 const restricted = require("../../utils/middlewares/restrict.js");
 
+// Schema edits are allowed for editors and administrators only
+router.use(restricted.toEditor);
+
 // Delete specified collection
-router.post("/delete/:collection", restricted.toEditor, function(req, res){
+router.post("/delete/:collection", function(req, res){
 	connect.then(function(db){
+		// Rethink required: model list under users need to be cleaned as well
 		var deletion = [];
 		deletion.push(db.collection("_schema").deleteOne({collectionSlug: req.params.collection}));
 		deletion.push(db.collection(req.params.collection).drop());
@@ -19,6 +23,7 @@ router.post("/delete/:collection", restricted.toEditor, function(req, res){
 
 			res.redirect("/admin");
 		}).catch(function(err){
+			// If collection doesn't exist (no model created under the collection)
 			if(err.errmsg == "ns not found") {
 				res.redirect("/admin");
 			}else{
@@ -29,7 +34,7 @@ router.post("/delete/:collection", restricted.toEditor, function(req, res){
 });
 
 // Pasrse incoming data for following routes
-router.use(restricted.toEditor, multerNone, parseRequest);
+router.use(multerNone, parseRequest);
 
 // Create new collection
 router.post("/new", function(req, res){
@@ -37,12 +42,14 @@ router.post("/new", function(req, res){
 		db.collection("_schema").find({collectionSlug: req.formData.collectionSlug}).toArray(function(err, result){
 			if(err) throw err;
 
+			// Find collection with duplicate slug, if found, reject the new one
 			if(result.length > 0){
 				res.json({
 					status: "failed",
 					reason: "Collection with that name already exist."
 				});
 			}else{
+				// Insert form data as is, should be parsed perfectly beforehand
 				db.collection("_schema").insertOne(req.formData, function(err){
 					if(err) throw err;
 
@@ -85,6 +92,7 @@ function validateIncoming(string){
 function parseRequest(req, res, next){
 	let data = {};
 	data.collectionName = req.body["collection-name"];
+
 	if(!validateIncoming(data.collectionName)){
 		res.json({
 			status: "failed",
@@ -92,6 +100,7 @@ function parseRequest(req, res, next){
 		});
 		return;
 	}
+
 	data.collectionSlug = data.collectionName.toLowerCase().replace(" ", "_");
 	data.exposeToAPI = req.body["expose-to-api"] ? true : false;
 
@@ -102,17 +111,31 @@ function parseRequest(req, res, next){
 	data.fields = [];
 	let regName = /^name-(\d+)?$/;
 	let regType = /^type-(\d+?)$/;
+
+	// req.body should only contain field info now
 	_.each(req.body, function(el, key){
 		let buffer = {};
+
 		if(regName.test(key)){
 			let index = key.replace(regName, "$1");
 			buffer.properties = {};
 			buffer.name = req.body["name-" + index];
 			buffer.slug = buffer.name.toLowerCase().replace(" ", "_");
 			buffer.type = req.body["type-" + index];
+
+			// Checkbox and radio box require extra parsing
 			if(buffer.type == "checkbox" || buffer.type == "radio"){
+				// Split choices onto array by new lines
 				let choices = req.body["option-" + index].split(/\r?\n/);
 				let choiceObject = {};
+
+				// Individual choices can be in the form:
+				// choice
+				// choice:value
+				// "choice":value
+				// choice:"value"
+				// "choice":"value"
+				// (Detected in reverse order to the list above)
 				_.each(choices, function(el, i){
 					var reg = [/^"(.+?)":"(.+?)"$/g, /^"(.+?)":(.+?)$/g, /^(.+?):"(.+?)"$/g, /^(.+?):(.+?)$/g];
 					if(reg[0].test(el)){
@@ -127,12 +150,15 @@ function parseRequest(req, res, next){
 						choiceObject[el] = el;
 					}
 				});
+
+				// Store parsed choices into buffer object
 				buffer.properties.choices = choiceObject;
 			}
 			data.fields.push(buffer);
 		}
 	});
 
+	// Store parsed form data into request object to be passed onto the next middleware
 	req.formData = data;
 	next();
 

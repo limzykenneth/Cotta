@@ -1,11 +1,22 @@
 &.models-container{
+	.new-btn{
+		font-size: @medium-font-size;
+	}
+
+	.delete-btn{
+		font-size: @medium-font-size;
+	}
+
 	.models{
 		.reduced-list;
 
 		.model{
-			.card(100%);
-
+			width: 100%;
 			display: flex;
+
+			&:hover{
+				color: @tromso-blue;
+			}
 
 			span{
 

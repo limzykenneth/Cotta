@@ -5,10 +5,15 @@
 		<h2>{{username}}</h2>
 
 		<ul class="model-list">
-			<h5 class="subtitle">Created Models</h5>
+			<h3 class="subtitle">Created Models</h3>
 		{{#each modelLinks}}
-			<li>
-				<a href="{{this.link}}">{{this.name}}</a> <a href="/admin/collections/{{collectionSlug}}/{{_uid}}/edit">Edit</a>
+			<li class="user-model card">
+				<a class="model-name" href="/admin/collections/{{collectionSlug}}/{{_uid}}">
+					<span>Collection: {{collectionName}}</span>
+					<span>ID: {{_uid}}</span>
+				</a>
+
+				<a class="button edit-btn" href="/admin/collections/{{collectionSlug}}/{{_uid}}/edit">Edit</a>
 
 				<form class="delete-form" action="/admin/collections/{{collectionSlug}}/{{_uid}}" method="post">
 					<input type="hidden" name="_method" value="delete" />
@@ -19,8 +24,8 @@
 		</ul>
 
 		<form class="edit-role" action="/admin/users/{{username}}" method="post">
-			<h5 class="subtitle">Role</h5>
-			<select name="user_role">
+			<h3 class="subtitle">Role</h3>
+			<select class="user-role" name="user_role">
 				<option value="administrator" {{#ifEquals "administrator" role}}selected{{/ifEquals}}>Administrator</option>
 				<option value="editor" {{#ifEquals "editor" role}}selected{{/ifEquals}}>Editor</option>
 				<option value="author" {{#ifEquals "author" role}}selected{{/ifEquals}}>Author</option>

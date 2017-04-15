@@ -17,6 +17,8 @@ router.get("/", function(req, res){
 });
 
 // Must be the current signed in user
+// Rethink required: some way to change username, maybe with email as well
+// Should keep this or check authentication to prevent abuse
 router.post("/", multerNone, function(req, res, next){
 	if(req.body.username == req.session.user.username){
 		next();
@@ -25,9 +27,13 @@ router.post("/", multerNone, function(req, res, next){
 	}
 });
 
+// Edit info of current signed in user
 router.post("/", function(req, res){
+	// Change current user password
 	// Possibly do password strength check here
 	if(req.body.current_password !== "" && req.body.new_password !== ""){
+
+		// auth.changePassword already takes care of authentication before password change
 		auth.changePassword(req.body.username, req.body.current_password, req.body.new_password, function(err, result){
 			if(err) throw err;
 
@@ -35,6 +41,7 @@ router.post("/", function(req, res){
 				status: "success"
 			});
 		});
+
 	}
 });
 

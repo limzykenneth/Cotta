@@ -5,8 +5,8 @@
 
 	<form method="post" action="/admin/schema/edit/{{collectionSlug}}" class="schema-definition"  enctype="multipart/form-data" data-collection-name="{{collectionName}}">
 		<span class="hidden"><input type="text" name="collection-name" value="{{collectionName}}"></span>
-		<legend>
-			<span>Name</span><span>Type</span>
+		<legend class="field-label-container">
+			<label class="field-name-label">Name</label><label class="field-type-label">Type</label>
 		</legend>
 
 		{{#each fields}}
@@ -35,5 +35,10 @@
 		</div>
 		{{/each}}
 		<p class="submit"><input type="submit" value="Save"></p>
+	</form>
+
+	<form class="delete-form" action="/admin/schema/delete/{{collectionSlug}}" method="post">
+		<input type="hidden" name="_method" value="delete" />
+		<input class="delete-btn" type="submit" name="delete" value="Delete">
 	</form>
 </section>

@@ -2,9 +2,9 @@
 	<h1>Account</h1>
 
 	<form method="post" action="/admin/account" class="account" enctype="multipart/form-data">
-		<p>Username: <input type="text" name="username" value="{{currentUsername}}"></p>
-		<p>Current Password: <input type="password" name="current_password"></p>
-		<p>New Password: <input type="password" name="new_password"></p>
+		<p><label for="username">Username:</label> <input type="text" name="username" value="{{currentUsername}}" readonly></p>
+		<p><label for="current_password">Current Password:</label> <input type="password" name="current_password"></p>
+		<p><label for="new_password">New Password:</label> <input type="password" name="new_password"></p>
 
 		<input type="submit" name="submit" value="Save">
 	</form>

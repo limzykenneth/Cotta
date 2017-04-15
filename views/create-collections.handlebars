@@ -1,29 +1,32 @@
 <section class="collection-creation main-content">
 	<h1>Collections</h1>
 
-	<h2>New Collections</h2>
+	<h2>New Collection</h2>
 
 	<form method="POST" action="/admin/schema/new" class="schema-definition" enctype="multipart/form-data">
-		Collection Name: <input type="text" name="collection-name">
+		<p class="collection-name-container">
+			<label class="collection-name-label" for="collection-name">Collection Name:</label> <input type="text" name="collection-name">
+		</p>
 
-		<legend>
-			<span>Name</span><span>Type</span>
+		<p class="expose-to-api"><input type="checkbox" name="expose-to-api"> Expose to API</p>
+
+		<h3 class="field-subtitle">Fields</h3>
+		<legend class="field-label-container">
+			<label class="field-name-label">Name</label><label class="field-type-label">Type</label>
 		</legend>
 
 		<div class="field">
-			<span><input class="name-field" name="name-1" type="text"></span>
-			<span><select class="type-field" name="type-1">
+			<input class="name-field" name="name-1" type="text">
+			<select class="type-field" name="type-1">
 				<option value="wysiwyg">WYSIWYG</option>
 				<option value="text">Text</option>
 				<option value="email">Email</option>
 				<option value="checkbox">Checkbox</option>
 				<option value="radio">Radio buttons</option>
 				<option value="image">Image</option>
-			</select></span>
-			<span><i class="fa fa-plus-circle schema-add" aria-hidden="true"></i></span>
+			</select>
+			<i class="fa fa-plus-circle schema-add" aria-hidden="true"></i>
 		</div>
-
-		<p class="expose-to-api"><input type="checkbox" name="expose-to-api"> Expose to API</p>
 
 		<p class="submit"><input type="submit" value="Save"></p>
 	</form>
