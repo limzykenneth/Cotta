@@ -21,11 +21,11 @@ router.post("/delete/:collection", function(req, res){
 		Promise.all(deletion).then(function(err){
 			if(err) throw err;
 
-			res.redirect("/admin");
+			res.redirect("/admin/collections");
 		}).catch(function(err){
 			// If collection doesn't exist (no model created under the collection)
 			if(err.errmsg == "ns not found") {
-				res.redirect("/admin");
+				res.redirect("/admin/collections");
 			}else{
 				throw err;
 			}

@@ -2,7 +2,6 @@ var $ = require("jquery");
 var _ = require("lodash/core");
 _.template = require("lodash/template");
 require('whatwg-fetch');
-var fetchJSON = require("./fetchJSON.js");
 var CharMessenger = require("./CharMessenger.js");
 
 $(document).ready(function() {
@@ -84,7 +83,8 @@ $(document).ready(function() {
 		});
 	});
 
-	// JS elegant way of dealing with unauthorized access
+	// JS elegant way of dealing with unauthorized access ---------------------------
+	// Get requests
 	$(".new-btn, .edit-btn").click(function(e) {
 		e.preventDefault();
 		var href = $(this).attr("href");
@@ -101,8 +101,36 @@ $(document).ready(function() {
 			}
 		}).then(function(data){
 			if(data.status == "error"){
-				// Show message
-				console.log("Wrong");
+				message.showMessage(data.message);
+			}else{
+				throw new Error(data);
+			}
+		}).catch(function(err){
+			throw err;
+		});
+	});
+
+	// POST requests
+	$(".delete-form").submit(function(e){
+		e.preventDefault();
+
+		var href = $(this).attr("action");
+		var formData = new FormData($(this)[0]);
+		fetch(href, {
+			method: "post",
+			body: formData,
+			credentials: "include"
+		}).then(function(res){
+			var contentType = res.headers.get("content-type");
+			if(contentType && contentType.indexOf("application/json") !== -1){
+				return res.json();
+			}else if(res.status == 200){
+				window.location.replace(res.url);
+			}else{
+				throw new Error(res);
+			}
+		}).then(function(data){
+			if(data.status == "error"){
 				message.showMessage(data.message);
 			}else{
 				throw new Error(data);
