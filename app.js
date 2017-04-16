@@ -19,12 +19,6 @@ let app = express();
 // Socket.io
 let io = socketIO();
 app.io = io;
-let socket = new Promise(function(resolve, reject){
-	require("./utils/messaging.js")(io).on("connection", function(soc){
-		resolve(soc);
-	});
-});
-app.set("messaging", socket);
 
 // View engine setup
 
