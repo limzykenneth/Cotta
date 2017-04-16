@@ -2,9 +2,13 @@ var $ = require("jquery");
 var _ = require("lodash/core");
 _.template = require("lodash/template");
 require('whatwg-fetch');
-require("./char-messaging.js")();
+var fetchJSON = require("./fetchJSON.js");
+var CharMessenger = require("./CharMessenger.js");
 
 $(document).ready(function() {
+	var message = new CharMessenger($(".message-box"));
+	message.fadeOut();
+
 	$("#page-content").on("click", ".schema-definition .schema-add", function(e) {
 		var renderField = _.template($("#schema-creation-template").html());
 
@@ -80,11 +84,31 @@ $(document).ready(function() {
 		});
 	});
 
-	setTimeout(function(){
-		$(".message-box").addClass("hide");
+	// JS elegant way of dealing with unauthorized access
+	$(".new-btn, .edit-btn").click(function(e) {
+		e.preventDefault();
+		var href = $(this).attr("href");
 
-		setTimeout(function(){
-			$(".message-box").removeClass("hide").find(".msg").html("");
-		}, 501);
-	}, 2000);
+		fetch(href, {
+			method: "get",
+			credentials: "include"
+		}).then(function(res){
+			var contentType = res.headers.get("content-type");
+			if(contentType && contentType.indexOf("application/json") !== -1){
+				return res.json();
+			}else{
+				window.location.replace(href);
+			}
+		}).then(function(data){
+			if(data.status == "error"){
+				// Show message
+				console.log("Wrong");
+				message.showMessage(data.message);
+			}else{
+				throw new Error(data);
+			}
+		}).catch(function(err){
+			throw err;
+		});
+	});
 });
