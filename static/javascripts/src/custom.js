@@ -8,6 +8,7 @@ $(document).ready(function() {
 	var message = new CharMessenger($(".message-box"));
 	message.fadeOut();
 
+	// Schema definition aids ------------------------------------------------------
 	$("#page-content").on("click", ".schema-definition .schema-add", function(e) {
 		var renderField = _.template($("#schema-creation-template").html());
 
@@ -17,6 +18,7 @@ $(document).ready(function() {
 			$(this).find(".type-field").attr("name", "type-" + i);
 		});
 	});
+
 	$("#page-content").on("click", ".schema-definition .schema-remove", function(e) {
 		$(this).parents(".field").remove();
 	});
@@ -32,7 +34,7 @@ $(document).ready(function() {
 		}
 	});
 
-
+	// Schema definition submission -------------------------------------------------
 	$("#page-content .schema-definition").submit(function(e) {
 		e.preventDefault();
 
@@ -49,15 +51,21 @@ $(document).ready(function() {
 			if(data.status == "success"){
 				// redirect somewhere else
 				window.location.replace("/admin/collections");
+			}else if(data.status == "failed" || data.status == "error"){
+				message.showMessage(data.message);
 			}else{
-				$("#page-content .collection-creation .error-msg").text(data.reason).show().delay(2000).fadeOut(500);
+				throw new Error(data);
 			}
 			$submitBtn.attr("value", "Save").prop("disabled", false);
+		}).catch(function(err){
+			throw err;
 		});
 	});
 
+	// Editor settings -------------------------------------------------------------
 	$(".wysiwyg-editor").trumbowyg();
 
+	// New model submission --------------------------------------------------------
 	$("#page-content .model-form").submit(function(e) {
 		var formData = new FormData($(this)[0]);
 		e.preventDefault();

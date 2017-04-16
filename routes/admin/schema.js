@@ -46,7 +46,7 @@ router.post("/new", function(req, res){
 			if(result.length > 0){
 				res.json({
 					status: "failed",
-					reason: "Collection with that name already exist."
+					message: "Collection with that name already exist."
 				});
 			}else{
 				// Insert form data as is, should be parsed perfectly beforehand
@@ -96,7 +96,7 @@ function parseRequest(req, res, next){
 	if(!validateIncoming(data.collectionName)){
 		res.json({
 			status: "failed",
-			reason: "Collection names should start with alphanumeric characters and contain only alphanumeric characters, underscores and spaces."
+			message: "Collection names should start with alphanumeric characters and contain only alphanumeric characters, underscores and spaces."
 		});
 		return;
 	}
