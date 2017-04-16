@@ -16,7 +16,7 @@ describe("While signed in as admin", function(){
 
 	beforeEach(function(done){
 		testSession.post("/admin/login")
-			.send({username: "admin", password: "admin"})
+			.send({username: "author", password: "author"})
 			.expect(302)
 			.end(function(err){
 				if(err) throw err;
@@ -44,6 +44,24 @@ describe("While signed in as admin", function(){
 		}
 	};
 
+	var expectForbiddenResponse = function(urls, done){
+		if(typeof urls == "string"){
+			authenticatedSession.get(urls)
+				.expect(403, done);
+		}else if(Array.isArray(urls)){
+			var responses = [];
+			_.each(urls, function(url){
+				responses.push(authenticatedSession.get(url)
+					.expect(403));
+			});
+
+			Promise.all(responses)
+			.then(function(){
+				done();
+			});
+		}
+	};
+
 	describe("GET /admin/collections", function(){
 		it("should return with status code 200", function(done){
 			expectOKResponse("/admin/collections", done);
@@ -51,14 +69,14 @@ describe("While signed in as admin", function(){
 	});
 
 	describe("GET /admin/collectionsn/new", function(){
-		it("should return with status code 200", function(done){
-			expectOKResponse("/admin/collections/new", done);
+		it("should return with status code 403", function(done){
+			expectForbiddenResponse("/admin/collections/new", done);
 		});
 	});
 
 	describe("GET /admin/collections/edit/:collection", function(){
-		it("should return with status code 200", function(done){
-			expectOKResponse("/admin/collections/edit/test_1", done);
+		it("should return with status code 403", function(done){
+			expectForbiddenResponse("/admin/collections/edit/test_1", done);
 		});
 	});
 
@@ -87,14 +105,14 @@ describe("While signed in as admin", function(){
 	});
 
 	describe("GET /admin/users", function(){
-		it("should return with status code 200", function(done){
-			expectOKResponse("/admin/users", done);
+		it("should return with status code 403", function(done){
+			expectForbiddenResponse("/admin/users", done);
 		});
 	});
 
 	describe("GET /admin/users/:userid", function(){
-		it("should return with status code 200", function(done){
-			expectOKResponse(["/admin/users/admin",
+		it("should return with status code 403", function(done){
+			expectForbiddenResponse(["/admin/users/admin",
 							  "/admin/users/editor",
 							  "/admin/users/author"],
 			done);
@@ -108,8 +126,8 @@ describe("While signed in as admin", function(){
 	});
 
 	describe("GET /admin/config", function(){
-		it("should return with status code 200", function(done){
-			expectOKResponse("/admin/config", done);
+		it("should return with status code 403", function(done){
+			expectForbiddenResponse("/admin/config", done);
 		});
 	});
 

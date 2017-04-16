@@ -22,7 +22,7 @@ restrict.toAdministrator = function(req, res, next){
 			if(user.role == "administrator"){
 				next();
 			} else{
-				res.locals.message = "Not allowed";
+				res.status(403);
 				res.json({
 					status: "error",
 					message: "Not allowed"
@@ -41,7 +41,7 @@ restrict.toEditor = function(req, res, next){
 			if(user.role == "administrator" || user.role == "editor"){
 				next();
 			} else{
-				res.locals.message = "Not allowed";
+				res.status(403);
 				res.json({
 					status: "error",
 					message: "Not allowed"
@@ -60,7 +60,7 @@ restrict.toAuthor = function(req, res, next){
 			if(user.role == "administrator" || user.role == "editor" || user.role == "author"){
 				next();
 			} else{
-				res.locals.message = "Not allowed";
+				res.status(403);
 				res.json({
 					status: "error",
 					message: "Not allowed"

@@ -217,7 +217,7 @@ router.post("/:collection/:id", function(req, res, next){
 							function(err){
 							if(err) throw err;
 
-							res.redirect(`/admin/${req.params.collection}`);
+							res.redirect(`/admin/collections/${req.params.collection}`);
 					   });
 					});
 
