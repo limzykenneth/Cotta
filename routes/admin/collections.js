@@ -215,9 +215,9 @@ router.post("/:collection/:id/edit", uploadSchemas, function(req, res){
 
 // Delete specified model from database
 router.post("/:collection/:id", multerNone, function(req, res, next){
-	var modelOwner;
 	// HTML forms don't support DELETE action, this is a workaround
 	if(req.body._method === "delete"){
+		var modelOwner;
 		connect.then(function(db){
 			return db.collection(req.params.collection).findOne({"_uid": parseInt(req.params.id)}).then(function(model){
 				modelOwner = model._metadata.created_by;
