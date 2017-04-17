@@ -122,14 +122,12 @@ router.use(function(req, res, next){
 	res.locals.currentUserRole = req.session.user.role;
 
 	connect.then(function(db){
-		db.collection("_schema").find().toArray(function(err, results){
-			if(err) throw err;
-
-			// Fetch schema preemptively to simplify latter parts also to render sidebar
-			// Models and users should not be fetched as that might take up way too much RAM
-			res.locals.schemas = results;
-			next();
-		});
+		return db.collection("_schema").find().toArray();
+	}).then(function(results){
+		// Fetch schema preemptively to simplify latter parts also to render sidebar
+		// Models and users should not be fetched as that might take up way too much RAM
+		res.locals.schemas = results;
+		next();
 	});
 });
 
