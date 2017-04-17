@@ -21,43 +21,39 @@ app.get("/:collection*", function(req, res, next){
 	}
 });
 
-app.get("/:collection", function (req, res){
-	var collection = req.params.collection;
-
+app.get("/:collection", function (req, res, next){
 	connect.then(function(db){
-		db.collection(collection).find().toArray(function (err, result) {
-			if (err) throw err;
-
-			res.json(result);
-		});
+		return db.collection(req.params.collection).find().toArray();
+	}).then(function(result){
+		res.json(result);
+	}).catch(function(err){
+		next(err);
 	});
 });
 
-app.get("/:collection/:name/:value", function(req, res){
-	var collection = req.params.collection;
+app.get("/:collection/:name/:value", function(req, res, next){
 	var obj = {};
 	obj[req.params.name] = req.params.value;
 
 	connect.then(function(db){
-		db.collection(collection).find(obj).toArray(function (err, result) {
-			if (err) throw err;
-
-			res.json(result);
-		});
+		return db.collection(req.params.collection).find(obj).toArray();
+	}).then(function(){
+		res.json(result);
+	}).catch(function(err){
+		next(err);
 	});
 });
 
 app.get("/:collection/filter\\[:name\]=:value", function(req, res){
-	var collection = req.params.collection;
 	var obj = {};
 	obj[req.params.name] = req.params.value;
 
 	connect.then(function(db){
-		db.collection(collection).find(obj).toArray(function (err, result) {
-			if (err) throw err;
-
-			res.json(result);
-		});
+		db.collection(req.params.collection).find(obj).toArray();
+	}).then(function(result){
+		res.json(result);
+	}).catch(function(err){
+		next(err);
 	});
 });
 
