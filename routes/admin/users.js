@@ -96,6 +96,7 @@ router.post("/:id", multerNone, function(req, res, next){
 					return Promise.all(modelEdits);
 				});
 			}).then(function(){
+				// Need to figure out how to send delete success message
 				res.locals.message = "Success!";
 				res.redirect("/admin/users");
 			}).catch(function(err){
@@ -117,11 +118,16 @@ router.post("/:id", multerNone, function(req, res, next){
 	// Change user role
 	if(req.body.user_role){
 		connect.then(function(db){
-			db.collection("_users_auth").updateOne({username: req.params.id}, {$set: {role: req.body.user_role}},function(err){
-				if(err) throw err;
-
+			db.collection("_users_auth").updateOne({username: req.params.id},
+												   {
+												   	$set:
+												   		{role: req.body.user_role}
+												   })
+			.then(function(){
 				res.locals.message = "Success!";
 				res.redirect(`/admin/users/${req.params.id}`);
+			}).catch(function(err){
+				next(err);
 			});
 		});
 	}else{
