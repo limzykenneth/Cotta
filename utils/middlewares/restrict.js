@@ -16,57 +16,57 @@ var restrict = function(req, res, next){
 // Restrict route to administrators only
 restrict.toAdministrator = function(req, res, next){
 	connect.then(function(db){
-		db.collection("_users_auth").findOne({username: req.session.user.username}, function(err, user){
-			if(err) throw err;
-
-			if(user.role == "administrator"){
-				next();
-			} else{
-				res.status(403);
-				res.json({
-					status: "error",
-					message: "Not allowed"
-				});
-			}
-		});
+		return db.collection("_users_auth").findOne({username: req.session.user.username});
+	}).then(function(user){
+		if(user.role == "administrator"){
+			next();
+		} else{
+			res.status(403);
+			res.json({
+				status: "error",
+				message: "Not allowed"
+			});
+		}
+	}).catch(function(err){
+		next(err);
 	});
 };
 
 // Restrict route to administrators and editors only
 restrict.toEditor = function(req, res, next){
 	connect.then(function(db){
-		db.collection("_users_auth").findOne({username: req.session.user.username}, function(err, user){
-			if(err) throw err;
-
-			if(user.role == "administrator" || user.role == "editor"){
-				next();
-			} else{
-				res.status(403);
-				res.json({
-					status: "error",
-					message: "Not allowed"
-				});
-			}
-		});
+		return db.collection("_users_auth").findOne({username: req.session.user.username});
+	}).then(function(user){
+		if(user.role == "administrator" || user.role == "editor"){
+			next();
+		} else{
+			res.status(403);
+			res.json({
+				status: "error",
+				message: "Not allowed"
+			});
+		}
+	}).catch(function(err){
+		next(err);
 	});
 };
 
 // Restrict route to administrators, editors and authors only
 restrict.toAuthor = function(req, res, next){
 	connect.then(function(db){
-		db.collection("_users_auth").findOne({username: req.session.user.username}, function(err, user){
-			if(err) throw err;
-
-			if(user.role == "administrator" || user.role == "editor" || user.role == "author"){
-				next();
-			} else{
-				res.status(403);
-				res.json({
-					status: "error",
-					message: "Not allowed"
-				});
-			}
-		});
+		return db.collection("_users_auth").findOne({username: req.session.user.username});
+	}).then(function(user){
+		if(user.role == "administrator" || user.role == "editor" || user.role == "author"){
+			next();
+		} else{
+			res.status(403);
+			res.json({
+				status: "error",
+				message: "Not allowed"
+			});
+		}
+	}).catch(function(err){
+		next(err);
 	});
 };
 
