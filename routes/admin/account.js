@@ -28,18 +28,20 @@ router.post("/", multerNone, function(req, res, next){
 });
 
 // Edit info of current signed in user
-router.post("/", function(req, res){
+router.post("/", function(req, res, next){
 	// Change current user password
 	// Possibly do password strength check here
 	if(req.body.current_password !== "" && req.body.new_password !== ""){
 
 		// auth.changePassword already takes care of authentication before password change
 		auth.changePassword(req.body.username, req.body.current_password, req.body.new_password, function(err, result){
-			if(err) throw err;
-
-			res.json({
-				status: "success"
-			});
+			if(err) {
+				next(err);
+			}else{
+				res.json({
+					status: "success"
+				});
+			}
 		});
 
 	}

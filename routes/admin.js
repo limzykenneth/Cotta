@@ -90,7 +90,7 @@ router.get("/signup", function(req, res){
 });
 
 // User sign up
-router.post("/signup", function(req, res){
+router.post("/signup", function(req, res, next){
 	auth.signup(req.body.username, req.body.password, function(err){
 		if(err){
 			// Reject sign up if username already exist in database
@@ -101,7 +101,7 @@ router.post("/signup", function(req, res){
 					message: "Username exist."
 				});
 			}else{
-				throw err;
+				next(err);
 			}
 		}else{
 			res.json({status: "success"});
