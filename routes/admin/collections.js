@@ -6,6 +6,7 @@ const connect = require("../../utils/database.js");
 const uploadSchemas = require("../../utils/middlewares/upload.js");
 const restricted = require("../../utils/middlewares/restrict.js");
 const moment = require("moment");
+const multerNone = require('multer')().none();
 const Promise = require("bluebird");
 const autoIncrement = require("mongodb-autoincrement");
 Promise.promisifyAll(autoIncrement);
@@ -94,6 +95,7 @@ router.post("/:collection/new", uploadSchemas, function(req, res){
 		date_modified: moment.utc().format()
 	};
 
+	// Checkbox field must be array
 	_.each(schema.fields, function(field){
 		if(field.type == "checkbox" && !Array.isArray(data[field.slug])){
 			let buffer = data[field.slug];
@@ -166,21 +168,28 @@ router.get("/:collection/:id/edit", function(req, res){
 
 // Edit data of specified model
 router.post("/:collection/:id/edit", uploadSchemas, function(req, res){
+	var data = req.body;
+	var schema = _.find(res.locals.schemas, {collectionSlug: req.params.collection});
+
+	// Save the uploaded file's path as a field value
+	_.each(req.files, function(el, i){
+		data[el[0].fieldname] = el[0].path;
+	});
+
+	// Set unique ID
+	data._uid = parseInt(req.params.id);
+
+	// Checkbox field must be array
+	_.each(schema.fields, function(field){
+		if(field.type == "checkbox" && !Array.isArray(data[field.slug])){
+			let buffer = data[field.slug];
+			data[field.slug] = [buffer];
+		}
+	});
+
 	connect.then(function(db){
 		// Find model to be edited
-		db.collection(req.params.collection).findOne({"_uid": parseInt(req.params.id)}, function(err, model){
-			if(err) throw err;
-
-			var data = req.body;
-			var schema = _.find(res.locals.schemas, {collectionSlug: req.params.collection});
-
-			// Save the uploaded file's path as a field value
-			_.each(req.files, function(el, i){
-				data[el[0].fieldname] = el[0].path;
-			});
-
-			// Set unique ID
-			data._uid = parseInt(req.params.id);
+		return db.collection(req.params.collection).findOne({"_uid": parseInt(req.params.id)}).then(function(model){
 			// Set metadata, changing only date modified
 			data._metadata = {
 				created_by: model._metadata.created_by,
@@ -188,52 +197,36 @@ router.post("/:collection/:id/edit", uploadSchemas, function(req, res){
 				date_modified: moment.utc().format()
 			};
 
-			_.each(schema.fields, function(field){
-				if(field.type == "checkbox" && !Array.isArray(data[field.slug])){
-					let buffer = data[field.slug];
-					data[field.slug] = [buffer];
-				}
-			});
-
-			// Probably don't want to use $set (maybe dunno)
-			db.collection(req.params.collection).updateOne({"_uid": parseInt(req.params.id)}, {$set: data}, function(err){
-				if(err) throw err;
-
-				res.json({
-					status: "success"
-				});
+			return Promise.resolve(db);
+		});
+	}).then(function(db){
+		// Probably don't want to use $set (maybe dunno)
+		db.collection(req.params.collection).updateOne({"_uid": parseInt(req.params.id)},
+													   {$set: data})
+		.then(function(){
+			res.json({
+				status: "success"
 			});
 		});
+	}).catch(function(err){
+		next(err);
 	});
 });
 
 // Delete specified model from database
-router.post("/:collection/:id", function(req, res, next){
+router.post("/:collection/:id", multerNone, function(req, res, next){
+	var modelOwner;
 	// HTML forms don't support DELETE action, this is a workaround
 	if(req.body._method === "delete"){
 		connect.then(function(db){
-			db.collection(req.params.collection).findOne({"_uid": parseInt(req.params.id)}, function(err, model){
-				if(err) throw err;
+			return db.collection(req.params.collection).findOne({"_uid": parseInt(req.params.id)}).then(function(model){
+				modelOwner = model._metadata.created_by;
 
 				// You can only delete models belonging to you unless you are an editor or an administrator
-				if(req.session.user.username == model._metadata.created_by ||
-					req.session.user.role == "administrator" ||
-					req.session.user.role == "editor"){
-
-					// Delete model under specified collection with specified ID
-					db.collection(req.params.collection).deleteOne({"_uid": parseInt(req.params.id)}, function(err){
-						if(err) throw err;
-
-						// Delete model's entry in user associated with the model
-						db.collection("_users_auth").updateOne({username: model._metadata.created_by},
-							{$pull:{models: `${req.params.collection}.${req.params.id}`}},
-							function(err){
-							if(err) throw err;
-
-							res.redirect(`/admin/collections/${req.params.collection}`);
-					   });
-					});
-
+				if(req.session.user.username == modelOwner ||
+				   req.session.user.role == "administrator" ||
+				   req.session.user.role == "editor"){
+					return Promise.resolve(db);
 				}else{
 					res.locals.message = "Not allowed";
 					res.json({
@@ -242,6 +235,18 @@ router.post("/:collection/:id", function(req, res, next){
 					});
 				}
 			});
+		}).then(function(db){
+			Promise.join(
+				// Delete model under specified collection with specified ID
+				db.collection(req.params.collection).deleteOne({"_uid": parseInt(req.params.id)}),
+				// Delete model's entry in user associated with the model
+				db.collection("_users_auth").updateOne({username: modelOwner},
+					{$pull:{models: `${req.params.collection}.${req.params.id}`}}),
+			function(){
+				res.redirect(`/admin/collections/${req.params.collection}`);
+			});
+		}).catch(function(err){
+			next(err);
 		});
 	}else{
 		next();
