@@ -66,7 +66,7 @@ auth.signup = function(name, pass, fn){
 auth.changePassword = function(name, currentPassword, newPassword, fn){
 	// Authenticate with the provided username and password
 	this.authenticate(name, currentPassword, function(err, result){
-		if(err) throw err;
+		if(err) fn(err);
 
 		// Hash the new password
 		bcrypt.hash(newPassword, 10, function(err, hash){
