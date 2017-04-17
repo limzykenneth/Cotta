@@ -7,6 +7,9 @@
 		{{#if currentUsername }}
 		<a href="/admin/account"><i class="fa fa-2x fa-user" aria-hidden="true"></i></a>
 		<a href="/admin/logout"><i class="fa fa-2x fa-sign-out" aria-hidden="true"></i></a>
+		{{else}}
+		<a href="/admin/signup"><i class="fa fa-2x fa-user-plus" aria-hidden="true"></i></a>
+		<a href="/admin/login"><i class="fa fa-2x fa-sign-in" aria-hidden="true"></i></a>
 		{{/if}}
 	</span>
 </header>
