@@ -39,29 +39,23 @@ const uploadImage = multer({
 
 // Middleware to handle multipart/form-data request
 var uploadSchemas = function(req, res, next){
-	connect.then(function(db){
-		// Get the schema of the requested collection so we know how many upload fields there are
-		db.collection("_schema").findOne({collectionSlug: req.params.collection}, function(err, result){
-			if(err) throw err;
-
-			// Populate array with fields with type "image"
-			// Rethink required: Upload more than one image a field?
-			var fields = [];
-			_.each(result.fields, function(el, i){
-				if(el.type == "image"){
-					fields.push({name: el.slug, maxCount: 1});
-				}
-			});
-
-			// Make sure there are something to process
-			if(fields.length !== 0){
-				uploadImage.fields(fields)(req, res, next);
-			}else{
-			// If not, just run the "none" middleware
-				uploadImage.none()(req, res, next);
-			}
-		});
+	var schema = _.find(res.locals.schemas, {collectionSlug: req.params.collection});
+	// Populate array with fields with type "image"
+	// Rethink required: Upload more than one image a field?
+	var fields = [];
+	_.each(schema.fields, function(el, i){
+		if(el.type == "image"){
+			fields.push({name: el.slug, maxCount: 1});
+		}
 	});
+
+	// Make sure there are something to process
+	if(fields.length !== 0){
+		uploadImage.fields(fields)(req, res, next);
+	}else{
+	// If not, just run the "none" middleware
+		uploadImage.none()(req, res, next);
+	}
 };
 
 module.exports = uploadSchemas;
