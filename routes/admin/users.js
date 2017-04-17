@@ -4,6 +4,7 @@ const router = express.Router();
 const path = require("path");
 const connect = require("../../utils/database.js");
 const restricted = require("../../utils/middlewares/restrict.js");
+const multerNone = require('multer')().none();
 
 // Setting locals
 router.use(function(req, res, next){
@@ -13,9 +14,9 @@ router.use(function(req, res, next){
 }, restricted.toAdministrator);
 
 // Render list of all users
-router.get("/", function(req, res){
+router.get("/", function(req, res, next){
 	connect.then(function(db){
-		db.collection("_users_auth").find().toArray(function(err, users){
+		db.collection("_users_auth").find().toArray().then(function(users){
 			// Find number of registered users
 			_.each(users, function(user, i){
 				if(typeof user.models == "undefined" ||
@@ -26,14 +27,16 @@ router.get("/", function(req, res){
 				}
 			});
 			res.render("users", {users: users});
+		}).catch(function(err){
+			next(err);
 		});
 	});
 });
 
 // Render info of user with specified ID
-router.get("/:id", function(req, res){
+router.get("/:id", function(req, res, next){
 	connect.then(function(db){
-		db.collection("_users_auth").findOne({username: req.params.id}, function(err, user){
+		db.collection("_users_auth").findOne({username: req.params.id}).then(function(user){
 			// Create array to store model data
 			user.modelLinks = [];
 
@@ -53,43 +56,50 @@ router.get("/:id", function(req, res){
 			});
 
 			res.render("user", user);
+		}).catch(function(err){
+			next(err);
 		});
 	});
 });
 
 // Delete user with specified ID
-router.post("/:id", function(req, res, next){
+router.post("/:id", multerNone, function(req, res, next){
 	// HTML forms don't support DELETE action, this is a workaround
 	if(req.body._method == "delete"){
 		// Users are not allowed to delete themselves here
 		if(req.params.id !== req.session.user.username){
 			connect.then(function(db){
-
 				// Delete user entry in database, counter is maintained to not messed up model ownership
-				db.collection("_users_auth").deleteOne({username: req.params.id}, function(err){
-					if(err) throw err;
-
-					// Move ownership of existing models under the user to admin
-					// Rethink required: provide option to delete, or transfer ownership and update user model list
-					db.listCollections().toArray(function(err, result){
-						result = _.filter(result, function(el){
-							return !/^_/.test(el.name);
-						});
-
-						var modelEdits = [];
-						_.each(result, function(el){
-							modelEdits.push(db.collection(el.name)
-							  .updateMany({"_metadata.created_by": req.params.id}, {$set: {"_metadata.created_by": "admin"}}));
-						});
-
-						Promise.all(modelEdits).then(function(){
-							res.locals.message = "Success!";
-							res.redirect("/admin/users");
-						}).catch(function(err){
-							if(err) throw err;
-						});
-					});
+				return db.collection("_users_auth").deleteOne({username: req.params.id}).then(function(){
+					return Promise.resolve(db);
 				});
+			}).then(function(db){
+				// Move ownership of existing models under the user to admin
+				// Rethink required: provide option to delete, or transfer ownership and update user model list
+				return db.listCollections().toArray().then(function(result){
+					result = _.filter(result, function(el){
+						return !/^_/.test(el.name);
+					});
+
+					var modelEdits = [];
+					_.each(result, function(el){
+						modelEdits.push(db.collection(el.name)
+						.updateMany({"_metadata.created_by": req.params.id},
+						  			{
+						  			  	$set: {
+							  			  	"_metadata.created_by": "admin"
+						  			    }
+						  			})
+						);
+					});
+
+					return Promise.all(modelEdits);
+				});
+			}).then(function(){
+				res.locals.message = "Success!";
+				res.redirect("/admin/users");
+			}).catch(function(err){
+				next(err);
 			});
 		}else{
 			res.json({
@@ -103,7 +113,7 @@ router.post("/:id", function(req, res, next){
 });
 
 // Edit info of user with specified ID
-router.post("/:id", function(req, res, next){
+router.post("/:id", multerNone, function(req, res, next){
 	// Change user role
 	if(req.body.user_role){
 		connect.then(function(db){

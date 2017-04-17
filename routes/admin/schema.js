@@ -10,7 +10,7 @@ const restricted = require("../../utils/middlewares/restrict.js");
 router.use(restricted.toEditor);
 
 // Delete specified collection
-router.post("/delete/:collection", function(req, res){
+router.post("/delete/:collection", function(req, res, next){
 	connect.then(function(db){
 		// Rethink required: model list under users need to be cleaned as well
 		var deletion = [];
@@ -18,16 +18,14 @@ router.post("/delete/:collection", function(req, res){
 		deletion.push(db.collection(req.params.collection).drop());
 		deletion.push(db.collection("_counters").deleteOne({"_id": req.params.collection}));
 
-		Promise.all(deletion).then(function(err){
-			if(err) throw err;
-
+		Promise.all(deletion).then(function(){
 			res.redirect("/admin/collections");
 		}).catch(function(err){
 			// If collection doesn't exist (no model created under the collection)
 			if(err.errmsg == "ns not found") {
 				res.redirect("/admin/collections");
 			}else{
-				throw err;
+				next(err);
 			}
 		});
 	});
@@ -37,40 +35,41 @@ router.post("/delete/:collection", function(req, res){
 router.use(multerNone, parseRequest);
 
 // Create new collection
-router.post("/new", function(req, res){
+router.post("/new", function(req, res, next){
 	connect.then(function(db){
-		db.collection("_schema").find({collectionSlug: req.formData.collectionSlug}).toArray(function(err, result){
-			if(err) throw err;
+		// Find collection with duplicate slug, if found, reject the new one
+		var schemas = res.locals.schemas;
+		var result = _.filter(schemas, {collectionSlug: req.params.collectionSlug});
 
-			// Find collection with duplicate slug, if found, reject the new one
-			if(result.length > 0){
+		if(result.length > 0){
+			res.status(409);
+			res.json({
+				status: "failed",
+				message: "Collection with that name already exist."
+			});
+		}else{
+			// Insert form data as is, should be parsed perfectly beforehand
+			db.collection("_schema").insertOne(req.formData).then(function(){
 				res.json({
-					status: "failed",
-					message: "Collection with that name already exist."
+					status: "success"
 				});
-			}else{
-				// Insert form data as is, should be parsed perfectly beforehand
-				db.collection("_schema").insertOne(req.formData, function(err){
-					if(err) throw err;
-
-					res.json({
-						status: "success"
-					});
-				});
-			}
-		});
+			}).catch(function(err){
+				next(err);
+			});
+		}
 	});
 });
 
 // Edit specified collection's schema
-router.post("/edit/:collection", function(req, res){
+router.post("/edit/:collection", function(req, res, next){
 	connect.then(function(db){
-		db.collection("_schema").updateOne({collectionSlug: req.formData.collectionSlug}, req.formData, null, function(err){
-			if(err) throw err;
-
+		db.collection("_schema").updateOne({collectionSlug: req.formData.collectionSlug}, req.formData)
+		.then(function(){
 			res.json({
 				status: "success"
 			});
+		}).catch(function(err){
+			next(err);
 		});
 	});
 });

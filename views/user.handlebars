@@ -23,7 +23,7 @@
 		{{/each}}
 		</ul>
 
-		<form class="edit-role" action="/admin/users/{{username}}" method="post">
+		<form class="edit-role" action="/admin/users/{{username}}" method="post" enctype="multipart/form-data">
 			<h3 class="subtitle">Role</h3>
 			<select class="user-role" name="user_role">
 				<option value="administrator" {{#ifEquals "administrator" role}}selected{{/ifEquals}}>Administrator</option>
@@ -33,7 +33,7 @@
 			<input type="submit" name="submit" value="Edit Role">
 		</form>
 
-		<form class="delete-form" action="/admin/users/{{username}}" method="post">
+		<form class="delete-form" action="/admin/users/{{username}}" method="post" enctype="multipart/form-data">
 			<input type="hidden" name="_method" value="delete" />
 			<input class="delete-btn" type="submit" name="delete" value="Delete User">
 		</form>
