@@ -16,49 +16,49 @@ router.use(function(req, res, next){
 // Render list of all users
 router.get("/", function(req, res, next){
 	connect.then(function(db){
-		db.collection("_users_auth").find().toArray().then(function(users){
-			// Find number of registered users
-			_.each(users, function(user, i){
-				if(typeof user.models == "undefined" ||
-				   typeof user.models.length == "undefined"){
-					user.modelsCount = 0;
-				}else{
-					user.modelsCount = user.models.length;
-				}
-			});
-			res.render("users", {users: users});
-		}).catch(function(err){
-			next(err);
+		return db.collection("_users_auth").find().toArray();
+	}).then(function(users){
+		// Find number of registered users
+		_.each(users, function(user, i){
+			if(typeof user.models == "undefined" ||
+			   typeof user.models.length == "undefined"){
+				user.modelsCount = 0;
+			}else{
+				user.modelsCount = user.models.length;
+			}
 		});
+		res.render("users", {users: users});
+	}).catch(function(err){
+		next(err);
 	});
 });
 
 // Render info of user with specified ID
 router.get("/:id", function(req, res, next){
 	connect.then(function(db){
-		db.collection("_users_auth").findOne({username: req.params.id}).then(function(user){
-			// Create array to store model data
-			user.modelLinks = [];
+		return db.collection("_users_auth").findOne({username: req.params.id});
+	}).then(function(user){
+		// Create array to store model data
+		user.modelLinks = [];
 
-			_.each(user.models, function(el, i){
-				// Get collection name
-				var slug = el.replace(/^(.+?)\.(.+?)$/, "$1");
-				// Get model ID
-				var id = el.replace(/^(.+?)\.(.+?)$/, "$2");
+		_.each(user.models, function(el, i){
+			// Get collection name
+			var slug = el.replace(/^(.+?)\.(.+?)$/, "$1");
+			// Get model ID
+			var id = el.replace(/^(.+?)\.(.+?)$/, "$2");
 
-				var col = _.find(res.locals.schemas, {collectionSlug: slug}).collectionName;
+			var col = _.find(res.locals.schemas, {collectionSlug: slug}).collectionName;
 
-				user.modelLinks[i] = {
-					collectionSlug: slug,
-					collectionName: col,
-					_uid: id
-				};
-			});
-
-			res.render("user", user);
-		}).catch(function(err){
-			next(err);
+			user.modelLinks[i] = {
+				collectionSlug: slug,
+				collectionName: col,
+				_uid: id
+			};
 		});
+
+		res.render("user", user);
+	}).catch(function(err){
+		next(err);
 	});
 });
 
@@ -118,17 +118,16 @@ router.post("/:id", multerNone, function(req, res, next){
 	// Change user role
 	if(req.body.user_role){
 		connect.then(function(db){
-			db.collection("_users_auth").updateOne({username: req.params.id},
-												   {
-												   	$set:
-												   		{role: req.body.user_role}
-												   })
-			.then(function(){
-				res.locals.message = "Success!";
-				res.redirect(`/admin/users/${req.params.id}`);
-			}).catch(function(err){
-				next(err);
-			});
+			return db.collection("_users_auth").updateOne(
+				{username: req.params.id},
+				{$set:
+			   		{role: req.body.user_role}
+				});
+		}).then(function(){
+			res.locals.message = "Success!";
+			res.redirect(`/admin/users/${req.params.id}`);
+		}).catch(function(err){
+			next(err);
 		});
 	}else{
 		next();

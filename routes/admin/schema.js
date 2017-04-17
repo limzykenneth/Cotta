@@ -18,16 +18,16 @@ router.post("/delete/:collection", function(req, res, next){
 		deletion.push(db.collection(req.params.collection).drop());
 		deletion.push(db.collection("_counters").deleteOne({"_id": req.params.collection}));
 
-		Promise.all(deletion).then(function(){
+		return Promise.all(deletion);
+	}).then(function(){
+		res.redirect("/admin/collections");
+	}).catch(function(err){
+		// If collection doesn't exist (no model created under the collection)
+		if(err.errmsg == "ns not found") {
 			res.redirect("/admin/collections");
-		}).catch(function(err){
-			// If collection doesn't exist (no model created under the collection)
-			if(err.errmsg == "ns not found") {
-				res.redirect("/admin/collections");
-			}else{
-				next(err);
-			}
-		});
+		}else{
+			next(err);
+		}
 	});
 });
 
@@ -48,29 +48,30 @@ router.post("/new", function(req, res, next){
 				message: "Collection with that name already exist."
 			});
 		}else{
-			// Insert form data as is, should be parsed perfectly beforehand
-			db.collection("_schema").insertOne(req.formData).then(function(){
-				res.json({
-					status: "success"
-				});
-			}).catch(function(err){
-				next(err);
-			});
+			return Promise.resolve(db);
 		}
+	}).then(function(db){
+		// Insert form data as is, should be parsed perfectly beforehand
+		return db.collection("_schema").insertOne(req.formData);
+	}).then(function(db){
+		res.json({
+			status: "success"
+		});
+	}).catch(function(err){
+		next(err);
 	});
 });
 
 // Edit specified collection's schema
 router.post("/edit/:collection", function(req, res, next){
 	connect.then(function(db){
-		db.collection("_schema").updateOne({collectionSlug: req.formData.collectionSlug}, req.formData)
-		.then(function(){
-			res.json({
-				status: "success"
-			});
-		}).catch(function(err){
-			next(err);
+		return db.collection("_schema").updateOne({collectionSlug: req.formData.collectionSlug}, req.formData);
+	}).then(function(){
+		res.json({
+			status: "success"
 		});
+	}).catch(function(err){
+		next(err);
 	});
 });
 
