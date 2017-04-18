@@ -4,13 +4,15 @@ const _ = require("lodash");
 
 let app = express.Router();
 
-app.get("/", function(req, res){
-	res.send("<p>Welcome to the API Endpoint. Please refer to the documentation for its usage.</p>");
+app.use(function(req, res, next){
+	res.header("Access-Control-Allow-Origin", "*");
+	res.header('Access-Control-Allow-Methods', 'GET, POST, PATCH, PUT, DELETE, OPTIONS');
+	res.header('Access-Control-Allow-Headers', 'Origin, Content-Type, X-Auth-Token');
+	next();
 });
 
-app.get("*", function(req, res, next){
-	res.header("Access-Control-Allow-Origin", "*");
-	next();
+app.get("/", function(req, res){
+	res.send("<p>Welcome to the API Endpoint. Please refer to the documentation for its usage.</p>");
 });
 
 app.get("/:collection*", function(req, res, next){
