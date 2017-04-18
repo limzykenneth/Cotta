@@ -55,6 +55,7 @@ app.set("view engine", "handlebars");
 //app.use(favicon(path.join(__dirname, "static", "favicon.ico")));
 app.use(logger("dev"));
 app.use(bodyParser.json());
+// app.use(bodyParser.text());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 // Mount root to /public where front end lives
