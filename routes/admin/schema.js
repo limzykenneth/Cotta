@@ -33,7 +33,7 @@ router.post("/delete/:collection", function(req, res, next){
 });
 
 // Pasrse incoming data for following routes
-router.use(multerNone, parseRequest);
+router.use(multerNone, validateIncoming, parseRequest);
 
 // Create new collection
 router.post("/new", function(req, res, next){
@@ -79,12 +79,21 @@ router.post("/edit/:collection", function(req, res, next){
 module.exports = router;
 
 // Utils
-function validateIncoming(string){
+function validateIncoming(req, res, next){
 	let regexp = /^[a-zA-Z0-9-_ ]+$/;
-	if (string.search(regexp) == -1 || string.substr(0, 1) == "_"){
-		return false;
+	let reservedWords = /^new|edit$/;
+	if (req.body["collection-name"].search(regexp) == -1 || req.body["collection-name"].substr(0, 1) == "_"){
+		res.json({
+			status: "failed",
+			message: "Collection names should start with alphanumeric characters and contain only alphanumeric characters, underscores and spaces."
+		});
+	}else if(reservedWords.test(req.body["collection-name"])){
+		res.json({
+			status: "failed",
+			message: "\"new\" and \"edit\" are reserved words for collection names."
+		});
 	}else{
-		return true;
+		next();
 	}
 }
 
@@ -93,15 +102,6 @@ function validateIncoming(string){
 function parseRequest(req, res, next){
 	let data = {};
 	data.collectionName = req.body["collection-name"];
-
-	if(!validateIncoming(data.collectionName)){
-		res.json({
-			status: "failed",
-			message: "Collection names should start with alphanumeric characters and contain only alphanumeric characters, underscores and spaces."
-		});
-		return;
-	}
-
 	data.collectionSlug = data.collectionName.toLowerCase().replace(" ", "_");
 	data.exposeToAPI = req.body["expose-to-api"] ? true : false;
 
