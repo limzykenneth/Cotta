@@ -4,6 +4,7 @@ const socketIO = require("socket.io");
 const path = require("path");
 const favicon = require("serve-favicon");
 const logger = require("morgan");
+const charLogger = require("./utils/charLogger.js");
 const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
 const _ = require("lodash");
@@ -95,7 +96,7 @@ app.use(function(err, req, res, next) {
 	// set locals, only providing error in development
 	res.locals.message = err.message;
 	res.locals.error = req.app.get("env") === "development" ? err : {};
-	console.log(res.locals.error);
+	charLogger.error(err);
 
 	// render the error page
 	res.status(err.status || 500);

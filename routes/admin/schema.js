@@ -5,6 +5,7 @@ const path = require("path");
 const multerNone = require('multer')().none();
 const connect = require("../../utils/database.js");
 const restricted = require("../../utils/middlewares/restrict.js");
+const charLogger = require("../../utils/charLogger.js");
 
 // Schema edits are allowed for editors and administrators only
 router.use(restricted.toEditor);
@@ -163,8 +164,5 @@ function parseRequest(req, res, next){
 	next();
 
 	// For debugging
-	// console.log(JSON.stringify(data));
-	// res.json({
-	// 	status: "success"
-	// });
+	charLogger.debug(JSON.stringify(data));
 }
