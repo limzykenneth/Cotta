@@ -81,7 +81,7 @@ module.exports = router;
 // Utils
 function validateIncoming(req, res, next){
 	let regexp = /^[a-zA-Z0-9-_ ]+$/;
-	let reservedWords = /^new|edit$/;
+	let reservedWords = /^new|edit|delete$/;
 	if (req.body["collection-name"].search(regexp) == -1 || req.body["collection-name"].substr(0, 1) == "_"){
 		res.json({
 			status: "failed",
@@ -90,7 +90,7 @@ function validateIncoming(req, res, next){
 	}else if(reservedWords.test(req.body["collection-name"])){
 		res.json({
 			status: "failed",
-			message: "\"new\" and \"edit\" are reserved words for collection names."
+			message: "\"new\", \"delete\" and \"edit\" are reserved words for collection names."
 		});
 	}else{
 		next();
