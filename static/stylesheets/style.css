@@ -64,7 +64,6 @@ input[type="button"],
 input[type="reset"],
 .button {
   background: #235076;
-  background-image: -webkit-linear-gradient(top, #235076, #17354f);
   background-image: linear-gradient(to bottom, #235076, #17354f);
   border-radius: 3px;
   color: #ffffff;
@@ -78,7 +77,6 @@ input[type="button"]:hover,
 input[type="reset"]:hover,
 .button:hover {
   background: #295d8a;
-  background-image: -webkit-linear-gradient(top, #2f6b9d, #1d4362);
   background-image: linear-gradient(to bottom, #2f6b9d, #1d4362);
 }
 button:active,
@@ -87,7 +85,6 @@ input[type="button"]:active,
 input[type="reset"]:active,
 .button:active {
   background: #17354f;
-  background-image: -webkit-linear-gradient(top, #17354f, #0c1b27);
   background-image: linear-gradient(to bottom, #17354f, #0c1b27);
 }
 button.delete-btn,
@@ -96,7 +93,6 @@ input[type="button"].delete-btn,
 input[type="reset"].delete-btn,
 .button.delete-btn {
   background: #f00;
-  background-image: -webkit-linear-gradient(top, #f00, #cc0000);
   background-image: linear-gradient(to bottom, #f00, #cc0000);
 }
 button.delete-btn:hover,
@@ -105,7 +101,6 @@ input[type="button"].delete-btn:hover,
 input[type="reset"].delete-btn:hover,
 .button.delete-btn:hover {
   background: #ff1a1a;
-  background-image: -webkit-linear-gradient(top, #ff3333, #e60000);
   background-image: linear-gradient(to bottom, #ff3333, #e60000);
 }
 button.delete-btn:active,
@@ -114,7 +109,6 @@ input[type="button"].delete-btn:active,
 input[type="reset"].delete-btn:active,
 .button.delete-btn:active {
   background: #cc0000;
-  background-image: -webkit-linear-gradient(top, #cc0000, #990000);
   background-image: linear-gradient(to bottom, #cc0000, #990000);
 }
 a.button {
@@ -434,7 +428,6 @@ a.button {
   width: calc(80% - 4rem);
   background-color: #deffd9;
   opacity: 1;
-  -webkit-transition: all 0.5s ease;
   transition: all 0.5s ease;
 }
 .message-box.hide {

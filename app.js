@@ -10,9 +10,10 @@ const bodyParser = require("body-parser");
 const _ = require("lodash");
 const exphbs  = require('express-handlebars');
 
+// let auth = require("./routes2/auth.js");
 let index = require("./routes/index");
 let admin = require("./routes/admin");
-let api = require("./routes/api");
+let api = require("./routes2/api/index.js");
 
 // Express
 let app = express();
@@ -56,22 +57,23 @@ app.set("view engine", "handlebars");
 //app.use(favicon(path.join(__dirname, "static", "favicon.ico")));
 app.use(logger("dev"));
 app.use(bodyParser.json());
-// app.use(bodyParser.text());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
-// Mount root to /public where front end lives
-app.use(express.static(path.join(__dirname, "public")));
 
-// Mount /static where backend static assets lives
-app.use("/static", express.static(path.join(__dirname, "static")));
-// Mount /uploads where uploaded images goes
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+// Mount root to /public where custom front end lives
+app.use(express.static(path.join(__dirname, "public")));
 
 // Set site root URL for convenience (should really use this more)
 app.use(function(req, res, next){
 	res.locals.rootURL = `${req.protocol}://${req.get("host")}/`;
 	next();
 });
+
+// WARN ----- Assets authentication should be considered
+// Mount /static where backend static assets lives
+app.use("/static", express.static(path.join(__dirname, "static")));
+// Mount /uploads where uploaded images goes
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Mount dynamic routes
 app.use("/api", api);
@@ -83,6 +85,12 @@ if(process.env.NODE_ENV !== "development"){
 }else{
 	app.use("/", index);
 }
+
+
+
+////////////
+// Errors //
+////////////
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
