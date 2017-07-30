@@ -29,24 +29,28 @@ router.get("/:schema", function(req, res){
 
 // POST routes
 // POST specified schema (add new and edit)
-router.post("/:schema", function(req, res){
+router.post("/", function(req, res){
 	connect.then(function(db){
 		// Find collection with duplicate slug, if found, edit it
-		var schemas = db.collection("_schema").find().toArray();
-		var result = _.filter(schemas, {collectionSlug: req.params.collectionSlug});
+		return db.collection("_schema").find().toArray().then(function(schemas){
+			var result = _.filter(schemas, {collectionSlug: req.body.collectionSlug});
 
-		if(result.length > 0){
-			// Edit schema
-			return db.collection("_schema").updateOne({collectionSlug: req.params.schema}, req.body);
-		}else{
-			// Create new schema
-			return db.collection("_schema").insertOne(req.body);
-		}
-	}).then(function(db){
-		res.json({
-			status: "success",
-			message: "Schema update successful."
+			if(result.length > 0){
+				// Edit schema
+				return db.collection("_schema").updateOne({collectionSlug: req.params.schema}, req.body).then(function(data){
+					return Promise.resolve(db);
+				});
+			}else{
+				// Create new schema
+				return db.collection("_schema").insertOne(req.body).then(function(data){
+					return Promise.resolve(db);
+				});
+			}
 		});
+	}).then(function(db){
+		return db.collection("_schema").findOne({collectionSlug: req.body.collectionSlug});
+	}).then(function(data){
+		res.json(data);
 	});
 });
 
