@@ -12,10 +12,14 @@ const connect = require("../../utils/database.js");
 // Everything else should be restricted
 // GET all users
 router.get("/", function(req, res){
-	// ALERT: Don't expose the hash!! ------------------------------------------------------------
 	connect.then(function(db){
 		return db.collection("_users_auth").find().toArray();
 	}).then(function(data){
+		// Remove internal ID and password hash, maybe split the db later
+		_.each(data, function(el, i){
+			delete el._id;
+			delete el.hash;
+		});
 		res.json(data);
 	});
 });
@@ -25,6 +29,9 @@ router.get("/:username", function(req, res){
 	connect.then(function(db){
 		return db.collection("_users_auth").findOne({username: req.params.username});
 	}).then(function(data){
+		// Remove internal ID and password hash, maybe split the db later
+		delete data._id;
+		delete data.hash;
 		res.json(data);
 	});
 });
