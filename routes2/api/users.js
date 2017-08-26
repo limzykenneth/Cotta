@@ -2,6 +2,7 @@ const _ = require("lodash");
 const express = require("express");
 const router = express.Router();
 const connect = require("../../utils/database.js");
+const auth = require("../../utils/auth.js");
 
 // Route: {root}/api/users/...
 
@@ -39,25 +40,38 @@ router.get("/:username", function(req, res){
 
 // POST routes
 // POST to create a new user
-router.post("/", function(req, res){
-	res.json({
-		message: "Implementation pending"
+router.post("/", function(req, res, next){
+	var data = req.body;
+	auth.signup(data.username, data.password, function(err, result){
+		if(err) next(err);
+
+		res.json(result);
 	});
 });
 
 // POST to a user (edit existing user)
-router.post("/:username", function(){
-	res.json({
-		message: "Implementation pending"
+router.post("/:username", function(req, res, next){
+	auth.authenticate(req.params.username, req.body.currentPassword, function(err, user){
+		if(err) next(err);
+
+		auth.changePassword(req.params.username, req.body.newPassword, function(err, user){
+			res.json({
+				message: `User ${req.params.username}'s password changed`
+			});
+		});
 	});
 });
 
 
 // DELETE routes
 // DELETE specific user
-router.post("/:username", function(){
-	res.json({
-		message: "Implementation pending"
+router.delete("/:username", function(req, res){
+	connect.then(function(db){
+		return db.collection("_users_auth").deleteOne({"username": req.params.username});
+	}).then(function(){
+		res.json({
+			message: `User ${req.params.username} deleted`
+		});
 	});
 });
 
