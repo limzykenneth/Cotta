@@ -12,6 +12,7 @@ const connect = require("../../utils/database.js");
 // Everything else should be restricted
 // GET all users
 router.get("/", function(req, res){
+	// ALERT: Don't expose the hash!! ------------------------------------------------------------
 	connect.then(function(db){
 		return db.collection("_users_auth").find().toArray();
 	}).then(function(data){
