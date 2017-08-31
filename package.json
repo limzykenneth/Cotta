@@ -17,6 +17,7 @@
     "express-handlebars": "^3.0.0",
     "express-session": "^1.15.1",
     "jade": "~1.11.0",
+    "jsonwebtoken": "^7.4.3",
     "lodash": "^4.17.4",
     "moment": "^2.18.1",
     "mongodb": "^2.2.24",

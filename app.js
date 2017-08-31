@@ -56,6 +56,14 @@ app.set("view engine", "handlebars");
 // uncomment after placing your favicon in /static
 //app.use(favicon(path.join(__dirname, "static", "favicon.ico")));
 app.use(logger("dev"));
+
+// Parsers
+app.use(function(req, res, next){
+	if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
+        req.token = req.headers.authorization.split(' ')[1];
+    }
+    next();
+});
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
