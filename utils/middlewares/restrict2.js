@@ -56,4 +56,5 @@ restrict.toAuthor = function(req, res, next){
 	}
 };
 
+
 module.exports = restrict;

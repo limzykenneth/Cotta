@@ -24,6 +24,9 @@ router.use("/users", users);
 // Mount collections related routes
 router.use("/collections", collections);
 
+// Mount account related routes
+router.use("/account", collections);
+
 // Default
 router.use("/", function(req, res){
 	res.json({

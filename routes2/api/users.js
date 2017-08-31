@@ -55,17 +55,15 @@ router.post("/", restrict.toAdministrator, function(req, res, next){
 });
 
 // POST to a user (edit existing user)
-router.post("/:username", restrict.toAdministrator, function(req, res, next){
-	auth.authenticate(req.params.username, req.body.currentPassword, function(err, user){
-		if(err) next(err);
+// router.post("/:username", restrict.toAdministrator, function(req, res, next){
+// 	auth.changePassword(req.params.username, req.body.password, req.body.newPassword, function(err, user){
+// 		if(err) next(err);
 
-		auth.changePassword(req.params.username, req.body.newPassword, function(err, user){
-			res.json({
-				message: `User ${req.params.username}'s password changed`
-			});
-		});
-	});
-});
+// 		res.json({
+// 			message: `User ${req.params.username}'s password changed`
+// 		});
+// 	});
+// });
 
 
 // DELETE routes
