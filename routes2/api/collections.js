@@ -6,6 +6,7 @@ const connect = require("../../utils/database.js");
 const Promise = require("bluebird");
 const autoIncrement = require("mongodb-autoincrement");
 Promise.promisifyAll(autoIncrement);
+const restrict = require("../../utils/middlewares/restrict2.js");
 
 // Route: {root}/api/collections/...
 
@@ -32,7 +33,7 @@ router.get("/:collectionSlug/:modelID", function(req, res){
 // POST routes
 // POST to specific collection (create new model)
 // Insert as is into database, just adding metadata and uid
-router.post("/:collectionSlug", function(req, res){
+router.post("/:collectionSlug", restrict.toAuthor, function(req, res){
 	// Check schema
 	connect.then(function(db){
 		return db.collection("_schema").findOne({"collectionSlug": req.params.collectionSlug})
@@ -91,7 +92,7 @@ router.post("/:collectionSlug", function(req, res){
 });
 
 // POST to specific model in a collection (edit existing model)
-router.post("/:collectionSlug/:modelID", function(req, res){
+router.post("/:collectionSlug/:modelID", restrict.toAuthor, function(req, res){
 	let data = req.body;
 
 	connect.then(function(db){
@@ -152,7 +153,7 @@ router.post("/:collectionSlug/:modelID", function(req, res){
 
 // DELETE routes
 // DELETE all models in a collection
-router.delete("/:collectionSlug", function(req, res){
+router.delete("/:collectionSlug", restrict.toAuthor, function(req, res){
 	// connect.then(function(db){
 	// 	return db.collection(req.params.collectionSlug).deleteMany({});
 	// }).then(function(){
@@ -168,7 +169,7 @@ router.delete("/:collectionSlug", function(req, res){
 });
 
 // DELETE specific model in a collection
-router.delete("/:collectionSlug/:modelID", function(req, res){
+router.delete("/:collectionSlug/:modelID", restrict.toAuthor, function(req, res){
 	var data;
 	connect.then(function(db){
 		return db.collection(req.params.collectionSlug).findOne({"_uid": parseInt(req.params.modelID)}).then(function(model){

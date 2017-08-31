@@ -9,8 +9,11 @@ const users = require("./users.js");
 const collections = require("./collections.js");
 const tokens = require("./tokens.js");
 
+// Mount Token routes
+router.use("/tokens", tokens);
+
 // Authenticate all routes (auth.js determine if it's requried or not)
-// router.use(auth);
+router.use(auth);
 
 // Mount schema related routes
 router.use("/schema", schema);
@@ -20,9 +23,6 @@ router.use("/users", users);
 
 // Mount collections related routes
 router.use("/collections", collections);
-
-// Mount Token routes
-router.use("/tokens", tokens);
 
 // Default
 router.use("/", function(req, res){

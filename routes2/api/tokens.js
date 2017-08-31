@@ -35,6 +35,10 @@ router.post("/generate_new_token", function(req, res, next){
 	});
 });
 
+// router.post("/generate_anonymous_token", function(req, res, nex){
+
+// });
+
 router.use("/", function(req, res){
 	res.json({
 		message: "Invalid route"

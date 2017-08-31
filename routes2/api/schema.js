@@ -2,12 +2,13 @@ const _ = require("lodash");
 const express = require("express");
 const router = express.Router();
 const connect = require("../../utils/database.js");
+const restrict = require("../../utils/middlewares/restrict2.js");
 
 // Route: {root}/api/schema/...
 
 // GET routes
 // GET all schemas
-router.get("/", function(req, res){
+router.get("/", restrict.toEditor, function(req, res){
 	// Better to cache it somehow maybe
 	// res.json(res.local.schemas);
 
@@ -19,7 +20,7 @@ router.get("/", function(req, res){
 });
 
 // GET specified schema
-router.get("/:schema", function(req, res){
+router.get("/:schema", restrict.toEditor, function(req, res){
 	connect.then(function(db){
 		return db.collection("_schema").findOne({collectionSlug: req.params.schema});
 	}).then(function(schema){
@@ -29,7 +30,7 @@ router.get("/:schema", function(req, res){
 
 // POST routes
 // POST specified schema (add new and edit)
-router.post("/", function(req, res){
+router.post("/", restrict.toEditor, function(req, res){
 	connect.then(function(db){
 		// Find collection with duplicate slug, if found, edit it
 		return db.collection("_schema").find().toArray().then(function(schemas){
@@ -56,7 +57,7 @@ router.post("/", function(req, res){
 
 // DELETE routes
 // DELETE specified schema (and all posts in it)
-router.delete("/:schema", function(req, res){
+router.delete("/:schema", restrict.toEditor, function(req, res){
 	connect.then(function(db){
 		return db.collection("_schema").deleteOne({collectionSlug: req.params.schema});
 	}).then(function(db){

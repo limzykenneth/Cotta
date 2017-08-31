@@ -3,6 +3,7 @@ const express = require("express");
 const router = express.Router();
 const connect = require("../../utils/database.js");
 const auth = require("../../utils/auth.js");
+const restrict = require("../../utils/middlewares/restrict2.js");
 
 // Route: {root}/api/users/...
 
@@ -12,7 +13,7 @@ const auth = require("../../utils/auth.js");
 
 // Everything else should be restricted
 // GET all users
-router.get("/", function(req, res){
+router.get("/", restrict.toAdministrator, function(req, res){
 	connect.then(function(db){
 		return db.collection("_users_auth").find().toArray();
 	}).then(function(data){
@@ -26,7 +27,7 @@ router.get("/", function(req, res){
 });
 
 // GET specific user
-router.get("/:username", function(req, res){
+router.get("/:username", restrict.toAdministrator, function(req, res){
 	connect.then(function(db){
 		return db.collection("_users_auth").findOne({username: req.params.username});
 	}).then(function(data){
@@ -40,7 +41,11 @@ router.get("/:username", function(req, res){
 
 // POST routes
 // POST to create a new user
-router.post("/", function(req, res, next){
+router.post("/", restrict.toAdministrator, function(req, res, next){
+	if(req.body.username == "Anonymous"){
+		next(new Error("Cannot register as " + req.body.username));
+	}
+
 	var data = req.body;
 	auth.signup(data.username, data.password, function(err, result){
 		if(err) next(err);
@@ -50,7 +55,7 @@ router.post("/", function(req, res, next){
 });
 
 // POST to a user (edit existing user)
-router.post("/:username", function(req, res, next){
+router.post("/:username", restrict.toAdministrator, function(req, res, next){
 	auth.authenticate(req.params.username, req.body.currentPassword, function(err, user){
 		if(err) next(err);
 
@@ -65,7 +70,7 @@ router.post("/:username", function(req, res, next){
 
 // DELETE routes
 // DELETE specific user
-router.delete("/:username", function(req, res){
+router.delete("/:username", restrict.toAdministrator, function(req, res){
 	connect.then(function(db){
 		return db.collection("_users_auth").deleteOne({"username": req.params.username});
 	}).then(function(){
