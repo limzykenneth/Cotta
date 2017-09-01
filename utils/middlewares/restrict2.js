@@ -18,7 +18,6 @@ var restrict = function(req, res, next){
 
 // Restrict route to administrators only
 restrict.toAdministrator = function(req, res, next){
-	console.log(req.user);
 	if(req.user.role == "administrator"){
 		next();
 	}else{

@@ -67,10 +67,17 @@ router.post("/:collectionSlug", restrict.toAuthor, function(req, res){
 
 		// Create metadata
 		data._metadata = {
-			created_by: "admin",
+			created_by: req.user.username,
 			date_created: moment.utc().format(),
 			date_modified: moment.utc().format()
 		};
+
+		// Update user schema
+		db.collection("_users_auth").updateOne({"username": req.user.username}, {
+			$addToSet:{
+				models: `${req.params.collectionSlug}.${data._uid}`
+			}
+		});
 
 		// Set increment index (should be abstracted if RDBS is to be used)
 		autoIncrement.setDefaults({collection: "_counters"});
@@ -93,16 +100,23 @@ router.post("/:collectionSlug", restrict.toAuthor, function(req, res){
 
 // POST to specific model in a collection (edit existing model)
 router.post("/:collectionSlug/:modelID", restrict.toAuthor, function(req, res){
+	let promises = [connect];
+	if(req.user.role != "administrator" && req.user.role != "editor"){
+		promises.push(ownModel(req.user.username, req.params.collectionSlug, req.params.modelID));
+	}
+
 	let data = req.body;
 
-	connect.then(function(db){
-		return db.collection("_schema").findOne({"collectionSlug": req.params.collectionSlug}).then(function(model){
+	Promise.all(promises).then(function(val){
+		db = val[0];
+
+		return db.collection("_schema").findOne({"collectionSlug": req.params.collectionSlug}).then(function(schema){
 			// Validate with schema
-			var fields = model.fields;
+			var fields = schema.fields;
 			var slugs = fields.map(function(el){
 				return el.slug;
 			});
-			var fieldsLength = model.fields.length;
+			var fieldsLength = fields.length;
 			var valid = true;
 
 			_.each(req.body, function(el, key){
@@ -170,8 +184,15 @@ router.delete("/:collectionSlug", restrict.toAuthor, function(req, res){
 
 // DELETE specific model in a collection
 router.delete("/:collectionSlug/:modelID", restrict.toAuthor, function(req, res){
+	let promises = [connect];
+	if(req.user.role != "administrator" && req.user.role != "editor"){
+		promises.push(ownModel(req.user.username, req.params.collectionSlug, req.params.modelID));
+	}
+
 	var data;
-	connect.then(function(db){
+	Promise.all(promises).then(function(val){
+		db = val[0];
+
 		return db.collection(req.params.collectionSlug).findOne({"_uid": parseInt(req.params.modelID)}).then(function(model){
 			data = model;
 			return Promise.resolve(db);
@@ -192,3 +213,17 @@ router.use("/", function(req, res){
 });
 
 module.exports = router;
+
+
+// Utils
+function ownModel(username, collectionSlug, modelID){
+	return connect.then(function(db){
+		return db.collection("_users_auth").findOne({"username": username});
+	}).then(function(user){
+		if(_.includes(user.models, `${collectionSlug}.${modelID}`)){
+			return Promise.resolve();
+		}else{
+			return Promise.reject();
+		}
+	});
+}
