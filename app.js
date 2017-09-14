@@ -9,9 +9,8 @@ const bodyParser = require("body-parser");
 const _ = require("lodash");
 const exphbs  = require('express-handlebars');
 
-// let auth = require("./routes2/auth.js");
 let index = require("./routes/index");
-let admin = require("./routes/admin");
+// let admin = require("./routes/admin");
 let api = require("./routes2/api/index.js");
 
 // Express
@@ -84,7 +83,7 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Mount dynamic routes
 app.use("/api", api);
-app.use("/admin", admin);
+// app.use("/admin", admin);
 
 // Why again???
 if(process.env.NODE_ENV !== "development"){
