@@ -2,7 +2,7 @@ const _ = require("lodash");
 const express = require("express");
 const router = express.Router();
 const connect = require("../../utils/database.js");
-const restrict = require("../../utils/middlewares/restrict2.js");
+const restrict = require("../../utils/middlewares/restrict.js");
 
 // Route: {root}/api/schema/...
 

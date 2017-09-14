@@ -3,7 +3,7 @@ const express = require("express");
 const router = express.Router();
 const connect = require("../../utils/database.js");
 const auth = require("../../utils/auth.js");
-const restrict = require("../../utils/middlewares/restrict2.js");
+const restrict = require("../../utils/middlewares/restrict.js");
 const CharError = require("../../utils/charError.js");
 
 // Route: {root}/api/users/...

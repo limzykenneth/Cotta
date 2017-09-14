@@ -6,7 +6,7 @@ const connect = require("../../utils/database.js");
 const Promise = require("bluebird");
 const autoIncrement = require("mongodb-autoincrement");
 Promise.promisifyAll(autoIncrement);
-const restrict = require("../../utils/middlewares/restrict2.js");
+const restrict = require("../../utils/middlewares/restrict.js");
 const CharError = require("../../utils/charError.js");
 
 // Route: {root}/api/collections/...
