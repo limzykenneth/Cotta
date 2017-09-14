@@ -6,6 +6,7 @@ const connect = require("../../utils/database.js");
 const restrict = require("../../utils/middlewares/restrict.js");
 const auth = require("../../utils/auth.js");
 const jwt = require('jsonwebtoken');
+const CharError = require("../../utils/charError.js");
 const Promise = require("bluebird");
 Promise.promisifyAll(jwt);
 require('dotenv').config();
@@ -33,11 +34,7 @@ router.use(function(req, res, next){
 		};
 		next();
 	}).catch(function(err){
-		res.status(403);
-		res.json({
-			status: "error",
-			message: err.message
-		});
+		next(new CharError("Auth Token Invalid", err.message, 403));
 	});
 });
 

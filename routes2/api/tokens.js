@@ -15,7 +15,18 @@ const secret = "secret_key_PLEASE_CHANGE";
 router.post("/generate_new_token", function(req, res, next){
 	// First, authenticate username and password pair
 	auth.authenticate(req.body.username, req.body.password, function(err){
-		if(err) next(err);
+		if(err) {
+			let error = new CharError();
+
+			if(err.message == "invalid password"){
+				error.title = "Authentication Failed";
+				error.message = "Username or password provided is incorrect";
+				error.status = 401;
+			}
+
+			next(error);
+			return;
+		}
 
 		// User sucessfully authenticated
 		// Next retrieve user info from database

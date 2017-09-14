@@ -4,6 +4,7 @@ const router = express.Router();
 const connect = require("../../utils/database.js");
 const auth = require("../../utils/auth.js");
 const restrict = require("../../utils/middlewares/restrict2.js");
+const CharError = require("../../utils/charError.js");
 
 // Route: {root}/api/users/...
 
@@ -42,13 +43,23 @@ router.get("/:username", restrict.toAdministrator, function(req, res){
 // POST routes
 // POST to create a new user
 router.post("/", restrict.toAdministrator, function(req, res, next){
-	if(req.body.username == "Anonymous"){
-		next(new Error("Cannot register as " + req.body.username));
+	let reservedUsernames = ["Anonymous", "anonymous"];
+	if(_.includes(reservedUsernames, req.body.username)){
+		next(new CharError("Username not available", `${req.body.username} is a reserved username and cannot be registered`));
+		return;
 	}
 
 	var data = req.body;
 	auth.signup(data.username, data.password, function(err, result){
-		if(err) next(err);
+		if(err) {
+			if(err.name == "MongoError" && err.code == 11000){
+				// Duplicate username
+				next(new CharError("Username not available", `Username ${req.body.username} is already registered`))
+			}else{
+				next(new CharError());
+			}
+			return;
+		}
 
 		res.json(result);
 	});

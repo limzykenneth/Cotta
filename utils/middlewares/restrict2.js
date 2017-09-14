@@ -2,17 +2,16 @@ const express = require("express");
 const session = require("express-session");
 const path = require("path");
 const connect = require("../database.js");
+const CharError = require("../charError.js");
 
 // Middleware to make sure user is logged in
 var restrict = function(req, res, next){
 	if (req.user) {
 		next();
 	} else {
-		res.status(403);
-		res.json({
-			status: "error",
-			message: "jwt must be provided"
-		});
+		let err = new CharError("Missing Auth Token", "Auth Token must be provided");
+		err.status = 403;
+		next(err);
 	}
 };
 
@@ -21,11 +20,9 @@ restrict.toAdministrator = function(req, res, next){
 	if(req.user.role == "administrator"){
 		next();
 	}else{
-		res.status(403);
-		res.json({
-			status: "error",
-			message: "User not allowed this resource"
-		});
+		let err = new CharError("Forbidden", "User not allowed this resource");
+		err.status = 403;
+		next(err);
 	}
 };
 
@@ -34,11 +31,9 @@ restrict.toEditor = function(req, res, next){
 	if(req.user.role == "administrator" || req.user.role == "editor"){
 		next();
 	}else{
-		res.status(403);
-		res.json({
-			status: "error",
-			message: "User not allowed this resource"
-		});
+		let err = new CharError("Forbidden", "User not allowed this resource");
+		err.status = 403;
+		next(err);
 	}
 };
 
@@ -47,11 +42,9 @@ restrict.toAuthor = function(req, res, next){
 	if(req.user.role == "administrator" || req.user.role == "editor" || req.user.role == "author"){
 		next();
 	}else{
-		res.status(403);
-		res.json({
-			status: "error",
-			message: "User not allowed this resource"
-		});
+		let err = new CharError("Forbidden", "User not allowed this resource");
+		err.status = 403;
+		next(err);
 	}
 };
 

@@ -7,6 +7,7 @@ const Promise = require("bluebird");
 const autoIncrement = require("mongodb-autoincrement");
 Promise.promisifyAll(autoIncrement);
 const restrict = require("../../utils/middlewares/restrict2.js");
+const CharError = require("../../utils/charError.js");
 
 // Route: {root}/api/collections/...
 
@@ -33,7 +34,7 @@ router.get("/:collectionSlug/:modelID", function(req, res){
 // POST routes
 // POST to specific collection (create new model)
 // Insert as is into database, just adding metadata and uid
-router.post("/:collectionSlug", restrict.toAuthor, function(req, res){
+router.post("/:collectionSlug", restrict.toAuthor, function(req, res, next){
 	// Check schema
 	connect.then(function(db){
 		return db.collection("_schema").findOne({"collectionSlug": req.params.collectionSlug})
@@ -55,10 +56,7 @@ router.post("/:collectionSlug", restrict.toAuthor, function(req, res){
 				// Schema matched
 				return Promise.resolve(db);
 			}else{
-				res.status(400);
-				res.json({
-					"message": "Invalid Schema"
-				});
+				return Promise.reject(new CharError("Invalid Schema", `The provided fields does not match schema entry of ${req.params.collectionSlug} in the database`, 400));
 			}
 		});
 
@@ -95,11 +93,13 @@ router.post("/:collectionSlug", restrict.toAuthor, function(req, res){
 	}).then(function(data){
 		// Data insertion successful
 		res.json(data);
+	}).catch(function(err){
+		next(err);
 	});
 });
 
 // POST to specific model in a collection (edit existing model)
-router.post("/:collectionSlug/:modelID", restrict.toAuthor, function(req, res){
+router.post("/:collectionSlug/:modelID", restrict.toAuthor, function(req, res, next){
 	let promises = [connect];
 	if(req.user.role != "administrator" && req.user.role != "editor"){
 		promises.push(ownModel(req.user.username, req.params.collectionSlug, req.params.modelID));
@@ -133,7 +133,7 @@ router.post("/:collectionSlug/:modelID", restrict.toAuthor, function(req, res){
 			if(valid){
 				return Promise.resolve(db);
 			}else{
-				return Promise.reject(new Error("Invalid Schema"));
+				return Promise.reject(new CharError("Invalid Schema", `The provided fields does not match schema entry of ${req.params.collectionSlug} in the database`), 400);
 			}
 		});
 
@@ -143,7 +143,7 @@ router.post("/:collectionSlug/:modelID", restrict.toAuthor, function(req, res){
 		return db.collection(req.params.collectionSlug).findOne({"_uid": parseInt(req.params.modelID)}).then(function(model){
 			if(model == null){
 				res.json(model);
-				return Promise.reject(new Error("Model not found"));
+				return Promise.reject(new CharError("Model not found", `Cannot edit model with ID: ${req.prarams.modelID}, model does not exist in the collection ${req.params.collectionSlug}`, 404));
 			}
 			data._metadata = model._metadata;
 			data._metadata.date_modified = moment.utc().format();
@@ -160,7 +160,7 @@ router.post("/:collectionSlug/:modelID", restrict.toAuthor, function(req, res){
 			res.json(model);
 		});
 	}).catch(function(err){
-
+		next(err);
 	});
 });
 
@@ -201,6 +201,8 @@ router.delete("/:collectionSlug/:modelID", restrict.toAuthor, function(req, res)
 		return db.collection(req.params.collectionSlug).deleteOne({"_uid": parseInt(req.params.modelID)});
 	}).then(function(){
 		res.json(data);
+	}).catch(function(err){
+		next(err);
 	});
 });
 
@@ -223,7 +225,7 @@ function ownModel(username, collectionSlug, modelID){
 		if(_.includes(user.models, `${collectionSlug}.${modelID}`)){
 			return Promise.resolve();
 		}else{
-			return Promise.reject();
+			return Promise.reject(new CharError("Forbidden", "User not allowed to modify this resource", 403));
 		}
 	});
 }

@@ -4,7 +4,6 @@ const socketIO = require("socket.io");
 const path = require("path");
 const favicon = require("serve-favicon");
 const logger = require("morgan");
-const charLogger = require("./utils/charLogger.js");
 const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
 const _ = require("lodash");
@@ -107,16 +106,26 @@ app.use(function(req, res, next) {
 	next(err);
 });
 
+
+// Errors should be thrown only if the problem is unrecoverable,
+// if recoverable, it should be caught and dealt with
+
 // error handler
 app.use(function(err, req, res, next) {
 	// set locals, only providing error in development
 	res.locals.message = err.message;
 	res.locals.error = req.app.get("env") === "development" ? err : {};
-	charLogger.error(err);
 
 	// render the error page
 	res.status(err.status || 500);
-	res.render("error");
+	res.json({
+		"errors": [
+			{
+				"title": err.title,
+				"detail": err.message
+			}
+		]
+	});
 });
 
 module.exports = app;
