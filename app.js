@@ -7,14 +7,12 @@ const logger = require("morgan");
 const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
 const _ = require("lodash");
-const exphbs  = require('express-handlebars');
 
 const errors = require("./errors.js");
 const views = require("./views.js");
 
 const index = require("./routes/index");
-// let admin = require("./routes/admin");
-const api = require("./routes2/api/index.js");
+const api = require("./routes/api/index.js");
 
 // Express
 let app = express();
@@ -54,7 +52,6 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Mount dynamic routes
 app.use("/api", api);
-// app.use("/admin", admin);
 
 // Why again???
 if(process.env.NODE_ENV !== "development"){
