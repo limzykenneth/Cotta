@@ -11,7 +11,7 @@ const Promise = require("bluebird");
 Promise.promisifyAll(jwt);
 require('dotenv').config();
 
-const secret = "secret_key_PLEASE_CHANGE";
+const secret = process.env.JWT_SECRET;
 
 // Catch all for authentication (temporary)
 router.use(function(req, res, next){
