@@ -21,9 +21,6 @@ let app = express();
 let io = socketIO();
 app.io = io;
 
-// Backend views
-app.use(views);
-
 app.use(logger("dev"));
 
 // Parsers
@@ -40,18 +37,15 @@ app.use(cookieParser());
 // Mount root to /public where custom front end lives
 app.use(express.static(path.join(__dirname, "public")));
 
-// Set site root URL for convenience (should really use this more)
-app.use(function(req, res, next){
-	res.locals.rootURL = `${req.protocol}://${req.get("host")}/`;
-	next();
-});
-
 // WARN ----- Assets authentication should be considered
 // Mount /uploads where uploaded images goes
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Mount dynamic routes
 app.use("/api", api);
+
+// Backend views
+app.use(views);
 
 // Why again???
 if(process.env.NODE_ENV !== "development"){
