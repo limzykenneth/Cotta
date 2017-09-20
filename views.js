@@ -11,26 +11,26 @@ app.engine("handlebars", exphbs({
 	defaultLayout: "main",
 	helpers:{
 		ifEquals: function(a, b, opts){
-        	if(a == b){
-		        return opts.fn(this);
-        	}else{
-		        return opts.inverse(this);
-		    }
-        },
-        lenEq: function(json, num, opts){
-        	if(Object.keys(json).length == num+1){
-        		return opts.fn(this);
-        	}else{
-        		return opts.inverse(this);
-        	}
-        },
-        ifContains: function(collection, item, opts){
-        	if(_.includes(collection, item)){
+			if(a == b){
 				return opts.fn(this);
-        	}else{
-        		return opts.inverse(this);
-        	}
-        }
+			}else{
+				return opts.inverse(this);
+			}
+		},
+		lenEq: function(json, num, opts){
+			if(Object.keys(json).length == num+1){
+				return opts.fn(this);
+			}else{
+				return opts.inverse(this);
+			}
+		},
+		ifContains: function(collection, item, opts){
+			if(_.includes(collection, item)){
+				return opts.fn(this);
+			}else{
+				return opts.inverse(this);
+			}
+		}
 	}
 }));
 app.set("views", path.join(__dirname, "views"));
