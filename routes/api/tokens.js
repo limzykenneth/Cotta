@@ -1,4 +1,5 @@
 const _ = require("lodash");
+require('dotenv').config();
 const express = require("express");
 const router = express.Router();
 const jwt = require('jsonwebtoken');
@@ -9,7 +10,7 @@ Promise.promisifyAll(jwt);
 
 // Route: {root}/api/tokens/...
 
-const secret = "secret_key_PLEASE_CHANGE";
+const secret = process.env.JWT_SECRET;
 
 // Generate token for user
 router.post("/generate_new_token", function(req, res, next){

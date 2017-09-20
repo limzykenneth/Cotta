@@ -1,13 +1,18 @@
+require('dotenv').config();
 const _ = require("lodash");
 const express = require("express");
 const moment = require("moment");
+const jwt = require('jsonwebtoken');
 const router = express.Router();
 const connect = require("../../utils/database.js");
 const Promise = require("bluebird");
+Promise.promisifyAll(jwt);
 const autoIncrement = require("mongodb-autoincrement");
 Promise.promisifyAll(autoIncrement);
 const restrict = require("../../utils/middlewares/restrict.js");
 const CharError = require("../../utils/charError.js");
+
+const secret = process.env.JWT_SECRET;
 
 // Route: {root}/api/collections/...
 
@@ -35,6 +40,10 @@ router.get("/:collectionSlug/:modelID", function(req, res){
 // POST to specific collection (create new model)
 // Insert as is into database, just adding metadata and uid
 router.post("/:collectionSlug", restrict.toAuthor, function(req, res, next){
+	let jwtData = {
+		fields: []
+	};
+
 	// Check schema
 	connect.then(function(db){
 		return db.collection("_schema").findOne({"collectionSlug": req.params.collectionSlug})
@@ -43,6 +52,7 @@ router.post("/:collectionSlug", restrict.toAuthor, function(req, res, next){
 			var fieldsLength = data.fields.length;
 			var count = 0;
 
+			// Comparing the schema with the provided data fields
 			for(let i=0; i<fields.length; i++){
 				let slug = fields[i].slug;
 				_.each(req.body, function(el, i){
@@ -52,15 +62,29 @@ router.post("/:collectionSlug", restrict.toAuthor, function(req, res, next){
 				});
 			}
 
-			if(count === fieldsLength){
-				// Schema matched
-				return Promise.resolve(db);
-			}else{
+			if(count !== fieldsLength){
+				// Schema mismatched
 				return Promise.reject(new CharError("Invalid Schema", `The provided fields does not match schema entry of ${req.params.collectionSlug} in the database`, 400));
+			}else{
+				// Schema matched continue processing
+				// Check for file upload field
+				_.each(fields, function(el, i){
+					if(el.type == "files"){
+						// Record the fields and also the data path intended(?)
+						jwtData.fields.push({
+							field: req.body[el.slug]
+						});
+					}
+				});
+
+				return Promise.resolve(db);
 			}
 		});
 
 	}).then(function(db){
+
+		// Process data
+
 		let data = req.body;
 
 		// Create metadata
@@ -92,7 +116,21 @@ router.post("/:collectionSlug", restrict.toAuthor, function(req, res, next){
 		});
 	}).then(function(data){
 		// Data insertion successful
-		res.json(data);
+		if(jwtData.fields.length > 0){
+			// There are file upload fields
+			// Set the model ID
+			jwtData.id = `${req.params.collectionSlug}.${data._uid}`;
+			// jwt signature, limited to 1 hour for file upload
+			jwt.signAsync(jwtData, secret, {
+				expiresIn: "1h"
+			}).then(function(token){
+				res.set("X-Char-upload-token", token);
+				res.json(data);
+			});
+		}else{
+			// No upload fields so just continue
+			res.json(data);
+		}
 	}).catch(function(err){
 		next(err);
 	});
