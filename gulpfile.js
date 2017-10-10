@@ -14,6 +14,9 @@ const less = require("gulp-less"),
 	  cleanCSS = require("gulp-clean-css"),
       autoprefixer = require("gulp-autoprefixer");
 
+const handlebars = require('gulp-handlebars'),
+	  defineModule = require('gulp-define-module');
+
 const path = require("path");
 const minimist = require("minimist");
 var argv = minimist(process.argv.slice(2));
@@ -54,7 +57,7 @@ if(argv.f){
 	});
 
 	// Build static source
-	gulp.task("javascripts", function(){
+	gulp.task("javascripts", ["templates"], function(){
 		var uglifyOptions = {
 			mangle: {
 				screw_ie8: true
@@ -100,6 +103,16 @@ if(argv.f){
 			.pipe(browserSync.stream());
 	});
 
+	gulp.task("templates", function(){
+		gulp.src(path.join(__dirname, "static/templates/*.handlebars"))
+			.pipe(handlebars({
+				handlebars: require('handlebars')
+			}))
+			.pipe(defineModule("node"))
+			.pipe(gulp.dest(path.join(__dirname, "static/javascripts/src/compiled-templates/")));
+	});
+
+	// Tests
 	gulp.task("test", function(){
 		return gulp.src("./test")
 			.pipe(mocha({reporter: "nyan"}));
