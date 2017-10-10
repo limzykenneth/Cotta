@@ -47,6 +47,7 @@ app.use("/api", api);
 // Backend views
 app.use(views);
 
+// Frontend views
 // Why again???
 if(process.env.NODE_ENV !== "development"){
 	app.use("/*", express.static(path.join(__dirname, "public")));

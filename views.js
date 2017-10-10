@@ -42,4 +42,13 @@ app.set("view engine", "handlebars");
 // Mount /static where backend static assets lives
 app.use("/static", express.static(path.join(__dirname, "static")));
 
+// Mount view
+app.use("/admin(/:path)?", function(req, res){
+	if(typeof req.params.path !== "undefined" && req.params.path.length > 0){
+		res.render(req.params.path);
+	}else{
+		res.render("index");
+	}
+});
+
 module.exports = app;
