@@ -5,7 +5,11 @@ require('whatwg-fetch');
 // var CharMessenger = require("./CharMessenger.js");
 
 $(document).ready(function() {
-	collectionPage.populate();
+	if(window.location.pathname == "/admin/collections"){
+		collectionPage.populate($("#page-content .collections-container .collections"));
+	}
+
+
 	// var message = new CharMessenger($(".message-box"));
 	// message.fadeOut();
 
