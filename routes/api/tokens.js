@@ -7,6 +7,7 @@ const auth = require("../../utils/auth.js");
 const connect = require("../../utils/database.js");
 const Promise = require("bluebird");
 Promise.promisifyAll(jwt);
+const CharError = require("../../utils/charError.js");
 
 // Route: {root}/api/tokens/...
 
@@ -42,7 +43,7 @@ router.post("/generate_new_token", function(req, res, next){
 				expiresIn: "7d"
 			});
 		}).then(function(token){
-			res.json(token);
+			res.send(token);
 		});
 	});
 });

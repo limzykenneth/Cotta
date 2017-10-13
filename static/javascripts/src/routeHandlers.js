@@ -1,4 +1,5 @@
 var collectionsPage = require("./collections.js");
+var loginPage = require("./login.js");
 var routeHandlers = {};
 
 routeHandlers.collectionsPage = function(){
@@ -6,7 +7,12 @@ routeHandlers.collectionsPage = function(){
 };
 routeHandlers.collectionPage = function(params){
 	collectionSlug = params.collection_slug;
+};
 
+
+routeHandlers.loginPage = function(){
+	loginPage.default();
+	loginPage.submit($("#page-content .login-form form"));
 };
 
 module.exports = routeHandlers;
