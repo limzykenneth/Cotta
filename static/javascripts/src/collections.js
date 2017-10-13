@@ -22,7 +22,12 @@ collectionsPage.populate = function($selector){
 	}).then(function(data){
 		$selector.html(template({data: data}));
 	}).catch(function(err){
-		console.error(err);
+		if(err.message.substring(0, 3) == "403"){
+			window.location.replace("/admin/login");
+			return;
+		}else{
+			console.error(err);
+		}
 	});
 };
 

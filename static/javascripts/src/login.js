@@ -26,6 +26,7 @@ var submit = function(username, password){
 		var expireIn = decoded.exp - decoded.iat;
 
 		docCookies.setItem("jwt_token", data, expireIn, null, null, false);
+		window.location.replace("/admin");
 	}).catch(function(err){
 		console.error(err);
 	});
