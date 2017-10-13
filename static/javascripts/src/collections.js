@@ -7,11 +7,9 @@ var template = require("./compiled-templates/collections.js");
 var collectionsPage = {};
 
 collectionsPage.populate = function($selector){
-	// TEMP SOLUTION ------------------
 	var headers = new Headers({
-		Authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwicm9sZSI6ImFkbWluaXN0cmF0b3IiLCJpYXQiOjE1MDc2MzA5MDAsImV4cCI6MTUwODIzNTcwMH0.0DHKsxWKdtq0s-ylVYjWj4lms4niaItT2w9zhVlWWOk"
+		Authorization: "Bearer " + docCookies.getItem("jwt_token")
 	});
-	// --------------------------------
 
 	fetch("/api/schema", {
 		headers: headers
