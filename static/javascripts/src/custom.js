@@ -1,13 +1,13 @@
 var $ = require("jquery");
 var _ = require("lodash/core");
-var collectionPage = require("./collections.js");
 require('whatwg-fetch');
 // var CharMessenger = require("./CharMessenger.js");
+var router = require("./router.js");
 
 $(document).ready(function() {
-	if(window.location.pathname == "/admin/collections"){
-		collectionPage.populate($("#page-content .collections-container .collections"));
-	}
+	var recognizedRoute = router.recognize(window.location.pathname)[0];
+
+	recognizedRoute.handler(recognizedRoute.params);
 
 
 	// var message = new CharMessenger($(".message-box"));
