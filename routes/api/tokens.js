@@ -43,7 +43,7 @@ router.post("/generate_new_token", function(req, res, next){
 				expiresIn: "7d"
 			});
 		}).then(function(token){
-			res.send(token);
+			res.json({"access_token": token});
 		});
 	});
 });

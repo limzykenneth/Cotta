@@ -48,38 +48,38 @@ router.post("/:collectionSlug", restrict.toAuthor, function(req, res, next){
 	connect.then(function(db){
 		return db.collection("_schema").findOne({"collectionSlug": req.params.collectionSlug})
 			.then(function(data){
-			var fields = data.fields;
-			var fieldsLength = data.fields.length;
-			var count = 0;
+				var fields = data.fields;
+				var fieldsLength = data.fields.length;
+				var count = 0;
 
-			// Comparing the schema with the provided data fields
-			for(let i=0; i<fields.length; i++){
-				let slug = fields[i].slug;
-				_.each(req.body, function(el, i){
-					if(slug === i){
-						count++;
-					}
-				});
-			}
+				// Comparing the schema with the provided data fields
+				for(let i=0; i<fields.length; i++){
+					let slug = fields[i].slug;
+					_.each(req.body, function(el, i){
+						if(slug === i){
+							count++;
+						}
+					});
+				}
 
-			if(count !== fieldsLength){
-				// Schema mismatched
-				return Promise.reject(new CharError("Invalid Schema", `The provided fields does not match schema entry of ${req.params.collectionSlug} in the database`, 400));
-			}else{
-				// Schema matched continue processing
-				// Check for file upload field
-				_.each(fields, function(el, i){
-					if(el.type == "files"){
-						// Record the fields and also the data path intended(?)
-						jwtData.fields.push({
-							field: req.body[el.slug]
-						});
-					}
-				});
+				if(count !== fieldsLength){
+					// Schema mismatched
+					return Promise.reject(new CharError("Invalid Schema", `The provided fields does not match schema entry of ${req.params.collectionSlug} in the database`, 400));
+				}else{
+					// Schema matched continue processing
+					// Check for file upload field
+					_.each(fields, function(el, i){
+						if(el.type == "files"){
+							// Record the fields and also the data path intended(?)
+							jwtData.fields.push({
+								field: req.body[el.slug]
+							});
+						}
+					});
 
-				return Promise.resolve(db);
-			}
-		});
+					return Promise.resolve(db);
+				}
+			});
 
 	}).then(function(db){
 

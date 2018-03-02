@@ -7,6 +7,7 @@ const logger = require("morgan");
 const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
 const _ = require("lodash");
+const cors = require("cors");
 
 const errors = require("./errors.js");
 const views = require("./views.js");
@@ -23,6 +24,7 @@ app.io = io;
 
 app.use(logger("dev"));
 
+app.use(cors());
 // Parsers
 app.use(function(req, res, next){
 	if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
