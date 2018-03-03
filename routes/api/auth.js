@@ -5,11 +5,11 @@ const session = require("express-session");
 const connect = require("../../utils/database.js");
 const restrict = require("../../utils/middlewares/restrict.js");
 const auth = require("../../utils/auth.js");
-const jwt = require('jsonwebtoken');
+const jwt = require("jsonwebtoken");
 const CharError = require("../../utils/charError.js");
 const Promise = require("bluebird");
 Promise.promisifyAll(jwt);
-require('dotenv').config();
+require("dotenv").config();
 
 const secret = process.env.JWT_SECRET;
 

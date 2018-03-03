@@ -1,7 +1,7 @@
 const gulp = require("gulp");
 const rename = require("gulp-rename");
 const nodemon = require("gulp-nodemon"),
-	  browserSync = require('browser-sync');
+	  browserSync = require("browser-sync");
 const plumber = require("gulp-plumber");
 const browserify = require("browserify"),
 	  source = require("vinyl-source-stream"),
@@ -14,8 +14,8 @@ const less = require("gulp-less"),
 	  cleanCSS = require("gulp-clean-css"),
       autoprefixer = require("gulp-autoprefixer");
 
-const handlebars = require('gulp-handlebars'),
-	  defineModule = require('gulp-define-module');
+const handlebars = require("gulp-handlebars"),
+	  defineModule = require("gulp-define-module");
 
 const path = require("path");
 const minimist = require("minimist");
@@ -106,7 +106,7 @@ if(argv.f){
 	gulp.task("templates", function(){
 		gulp.src(path.join(__dirname, "static/templates/*.handlebars"))
 			.pipe(handlebars({
-				handlebars: require('handlebars')
+				handlebars: require("handlebars")
 			}))
 			.pipe(defineModule("node"))
 			.pipe(gulp.dest(path.join(__dirname, "static/javascripts/src/compiled-templates/")));
@@ -123,6 +123,6 @@ if(argv.f){
 
 
 function onError(err){
-	gutil.log(gutil.colors.red('Error (' + err.plugin + '): ' + err.message));
+	gutil.log(gutil.colors.red("Error (" + err.plugin + "): " + err.message));
 	this.emit("end");
 }

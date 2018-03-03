@@ -3,7 +3,7 @@ Really wanted to be able to mix file filter and fields
 but doesn't seem to be possible.
 */
 const _ = require("lodash");
-const multer  = require('multer');
+const multer  = require("multer");
 const path = require("path");
 const connect = require("../database.js");
 const randomstring = require("randomstring");
@@ -19,7 +19,7 @@ const uploadImage = multer({
 		// Save uploaded images with a random string appended to original filename
 		// to prevent overwriting file with the same name
 		filename: function (req, file, cb) {
-			cb(null, path.basename(file.originalname, path.extname(file.originalname)) + '-' + randomstring.generate(10) + path.extname(file.originalname));
+			cb(null, path.basename(file.originalname, path.extname(file.originalname)) + "-" + randomstring.generate(10) + path.extname(file.originalname));
 		}
 	}),
 	fileFilter: function(req, file, cb){

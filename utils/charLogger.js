@@ -17,8 +17,8 @@ let charLogger = new (winston.Logger)({
 			},
 			formatter: function(options) {
 		        // Return string will be passed to logger.
-		        return winston.config.colorize(options.level, "CHAR") + " " + options.timestamp() +' '+ winston.config.colorize(options.level, options.level.toUpperCase()) +' '+ (options.message ? options.message : '') +
-		          (options.meta && Object.keys(options.meta).length ? '\n\t'+ JSON.stringify(options.meta) : '' );
+		        return winston.config.colorize(options.level, "CHAR") + " " + options.timestamp() +" "+ winston.config.colorize(options.level, options.level.toUpperCase()) +" "+ (options.message ? options.message : "") +
+		          (options.meta && Object.keys(options.meta).length ? "\n\t"+ JSON.stringify(options.meta) : "" );
 			},
 			colorize: true,
 			level: "info"
@@ -31,8 +31,8 @@ let charLogger = new (winston.Logger)({
 			},
 			formatter: function(options) {
 		        // Return string will be passed to logger.
-		        return options.timestamp() +' - '+ options.level.toUpperCase() +' '+ (options.message ? options.message : '') +
-		          (options.meta && Object.keys(options.meta).length ? '\n\t'+ JSON.stringify(options.meta) : '' );
+		        return options.timestamp() +" - "+ options.level.toUpperCase() +" "+ (options.message ? options.message : "") +
+		          (options.meta && Object.keys(options.meta).length ? "\n\t"+ JSON.stringify(options.meta) : "" );
 			},
 			level: "info"
 		})

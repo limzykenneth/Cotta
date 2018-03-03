@@ -1,4 +1,4 @@
-require('dotenv').config();
+require("dotenv").config();
 const express = require("express");
 const socketIO = require("socket.io");
 const path = require("path");
@@ -27,10 +27,10 @@ app.use(logger("dev"));
 app.use(cors());
 // Parsers
 app.use(function(req, res, next){
-	if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
-        req.token = req.headers.authorization.split(' ')[1];
-    }
-    next();
+	if (req.headers.authorization && req.headers.authorization.split(" ")[0] === "Bearer") {
+	    req.token = req.headers.authorization.split(" ")[1];
+	}
+	next();
 });
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));

@@ -1,8 +1,8 @@
-require('dotenv').config();
+require("dotenv").config();
 const _ = require("lodash");
 const express = require("express");
 const moment = require("moment");
-const jwt = require('jsonwebtoken');
+const jwt = require("jsonwebtoken");
 const router = express.Router();
 const connect = require("../../utils/database.js");
 const Promise = require("bluebird");
