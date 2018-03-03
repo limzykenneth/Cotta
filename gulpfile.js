@@ -45,62 +45,6 @@ if(argv.f){
 
 	gulp.task("server", ["nodemon"]);
 
-	// Build static source
-	gulp.task("javascripts", ["templates"], function(){
-		var uglifyOptions = {
-			mangle: {
-				screw_ie8: true
-			},
-			compress: {
-				screw_ie8: true
-			}
-		};
-
-		return browserify(path.join(__dirname, "static/javascripts/src/custom.js"), {
-			debug: true,
-		})
-	        .bundle()
-	        .on("error", onError)
-	        .pipe(plumber({
-				errorHandler: onError
-			}))
-	        .pipe(source("main.js"))
-	        .pipe(gulp.dest(path.join(__dirname, "static/javascripts/")))
-	        .pipe(buffer())
-	        .pipe(uglifyjs(uglifyOptions))
-	        .pipe(rename("main.min.js"))
-	        .pipe(gulp.dest(path.join(__dirname, "static/javascripts/")));
-	});
-
-	gulp.task("stylesheets", function(){
-		var lessOptions = {
-			paths: ["./static/stylesheets/src"]
-		};
-
-		var cleanCSSOptions = {};
-
-		return gulp.src(path.join(__dirname, "static/stylesheets/src/style.less"))
-			.pipe(plumber({
-				errorHandler: onError
-			}))
-			.pipe(less(lessOptions))
-			.pipe(autoprefixer())
-			.pipe(gulp.dest(path.join(__dirname, "static/stylesheets")))
-			.pipe(cleanCSS(cleanCSSOptions))
-			.pipe(rename("style.min.css"))
-			.pipe(gulp.dest(path.join(__dirname, "static/stylesheets")))
-			.pipe(browserSync.stream());
-	});
-
-	gulp.task("templates", function(){
-		gulp.src(path.join(__dirname, "static/templates/*.handlebars"))
-			.pipe(handlebars({
-				handlebars: require("handlebars")
-			}))
-			.pipe(defineModule("node"))
-			.pipe(gulp.dest(path.join(__dirname, "static/javascripts/src/compiled-templates/")));
-	});
-
 	// Tests
 	gulp.task("test", function(){
 		return gulp.src("./test")
