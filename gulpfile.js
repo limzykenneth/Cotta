@@ -28,7 +28,7 @@ if(argv.f){
 	});
 }else{
 	// Run server
-	gulp.task("nodemon", function(cb){
+	gulp.task("nodemon", ["default"], function(cb){
 		var started = false;
 
 		return nodemon({
@@ -43,18 +43,7 @@ if(argv.f){
 		});
 	});
 
-	gulp.task("browser-sync", ["nodemon"], function(){
-		browserSync.init({
-			proxy: "http://localhost:3000",
-			files: ["static/!(src)/*", "views/**/*"],
-			port: "3001"
-		});
-	});
-
-	gulp.task("server", ["default", "browser-sync"], function(){
-		gulp.watch("./static/stylesheets/src/*", ["stylesheets"]);
-		gulp.watch("./static/javascripts/src/*", ["javascripts"]);
-	});
+	gulp.task("server", ["nodemon"]);
 
 	// Build static source
 	gulp.task("javascripts", ["templates"], function(){
@@ -118,7 +107,9 @@ if(argv.f){
 			.pipe(mocha({reporter: "nyan"}));
 	});
 
-	gulp.task("default", ["stylesheets", "javascripts"]);
+	gulp.task("default", function(){
+
+	});
 }
 
 

@@ -10,9 +10,8 @@ const _ = require("lodash");
 const cors = require("cors");
 
 const errors = require("./errors.js");
-const views = require("./views.js");
 
-const index = require("./routes/index");
+// const index = require("./routes/index");
 const api = require("./routes/api/index.js");
 
 // Express
@@ -45,17 +44,6 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Mount dynamic routes
 app.use("/api", api);
-
-// Backend views
-app.use(views);
-
-// Frontend views
-// Why again???
-if(process.env.NODE_ENV !== "development"){
-	app.use("/*", express.static(path.join(__dirname, "public")));
-}else{
-	app.use("/", index);
-}
 
 
 
