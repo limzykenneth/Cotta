@@ -1,10 +1,13 @@
 const _ = require("lodash");
 const express = require("express");
+const ActiveRecord = require("active-record");
+
 const router = express.Router();
 const connect = require("../../utils/database.js");
 const auth = require("../../utils/auth.js");
 const restrict = require("../../utils/middlewares/restrict.js");
 const CharError = require("../../utils/charError.js");
+const Users = new ActiveRecord("_users_auth");
 
 // Route: {root}/api/users/...
 
@@ -15,27 +18,23 @@ const CharError = require("../../utils/charError.js");
 // Everything else should be restricted
 // GET all users
 router.get("/", restrict.toAdministrator, function(req, res){
-	connect.then(function(db){
-		return db.collection("_users_auth").find().toArray();
-	}).then(function(data){
-		// Remove internal ID and password hash, maybe split the db later
-		_.each(data, function(el, i){
-			delete el._id;
-			delete el.hash;
+	Users.all().then((users) => {
+		_.each(users, function(el, i){
+			delete el.data._id;
+			delete el.data.hash;
 		});
-		res.json(data);
+
+		res.json(users.data);
 	});
 });
 
 // GET specific user
 router.get("/:username", restrict.toAdministrator, function(req, res){
-	connect.then(function(db){
-		return db.collection("_users_auth").findOne({username: req.params.username});
-	}).then(function(data){
+	Users.findBy({username: req.params.username}).then((user) => {
 		// Remove internal ID and password hash, maybe split the db later
-		delete data._id;
-		delete data.hash;
-		res.json(data);
+		delete user.data._id;
+		delete user.data.hash;
+		res.json(user.data);
 	});
 });
 

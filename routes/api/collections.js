@@ -4,11 +4,13 @@ const express = require("express");
 const moment = require("moment");
 const jwt = require("jsonwebtoken");
 const router = express.Router();
-const connect = require("../../utils/database.js");
 const Promise = require("bluebird");
-Promise.promisifyAll(jwt);
+const ActiveRecord = require("active-record");
 const autoIncrement = require("mongodb-autoincrement");
+
+Promise.promisifyAll(jwt);
 Promise.promisifyAll(autoIncrement);
+const connect = require("../../utils/database.js");
 const restrict = require("../../utils/middlewares/restrict.js");
 const CharError = require("../../utils/charError.js");
 
@@ -19,19 +21,17 @@ const secret = process.env.JWT_SECRET;
 // GET routes
 // GET collection with slug
 router.get("/:collectionSlug", function(req, res){
-	connect.then(function(db){
-		return db.collection(req.params.collectionSlug).find().toArray();
-	}).then(function(data){
-		res.json(data);
+	let Collection = new ActiveRecord(req.params.collectionSlug);
+	Collection.all().then((collection) => {
+		res.json(collection.data);
 	});
 });
 
 // GET specific model from a collection
 router.get("/:collectionSlug/:modelID", function(req, res){
-	connect.then(function(db){
-		return db.collection(req.params.collectionSlug).findOne({"_uid": parseInt(req.params.modelID)});
-	}).then(function(data){
-		res.json(data);
+	let Collection = new ActiveRecord(req.params.collectionSlug);
+	Collection.findBy({"_uid": parseInt(req.params.modelID)}).then((collection) => {
+		res.json(collection.data);
 	});
 });
 

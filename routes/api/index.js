@@ -2,7 +2,6 @@
 const _ = require("lodash");
 const express = require("express");
 const router = express.Router();
-const connect = require("../../utils/database.js");
 const auth = require("./auth.js");
 const schema = require("./schema.js");
 const users = require("./users.js");

@@ -1,7 +1,6 @@
 const express = require("express");
 const session = require("express-session");
 const path = require("path");
-const connect = require("../database.js");
 const CharError = require("../charError.js");
 
 // Middleware to make sure user is logged in

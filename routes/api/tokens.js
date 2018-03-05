@@ -1,13 +1,15 @@
 const _ = require("lodash");
 require("dotenv").config();
 const express = require("express");
-const router = express.Router();
+const ActiveRecord = require("active-record");
 const jwt = require("jsonwebtoken");
-const auth = require("../../utils/auth.js");
-const connect = require("../../utils/database.js");
 const Promise = require("bluebird");
+
+const router = express.Router();
+const auth = require("../../utils/auth.js");
 Promise.promisifyAll(jwt);
 const CharError = require("../../utils/charError.js");
+const Users = new ActiveRecord("_users_auth");
 
 // Route: {root}/api/tokens/...
 
@@ -32,17 +34,14 @@ router.post("/generate_new_token", function(req, res, next){
 
 		// User sucessfully authenticated
 		// Next retrieve user info from database
-		connect.then(function(db){
-			return db.collection("_users_auth").findOne({"username": req.body.username});
-		}).then(function(user){
-			// Now sign the token
+		Users.findBy({"username": req.body.username}).then((user) => {
 			return jwt.signAsync({
-				username: user.username,
-				role: user.role
+				username: user.data.username,
+				role: user.data.role
 			}, secret, {
 				expiresIn: "7d"
 			});
-		}).then(function(token){
+		}).then((token) => {
 			res.json({"access_token": token});
 		});
 	});

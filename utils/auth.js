@@ -1,30 +1,29 @@
 const bcrypt = require("bcrypt");
 const connect = require("./database.js");
 const moment = require("moment");
+const ActiveRecord = require("active-record");
 
+let Users = new ActiveRecord("_users_auth");
 let auth = {};
 
 // Basic authentication
 // Compares user password bcrypt hash
 auth.authenticate = function(name, pass, fn) {
-	connect.then(function(db){
-		// Get user data
-		return db.collection("_users_auth").findOne({"username": name});
-	}).then(function(result){
+	Users.findBy({"username": name}).then((user) => {
 		// No user found, return generic failed message
-		if(!result){
+		if(!user){
 			return fn(new Error("invalid password"));
 		}
 
 		// Compare password and hash
-		bcrypt.compare(pass, result.hash, function(err, res) {
+		bcrypt.compare(pass, user.data.hash, function(err, res) {
 			if (err) return fn(err);
 
 			// Success, call callback with first argument as null
 			// second argument the user data sans password hash
 		    if(res === true){
-		    	delete result.hash;
-		    	return fn(null, result);
+		    	delete user.data.hash;
+		    	return fn(null, user.data);
 		    // Fail, call callback with error object
 		    }else{
 			    fn(new Error("invalid password"));

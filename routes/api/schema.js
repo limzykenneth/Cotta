@@ -1,8 +1,11 @@
 const _ = require("lodash");
 const express = require("express");
+const ActiveRecord = require("active-record");
+
 const router = express.Router();
 const connect = require("../../utils/database.js");
 const restrict = require("../../utils/middlewares/restrict.js");
+const Schemas = new ActiveRecord("_schema");
 
 // Route: {root}/api/schema/...
 
@@ -12,19 +15,15 @@ router.get("/", restrict.toEditor, function(req, res){
 	// Better to cache it somehow maybe
 	// res.json(res.local.schemas);
 
-	connect.then(function(db){
-		return db.collection("_schema").find().toArray();
-	}).then(function(data){
-		res.json(data);
+	Schemas.all().then((schemas) => {
+		res.json(schemas.data);
 	});
 });
 
 // GET specified schema
 router.get("/:schema", restrict.toEditor, function(req, res){
-	connect.then(function(db){
-		return db.collection("_schema").findOne({collectionSlug: req.params.schema});
-	}).then(function(schema){
-		res.json(schema);
+	Schemas.findBy({collectionSlug: req.params.schema}).then((schema) => {
+		res.json(schema.data);
 	});
 });
 
