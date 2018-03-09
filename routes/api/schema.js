@@ -37,7 +37,7 @@ router.post("/", restrict.toEditor, function(req, res){
 
 			if(result.length > 0){
 				// Edit schema
-				return db.collection("_schema").updateOne({collectionSlug: req.params.schema}, req.body).then(function(data){
+				return db.collection("_schema").updateOne({collectionSlug: req.body.collectionSlug}, req.body).then(function(data){
 					return Promise.resolve(db);
 				});
 			}else{
