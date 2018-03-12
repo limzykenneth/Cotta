@@ -53,7 +53,7 @@ router.post("/", restrict.toAdministrator, function(req, res, next){
 		if(err) {
 			if(err.name == "MongoError" && err.code == 11000){
 				// Duplicate username
-				next(new CharError("Username not available", `Username ${req.body.username} is already registered`))
+				next(new CharError("Username not available", `Username ${req.body.username} is already registered`));
 			}else{
 				next(new CharError());
 			}
@@ -79,11 +79,13 @@ router.post("/", restrict.toAdministrator, function(req, res, next){
 // DELETE routes
 // DELETE specific user
 router.delete("/:username", restrict.toAdministrator, function(req, res){
-	connect.then(function(db){
-		return db.collection("_users_auth").deleteOne({"username": req.params.username});
-	}).then(function(){
-		res.json({
-			message: `User ${req.params.username} deleted`
+	let User = new ActiveRecord("_users_auth");
+
+	User.findBy({"username": req.params.username}).then((user) => {
+		user.destroy().then((col) => {
+			res.json({
+				message: `User ${req.params.username} deleted`
+			});
 		});
 	});
 });
