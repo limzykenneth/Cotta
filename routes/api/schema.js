@@ -3,7 +3,6 @@ const express = require("express");
 const ActiveRecord = require("active-record");
 
 const router = express.Router();
-const connect = require("../../utils/database.js");
 const restrict = require("../../utils/middlewares/restrict.js");
 const Schemas = new ActiveRecord("_schema");
 
@@ -30,27 +29,23 @@ router.get("/:schema", restrict.toEditor, function(req, res){
 // POST routes
 // POST specified schema (add new and edit)
 router.post("/", restrict.toEditor, function(req, res){
-	connect.then(function(db){
-		// Find collection with duplicate slug, if found, edit it
-		return db.collection("_schema").find().toArray().then(function(schemas){
-			var result = _.filter(schemas, {collectionSlug: req.body.collectionSlug});
+	let Schema = new ActiveRecord("_schema");
 
-			if(result.length > 0){
-				// Edit schema
-				return db.collection("_schema").updateOne({collectionSlug: req.body.collectionSlug}, req.body).then(function(data){
-					return Promise.resolve(db);
-				});
-			}else{
-				// Create new schema
-				return db.collection("_schema").insertOne(req.body).then(function(data){
-					return Promise.resolve(db);
-				});
-			}
+	// Find collection with duplicate slug, if found, edit it
+	Schema.where({collectionSlug: req.body.collectionSlug}).then((schemas) => {
+		if(schemas.length > 0){
+			// Edit schema
+			schemas[0].data = req.body;
+			return schemas[0].save();
+		}else{
+			// Create new schema
+			let schema = new Schema.Model(req.body);
+			return schema.save();
+		}
+	}).then(() => {
+		Schema.findBy({collectionSlug: req.body.collectionSlug}).then((schema) => {
+			res.json(schema.data);
 		});
-	}).then(function(db){
-		return db.collection("_schema").findOne({collectionSlug: req.body.collectionSlug});
-	}).then(function(data){
-		res.json(data);
 	});
 });
 
