@@ -192,11 +192,11 @@ router.post("/:collectionSlug/:modelID", restrict.toAuthor, function(req, res, n
 	let data = req.body;
 
 	Promise.all(promises).then(function(val){
-		db = val[0];
+		let Schema = new ActiveRecord("_schema");
 
-		return db.collection("_schema").findOne({"collectionSlug": req.params.collectionSlug}).then(function(schema){
-			// Validate with schema
-			var fields = schema.fields;
+		Schema.findBy({"collectionSlug": req.params.collectionSlug}).then((schema) => {
+			// Check input against schema
+			var fields = schema.data.fields;
 			var slugs = fields.map(function(el){
 				return el.slug;
 			});
@@ -214,37 +214,34 @@ router.post("/:collectionSlug/:modelID", restrict.toAuthor, function(req, res, n
 				}
 			});
 
-			if(valid){
-				return Promise.resolve(db);
+			if(valid) {
+				return Promise.resolve();
 			}else{
 				return Promise.reject(new CharError("Invalid Schema", `The provided fields does not match schema entry of ${req.params.collectionSlug} in the database`), 400);
 			}
-		});
+		}).then(() => {
+			let Collection = new ActiveRecord(req.params.collectionSlug);
+			Collection.findBy({"_uid": parseInt(req.params.modelID)}).then((model) => {
+				// TO DO: Case where model don't exist
+				if(model.data == null){
+					res.json(model.data);
+					return Promise.reject(new CharError("Model not found", `Cannot edit model with ID: ${req.prarams.modelID}, model does not exist in the collection ${req.params.collectionSlug}`, 404));
+				}
 
-	}).then(function(db){
-		// TO DO: Case where model don't exist
-		// Set metadata
-		return db.collection(req.params.collectionSlug).findOne({"_uid": parseInt(req.params.modelID)}).then(function(model){
-			if(model == null){
-				res.json(model);
-				return Promise.reject(new CharError("Model not found", `Cannot edit model with ID: ${req.prarams.modelID}, model does not exist in the collection ${req.params.collectionSlug}`, 404));
-			}
-			data._metadata = model._metadata;
-			data._metadata.date_modified = moment.utc().format();
-			return Promise.resolve(db);
+				// Set metadata
+				model.data._metadata.date_modified = moment.utc().format();
+				_.merge(model.data, data);
+				// Insert into database
+				return model.save();
+			}).then(() => {
+				// Return with newly fetch model
+				Collection.findBy({"_uid": parseInt(req.params.modelID)}).then((model) => {
+					res.json(model.data);
+				});
+			});
+		}).catch(function(err){
+			next(err);
 		});
-	}).then(function(db){
-		// Insert into database
-		return db.collection(req.params.collectionSlug).updateOne({"_uid": parseInt(req.params.modelID)}, {$set: data}).then(function(){
-			return Promise.resolve(db);
-		});
-	}).then(function(db){
-		// Return updated model
-		db.collection(req.params.collectionSlug).findOne({"_uid": parseInt(req.params.modelID)}).then(function(model){
-			res.json(model);
-		});
-	}).catch(function(err){
-		next(err);
 	});
 });
 
