@@ -222,23 +222,19 @@ router.delete("/:collectionSlug", restrict.toAuthor, function(req, res){
 
 // DELETE specific model in a collection
 router.delete("/:collectionSlug/:modelID", restrict.toAuthor, function(req, res){
-	let promises = [connect];
+	let promises = [];
 	if(req.user.role != "administrator" && req.user.role != "editor"){
 		promises.push(ownModel(req.user.username, req.params.collectionSlug, req.params.modelID));
 	}
 
 	var data;
 	Promise.all(promises).then(function(val){
-		db = val[0];
-
-		return db.collection(req.params.collectionSlug).findOne({"_uid": parseInt(req.params.modelID)}).then(function(model){
-			data = model;
-			return Promise.resolve(db);
+		let Collection = new ActiveRecord(req.params.collectionSlug);
+		return Collection.findBy({"_uid": parseInt(req.params.modelID)});
+	}).then((model) => {
+		model.destroy().then((col) => {
+			res.json(model.data);
 		});
-	}).then(function(db){
-		return db.collection(req.params.collectionSlug).deleteOne({"_uid": parseInt(req.params.modelID)});
-	}).then(function(){
-		res.json(data);
 	}).catch(function(err){
 		next(err);
 	});
@@ -257,9 +253,8 @@ module.exports = router;
 
 // Utils
 function ownModel(username, collectionSlug, modelID){
-	return connect.then(function(db){
-		return db.collection("_users_auth").findOne({"username": username});
-	}).then(function(user){
+	let Collection = new ActiveRecord(collectionSlug);
+	return Collection.findBy({"username": username}).then((user) => {
 		if(_.includes(user.models, `${collectionSlug}.${modelID}`)){
 			return Promise.resolve();
 		}else{
