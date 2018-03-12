@@ -57,12 +57,14 @@ router.post("/", restrict.toEditor, function(req, res){
 // DELETE routes
 // DELETE specified schema (and all posts in it)
 router.delete("/:schema", restrict.toEditor, function(req, res){
-	connect.then(function(db){
-		return db.collection("_schema").deleteOne({collectionSlug: req.params.schema});
-	}).then(function(db){
-		res.json({
-			status: "success",
-			message: "Schema deleted."
+	let Schema = new ActiveRecord("_schema");
+
+	Schema.findBy({collectionSlug: req.params.schema}).then((schema) => {
+		schema.destroy().then(() => {
+			res.json({
+				status: "success",
+				message: "Schema deleted."
+			});
 		});
 	});
 });
