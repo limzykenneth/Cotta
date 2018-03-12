@@ -44,6 +44,52 @@ router.post("/:collectionSlug", restrict.toAuthor, function(req, res, next){
 		fields: []
 	};
 
+	// let Schema = new ActiveRecord("_schema");
+	// Schema.findBy({"collectionSlug": req.params.collectionSlug}).then((schema) => {
+	// 	var fields = schema.data.fields;
+	// 	var fieldsLength = schema.data.fields.length;
+	// 	var count = 0;
+
+	// 	// Comparing the schema with the provided data fields
+	// 	for(let i=0; i<fields.length; i++){
+	// 		let slug = fields[i].slug;
+	// 		_.each(req.body, function(el, i){
+	// 			if(slug === i){
+	// 				count++;
+	// 			}
+	// 		});
+	// 	}
+
+	// 	if(count !== fieldsLength){
+	// 		// Schema mismatched
+	// 		return Promise.reject(new CharError("Invalid Schema", `The provided fields does not match schema entry of ${req.params.collectionSlug} in the database`, 400));
+	// 	}else{
+	// 		// Schema matched continue processing
+	// 		// Check for file upload field
+	// 		_.each(fields, function(el, i){
+	// 			if(el.type == "files"){
+	// 				// Record the fields and also the data path intended(?)
+	// 				jwtData.fields.push({
+	// 					field: req.body[el.slug]
+	// 				});
+	// 			}
+	// 		});
+
+	// 		return Promise.resolve();
+	// 	}
+	// }).then(() => {
+	// 	// Process data
+
+	// 	let data = req.body;
+
+	// 	// Create metadata
+	// 	data._metadata = {
+	// 		created_by: req.user.username,
+	// 		date_created: moment.utc().format(),
+	// 		date_modified: moment.utc().format()
+	// 	};
+	// });
+
 	// Check schema
 	connect.then(function(db){
 		return db.collection("_schema").findOne({"collectionSlug": req.params.collectionSlug})
@@ -206,14 +252,6 @@ router.post("/:collectionSlug/:modelID", restrict.toAuthor, function(req, res, n
 // DELETE routes
 // DELETE all models in a collection
 router.delete("/:collectionSlug", restrict.toAuthor, function(req, res){
-	// connect.then(function(db){
-	// 	return db.collection(req.params.collectionSlug).deleteMany({});
-	// }).then(function(){
-	// 	res.json({
-	// 		message: "Deleted all"
-	// 	});
-	// });
-
 	// Dangerous method
 	res.json({
 		message: "Implementation pending"
