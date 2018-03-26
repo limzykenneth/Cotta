@@ -9,7 +9,9 @@ const router = express.Router();
 const auth = require("../../utils/auth.js");
 Promise.promisifyAll(jwt);
 const CharError = require("../../utils/charError.js");
-const Users = new ActiveRecord("_users_auth");
+const Users = new ActiveRecord({
+	tableSlug: "_users_auth"
+});
 
 // Route: {root}/api/tokens/...
 

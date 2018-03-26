@@ -21,7 +21,9 @@ const secret = process.env.JWT_SECRET;
 // GET routes
 // GET collection with slug
 router.get("/:collectionSlug", function(req, res){
-	let Collection = new ActiveRecord(req.params.collectionSlug);
+	let Collection = new ActiveRecord({
+		tableSlug: req.params.collectionSlug
+	});
 	Collection.all().then((collection) => {
 		res.json(collection.data);
 	});
@@ -29,7 +31,9 @@ router.get("/:collectionSlug", function(req, res){
 
 // GET specific model from a collection
 router.get("/:collectionSlug/:modelID", function(req, res){
-	let Collection = new ActiveRecord(req.params.collectionSlug);
+	let Collection = new ActiveRecord({
+		tableSlug: req.params.collectionSlug
+	});
 	Collection.findBy({"_uid": parseInt(req.params.modelID)}).then((collection) => {
 		res.json(collection.data);
 	});
@@ -43,6 +47,13 @@ router.post("/:collectionSlug", restrict.toAuthor, function(req, res, next){
 	let jwtData = {
 		fields: []
 	};
+
+	// let Collection = new ActiveRecord(req.params.collectionSlug);
+	// let schema = new Collection.Schema();
+	// schema.read().then(() => {
+	// 	console.log(schema.definition);
+	// });
+
 
 	// let Schema = new ActiveRecord("_schema");
 	// Schema.findBy({"collectionSlug": req.params.collectionSlug}).then((schema) => {
@@ -192,7 +203,9 @@ router.post("/:collectionSlug/:modelID", restrict.toAuthor, function(req, res, n
 	let data = req.body;
 
 	Promise.all(promises).then(function(val){
-		let Schema = new ActiveRecord("_schema");
+		let Schema = new ActiveRecord({
+			tableSlug: "_schema"
+		});
 
 		Schema.findBy({"collectionSlug": req.params.collectionSlug}).then((schema) => {
 			// Check input against schema
@@ -220,7 +233,9 @@ router.post("/:collectionSlug/:modelID", restrict.toAuthor, function(req, res, n
 				return Promise.reject(new CharError("Invalid Schema", `The provided fields does not match schema entry of ${req.params.collectionSlug} in the database`), 400);
 			}
 		}).then(() => {
-			let Collection = new ActiveRecord(req.params.collectionSlug);
+			let Collection = new ActiveRecord({
+				tableSlug: req.params.collectionSlug
+			});
 			Collection.findBy({"_uid": parseInt(req.params.modelID)}).then((model) => {
 				// TO DO: Case where model don't exist
 				if(model.data == null){
@@ -264,7 +279,9 @@ router.delete("/:collectionSlug/:modelID", restrict.toAuthor, function(req, res)
 
 	var data;
 	Promise.all(promises).then(function(val){
-		let Collection = new ActiveRecord(req.params.collectionSlug);
+		let Collection = new ActiveRecord({
+			tableSlug: req.params.collectionSlug
+		});
 		return Collection.findBy({"_uid": parseInt(req.params.modelID)});
 	}).then((model) => {
 		model.destroy().then((col) => {
@@ -288,7 +305,9 @@ module.exports = router;
 
 // Utils
 function ownModel(username, collectionSlug, modelID){
-	let Collection = new ActiveRecord(collectionSlug);
+	let Collection = new ActiveRecord({
+		tableSlug: collectionSlug
+	});
 	return Collection.findBy({"username": username}).then((user) => {
 		if(_.includes(user.models, `${collectionSlug}.${modelID}`)){
 			return Promise.resolve();

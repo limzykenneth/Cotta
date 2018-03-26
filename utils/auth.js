@@ -3,7 +3,9 @@ const connect = require("./database.js");
 const moment = require("moment");
 const ActiveRecord = require("active-record");
 
-let Users = new ActiveRecord("_users_auth");
+let Users = new ActiveRecord({
+	tableSlug: "_users_auth"
+});
 let auth = {};
 
 // Basic authentication

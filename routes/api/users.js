@@ -6,7 +6,9 @@ const router = express.Router();
 const auth = require("../../utils/auth.js");
 const restrict = require("../../utils/middlewares/restrict.js");
 const CharError = require("../../utils/charError.js");
-const Users = new ActiveRecord("_users_auth");
+const Users = new ActiveRecord({
+	tableSlug: "_users_auth"
+});
 
 // Route: {root}/api/users/...
 
@@ -78,7 +80,9 @@ router.post("/", restrict.toAdministrator, function(req, res, next){
 // DELETE routes
 // DELETE specific user
 router.delete("/:username", restrict.toAdministrator, function(req, res){
-	let User = new ActiveRecord("_users_auth");
+	let User = new ActiveRecord({
+		tableSlug: "_users_auth"
+	});
 
 	User.findBy({"username": req.params.username}).then((user) => {
 		user.destroy().then((col) => {

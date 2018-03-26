@@ -4,7 +4,9 @@ const ActiveRecord = require("active-record");
 
 const router = express.Router();
 const restrict = require("../../utils/middlewares/restrict.js");
-const Schemas = new ActiveRecord("_schema");
+const Schemas = new ActiveRecord({
+	tableSlug: "_schema"
+});
 
 // Route: {root}/api/schema/...
 
@@ -29,7 +31,9 @@ router.get("/:schema", restrict.toEditor, function(req, res){
 // POST routes
 // POST specified schema (add new and edit)
 router.post("/", restrict.toEditor, function(req, res){
-	let Schema = new ActiveRecord("_schema");
+	let Schema = new ActiveRecord({
+		tableSlug: "_schema"
+	});
 
 	// Find collection with duplicate slug, if found, edit it
 	Schema.where({collectionSlug: req.body.collectionSlug}).then((schemas) => {
@@ -52,7 +56,9 @@ router.post("/", restrict.toEditor, function(req, res){
 // DELETE routes
 // DELETE specified schema (and all posts in it)
 router.delete("/:schema", restrict.toEditor, function(req, res){
-	let Schema = new ActiveRecord("_schema");
+	let Schema = new ActiveRecord({
+		tableSlug: "_schema"
+	});
 
 	Schema.findBy({collectionSlug: req.params.schema}).then((schema) => {
 		schema.destroy().then(() => {
