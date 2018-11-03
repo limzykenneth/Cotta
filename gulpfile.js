@@ -14,8 +14,7 @@ const less = require("gulp-less"),
 	  cleanCSS = require("gulp-clean-css"),
       autoprefixer = require("gulp-autoprefixer");
 
-const handlebars = require("gulp-handlebars"),
-	  defineModule = require("gulp-define-module");
+const handlebars = require("gulp-handlebars");
 
 const path = require("path");
 const minimist = require("minimist");

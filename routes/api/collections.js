@@ -48,58 +48,70 @@ router.post("/:collectionSlug", restrict.toAuthor, function(req, res, next){
 		fields: []
 	};
 
-	// let Collection = new ActiveRecord(req.params.collectionSlug);
-	// let schema = new Collection.Schema();
-	// schema.read().then(() => {
-	// 	console.log(schema.definition);
-	// });
+	let Collection = new ActiveRecord({
+		tableSlug: req.params.collectionSlug
+	});
+	let schema = new Collection.Schema();
+	schema.read(req.params.collectionSlug).then(() => {
+		var fields = schema.definition;
+		var fieldsLength = schema.definition.length;
+		var count = 0;
 
+		// Comparing the schema with the provided data fields
+		for(let i=0; i<fields.length; i++){
+			let slug = fields[i].slug;
+			_.each(req.body, function(el, i){
+				if(slug === i){
+					count++;
+				}
+			});
+		}
 
-	// let Schema = new ActiveRecord("_schema");
-	// Schema.findBy({"collectionSlug": req.params.collectionSlug}).then((schema) => {
-	// 	var fields = schema.data.fields;
-	// 	var fieldsLength = schema.data.fields.length;
-	// 	var count = 0;
+		if(count !== fieldsLength){
+			// Schema mismatched
+			return Promise.reject(new CharError("Invalid Schema", `The provided fields does not match schema entry of ${req.params.collectionSlug} in the database`, 400));
+		}else{
+			// Schema matched continue processing
+			// Check for file upload field
+			_.each(fields, function(el, i){
+				if(el.type == "files"){
+					// Record the fields and also the data path intended(?)
+					jwtData.fields.push({
+						field: req.body[el.slug]
+					});
+				}
+			});
 
-	// 	// Comparing the schema with the provided data fields
-	// 	for(let i=0; i<fields.length; i++){
-	// 		let slug = fields[i].slug;
-	// 		_.each(req.body, function(el, i){
-	// 			if(slug === i){
-	// 				count++;
-	// 			}
-	// 		});
-	// 	}
+			return Promise.resolve();
+		}
+	}).then(() => {
+		// Process data
+		let data = req.body;
 
-	// 	if(count !== fieldsLength){
-	// 		// Schema mismatched
-	// 		return Promise.reject(new CharError("Invalid Schema", `The provided fields does not match schema entry of ${req.params.collectionSlug} in the database`, 400));
-	// 	}else{
-	// 		// Schema matched continue processing
-	// 		// Check for file upload field
-	// 		_.each(fields, function(el, i){
-	// 			if(el.type == "files"){
-	// 				// Record the fields and also the data path intended(?)
-	// 				jwtData.fields.push({
-	// 					field: req.body[el.slug]
-	// 				});
-	// 			}
-	// 		});
+		// Create metadata
+		data._metadata = {
+			created_by: req.user.username,
+			date_created: moment.utc().format(),
+			date_modified: moment.utc().format()
+		};
+		console.log("new", data);
 
-	// 		return Promise.resolve();
-	// 	}
-	// }).then(() => {
-	// 	// Process data
+		// Set increment index (should be abstracted if RDBS is to be used)
+		// autoIncrement.setDefaults({collection: "_counters"});
+		// return autoIncrement.getNextSequenceAsync(Collection._db, req.params.collectionSlug).then(function(autoIndex){
+		// 	// Set unique auto incrementing index
+		// 	data._uid = autoIndex;
+		// 	// Update user
 
-	// 	let data = req.body;
+		// 	return Promise.resolve(db);
 
-	// 	// Create metadata
-	// 	data._metadata = {
-	// 		created_by: req.user.username,
-	// 		date_created: moment.utc().format(),
-	// 		date_modified: moment.utc().format()
-	// 	};
-	// });
+		// }).then(function(db){
+		// 	// Insert data into database
+		// 	return db.collection(req.params.collectionSlug).insertOne(data).then(function(){
+		// 		return Promise.resolve(data);
+		// 	});
+		// });
+	});
 
 	// Check schema
 	connect.then(function(db){
@@ -150,6 +162,8 @@ router.post("/:collectionSlug", restrict.toAuthor, function(req, res, next){
 			date_created: moment.utc().format(),
 			date_modified: moment.utc().format()
 		};
+
+		console.log("old", data);
 
 		// Update user schema
 		db.collection("_users_auth").updateOne({"username": req.user.username}, {

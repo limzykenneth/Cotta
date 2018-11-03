@@ -101,3 +101,4 @@ test-data.json
 insertData.js
 uploads
 db_backup
+db/
