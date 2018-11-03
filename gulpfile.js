@@ -1,59 +1,35 @@
 const gulp = require("gulp");
-const rename = require("gulp-rename");
-const nodemon = require("gulp-nodemon"),
-	  browserSync = require("browser-sync");
-const plumber = require("gulp-plumber");
-const browserify = require("browserify"),
-	  source = require("vinyl-source-stream"),
-      buffer = require("vinyl-buffer"),
-      uglifyjs = require("gulp-uglify");
+const nodemon = require("gulp-nodemon");
 const mocha = require("gulp-mocha");
 const gutil = require("gulp-util");
 
-const less = require("gulp-less"),
-	  cleanCSS = require("gulp-clean-css"),
-      autoprefixer = require("gulp-autoprefixer");
 
-const handlebars = require("gulp-handlebars");
+gulp.task("default", function(done){
+	done();
+});
 
-const path = require("path");
-const minimist = require("minimist");
-var argv = minimist(process.argv.slice(2));
+// Run server
+gulp.task("nodemon", gulp.series("default", function(cb){
+	var started = false;
 
-if(argv.f){
-	require("./frontend/gulpfile.js")(gulp, {
-		dir: "./frontend/",
-		outDir: "./public/"
+	return nodemon({
+		script: "./bin/www",
+		ignore: ["public/**/*"]
+	}).on("start", function(){
+		if(!started){
+			cb();
+			started = true;
+		}
 	});
-}else{
-	// Run server
-	gulp.task("nodemon", ["default"], function(cb){
-		var started = false;
+}));
 
-		return nodemon({
-			verbose: argv.verbose || false,
-			script: "./bin/www",
-			ignore: ["frontend/**/*", "public/**/*", "static/**/*"]
-		}).on("start", function(){
-			if(!started){
-				cb();
-				started = true;
-			}
-		});
-	});
+gulp.task("server", gulp.series("nodemon"));
 
-	gulp.task("server", ["nodemon"]);
-
-	// Tests
-	gulp.task("test", function(){
-		return gulp.src("./test")
-			.pipe(mocha({reporter: "nyan"}));
-	});
-
-	gulp.task("default", function(){
-
-	});
-}
+// Tests
+gulp.task("test", function(){
+	return gulp.src("./test")
+		.pipe(mocha({reporter: "nyan"}));
+});
 
 
 function onError(err){

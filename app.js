@@ -2,7 +2,6 @@ require("dotenv").config();
 const express = require("express");
 const socketIO = require("socket.io");
 const path = require("path");
-const favicon = require("serve-favicon");
 const logger = require("morgan");
 const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
@@ -27,7 +26,7 @@ app.use(cors());
 // Parsers
 app.use(function(req, res, next){
 	if (req.headers.authorization && req.headers.authorization.split(" ")[0] === "Bearer") {
-	    req.token = req.headers.authorization.split(" ")[1];
+		req.token = req.headers.authorization.split(" ")[1];
 	}
 	next();
 });
