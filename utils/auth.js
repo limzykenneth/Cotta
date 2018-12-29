@@ -23,12 +23,12 @@ auth.authenticate = function(name, pass, fn) {
 
 			// Success, call callback with first argument as null
 			// second argument the user data sans password hash
-		    if(res === true){
-		    	delete user.data.hash;
-		    	return fn(null, user.data);
-		    // Fail, call callback with error object
-		    }else{
-			    fn(new Error("invalid password"));
+			if(res === true){
+				delete user.data.hash;
+				return fn(null, user.data);
+			// Fail, call callback with error object
+			}else{
+				fn(new Error("invalid password"));
 			}
 		});
 	}).catch(function(err){

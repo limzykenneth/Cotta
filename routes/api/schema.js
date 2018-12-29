@@ -7,7 +7,10 @@ const restrict = require("../../utils/middlewares/restrict.js");
 const Schemas = new ActiveRecord({
 	tableSlug: "_schema"
 });
-
+const ActiveSchema = ActiveRecord.ActiveSchema;
+//-----------------------
+// Pattern here is not in line with implemented active record pattern -----------
+//-----------------------
 // Route: {root}/api/schema/...
 
 // GET routes
@@ -42,9 +45,21 @@ router.post("/", restrict.toEditor, function(req, res){
 			schemas[0].data = req.body;
 			return schemas[0].save();
 		}else{
+			let table;
 			// Create new schema
-			let schema = new Schema.Model(req.body);
-			return schema.save();
+			return ActiveSchema.createTable({
+				tableSlug: req.body.collectionSlug,
+				tableName: req.body.collectionName,
+				indexColumns: {
+					name: "_uid",
+					unique: true,
+					autoIncrement: true
+				}
+			}).then(() => {
+				return Schema.Schema.read(req.body.collectionSlug);
+			}).then(() => {
+				return Schema.Schema.addColumns(req.body.fields);
+			});
 		}
 	}).then(() => {
 		Schema.findBy({collectionSlug: req.body.collectionSlug}).then((schema) => {

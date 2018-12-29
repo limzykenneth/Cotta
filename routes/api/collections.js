@@ -6,11 +6,8 @@ const jwt = require("jsonwebtoken");
 const router = express.Router();
 const Promise = require("bluebird");
 const ActiveRecord = require("active-record");
-const autoIncrement = require("mongodb-autoincrement");
 
 Promise.promisifyAll(jwt);
-Promise.promisifyAll(autoIncrement);
-const connect = require("../../utils/database.js");
 const restrict = require("../../utils/middlewares/restrict.js");
 const CharError = require("../../utils/charError.js");
 
@@ -51,12 +48,12 @@ router.post("/:collectionSlug", restrict.toAuthor, function(req, res, next){
 	let Collection = new ActiveRecord({
 		tableSlug: req.params.collectionSlug
 	});
-	let schema = new Collection.Schema();
+
+	let schema = Collection.Schema;
 	schema.read(req.params.collectionSlug).then(() => {
 		var fields = schema.definition;
 		var fieldsLength = schema.definition.length;
 		var count = 0;
-
 		// Comparing the schema with the provided data fields
 		for(let i=0; i<fields.length; i++){
 			let slug = fields[i].slug;
@@ -81,7 +78,6 @@ router.post("/:collectionSlug", restrict.toAuthor, function(req, res, next){
 					});
 				}
 			});
-
 			return Promise.resolve();
 		}
 	}).then(() => {
@@ -94,122 +90,28 @@ router.post("/:collectionSlug", restrict.toAuthor, function(req, res, next){
 			date_created: moment.utc().format(),
 			date_modified: moment.utc().format()
 		};
-		console.log("new", data);
 
-		// Set increment index (should be abstracted if RDBS is to be used)
-		// autoIncrement.setDefaults({collection: "_counters"});
-		// return autoIncrement.getNextSequenceAsync(Collection._db, req.params.collectionSlug).then(function(autoIndex){
-		// 	// Set unique auto incrementing index
-		// 	data._uid = autoIndex;
-		// 	// Update user
+		// Insert data
+		let model = new Collection.Model(data);
+		return model.save().then(() => {
+			return Promise.resolve(model.data);
+		});
 
-		// 	return Promise.resolve(db);
-
-		// }).then(function(db){
-		// 	// Insert data into database
-		// 	return db.collection(req.params.collectionSlug).insertOne(data).then(function(){
-		// 		return Promise.resolve(data);
+		// PENDING: update user model to relfect ownership of model
+		// 	// Update user schema
+		// 	db.collection("_users_auth").updateOne({"username": req.user.username}, {
+		// 		$addToSet:{
+		// 			models: `${req.params.collectionSlug}.${data._uid}`
+		// 		}
 		// 	});
-		// });
-	});
-
-	// Check schema
-	connect.then(function(db){
-		return db.collection("_schema").findOne({"collectionSlug": req.params.collectionSlug})
-			.then(function(data){
-				var fields = data.fields;
-				var fieldsLength = data.fields.length;
-				var count = 0;
-
-				// Comparing the schema with the provided data fields
-				for(let i=0; i<fields.length; i++){
-					let slug = fields[i].slug;
-					_.each(req.body, function(el, i){
-						if(slug === i){
-							count++;
-						}
-					});
-				}
-
-				if(count !== fieldsLength){
-					// Schema mismatched
-					return Promise.reject(new CharError("Invalid Schema", `The provided fields does not match schema entry of ${req.params.collectionSlug} in the database`, 400));
-				}else{
-					// Schema matched continue processing
-					// Check for file upload field
-					_.each(fields, function(el, i){
-						if(el.type == "files"){
-							// Record the fields and also the data path intended(?)
-							jwtData.fields.push({
-								field: req.body[el.slug]
-							});
-						}
-					});
-
-					return Promise.resolve(db);
-				}
-			});
-
-	}).then(function(db){
-
-		// Process data
-
-		let data = req.body;
-
-		// Create metadata
-		data._metadata = {
-			created_by: req.user.username,
-			date_created: moment.utc().format(),
-			date_modified: moment.utc().format()
-		};
-
-		console.log("old", data);
-
-		// Update user schema
-		db.collection("_users_auth").updateOne({"username": req.user.username}, {
-			$addToSet:{
-				models: `${req.params.collectionSlug}.${data._uid}`
-			}
-		});
-
-		// Set increment index (should be abstracted if RDBS is to be used)
-		autoIncrement.setDefaults({collection: "_counters"});
-		return autoIncrement.getNextSequenceAsync(db, req.params.collectionSlug).then(function(autoIndex){
-			// Set unique auto incrementing index
-			data._uid = autoIndex;
-			return Promise.resolve(db);
-
-		}).then(function(db){
-			// Insert data into database
-			return db.collection(req.params.collectionSlug).insertOne(data).then(function(){
-				return Promise.resolve(data);
-			});
-		});
-	}).then(function(data){
-		// Data insertion successful
-		if(jwtData.fields.length > 0){
-			// There are file upload fields
-			// Set the model ID
-			jwtData.id = `${req.params.collectionSlug}.${data._uid}`;
-			// jwt signature, limited to 1 hour for file upload
-			jwt.signAsync(jwtData, secret, {
-				expiresIn: "1h"
-			}).then(function(token){
-				res.set("X-Char-upload-token", token);
-				res.json(data);
-			});
-		}else{
-			// No upload fields so just continue
-			res.json(data);
-		}
-	}).catch(function(err){
-		next(err);
+	}).then((data) => {
+		res.json(data);
 	});
 });
 
 // POST to specific model in a collection (edit existing model)
 router.post("/:collectionSlug/:modelID", restrict.toAuthor, function(req, res, next){
-	let promises = [connect];
+	let promises = [];
 	if(req.user.role != "administrator" && req.user.role != "editor"){
 		promises.push(ownModel(req.user.username, req.params.collectionSlug, req.params.modelID));
 	}
@@ -259,7 +161,10 @@ router.post("/:collectionSlug/:modelID", restrict.toAuthor, function(req, res, n
 
 				// Set metadata
 				model.data._metadata.date_modified = moment.utc().format();
-				_.merge(model.data, data);
+				// Set new data into model
+				for(let key in data){
+					model.data[key] = data[key];
+				}
 				// Insert into database
 				return model.save();
 			}).then(() => {
