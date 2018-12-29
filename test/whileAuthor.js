@@ -3,7 +3,6 @@ const session = require("supertest-session");
 const assert = require("chai").assert;
 const _ = require("lodash");
 const app = require("../app.js");
-const connect = require("../utils/database.js");
 
 var testSession = null;
 
