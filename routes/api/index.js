@@ -7,7 +7,7 @@ const schema = require("./schema.js");
 const users = require("./users.js");
 const collections = require("./collections.js");
 const tokens = require("./tokens.js");
-const upload = require("./upload/upload.js");
+// const upload = require("./upload/upload.js");
 
 // Mount Token routes
 router.use("/tokens", tokens);
@@ -28,7 +28,7 @@ router.use("/collections", collections);
 router.use("/account", collections);
 
 // Mount upload paths
-router.use("upload", upload);
+// router.use("upload", upload);
 
 // Default
 router.use("/", function(req, res){

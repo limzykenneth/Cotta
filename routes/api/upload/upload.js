@@ -10,7 +10,7 @@ const randomstring = require("randomstring");
 const Promise = require("bluebird");
 const jwt = require('jsonwebtoken');
 Promise.promisifyAll(jwt);
-const connect = require("../../../utils/database.js");
+// const connect = require("../../../utils/database.js");
 const restrict = require("../../../utils/middlewares/restrict.js");
 const CharError = require("../../../utils/charError.js");
 

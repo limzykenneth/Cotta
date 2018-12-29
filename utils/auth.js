@@ -1,5 +1,4 @@
 const bcrypt = require("bcrypt");
-const connect = require("./database.js");
 const moment = require("moment");
 const ActiveRecord = require("active-record");
 
@@ -42,20 +41,13 @@ auth.signup = function(name, pass, fn){
 	bcrypt.hash(pass, 10, function(err, hash){
 		if(err) return fn(new Error("Unexpected error occurred"));
 
-		connect.then(function(db){
-			// Ensure username to be unique (to be tested)
-			return db.collection("_users_auth").createIndex({"username": 1}, {unique: true}).then(function(){
-				return Promise.resolve(db);
-			});
-		}).then(function(db){
-			// Insert data of new user into database under _users_auth collection
-			return db.collection("_users_auth").insertOne({
-				"username": name,
-				"hash": hash,
-				"role": "author",
-				"date_created": moment.utc().format()
-			});
-		}).then(function(){
+		let user = new Users.Model({
+			"username": name,
+			"hash": hash,
+			"role": "author",
+			"date_created": moment.utc().format()
+		});
+		user.save().then(() => {
 			fn(null);
 		}).catch(function(err){
 			fn(err);
@@ -63,7 +55,7 @@ auth.signup = function(name, pass, fn){
 	});
 };
 
-// Change password function with authentication built in
+// Change password function with authentication built in (ROUTE NOT ACTIVE)
 auth.changePassword = function(name, currentPassword, newPassword, fn){
 	// Authenticate with the provided username and password
 	this.authenticate(name, currentPassword, function(err, result){
@@ -71,10 +63,10 @@ auth.changePassword = function(name, currentPassword, newPassword, fn){
 
 		// Hash the new password
 		bcrypt.hash(newPassword, 10, function(err, hash){
-			connect.then(function(db){
-				// Update the password hash with the new one
-				return db.collection("_users_auth").updateOne({"username": name}, {$set: {"hash": hash}});
-			}).then(function(){
+			Users.findBy({"username": name}).then((user) => {
+				user.data.hash = hash;
+				return user.save();
+			}).then(() => {
 				fn(null, result);
 			}).catch(function(err){
 				fn(err);
