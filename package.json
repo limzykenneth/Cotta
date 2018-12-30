@@ -3,7 +3,7 @@
   "version": "0.0.2",
   "scripts": {
     "start": "node ./bin/www",
-    "dev-server": "{ gulp server & gulp server -f; }"
+    "server": "gulp server"
   },
   "dependencies": {
     "active-record": "git+https://github.com/limzykenneth/absurd-raven.git#45b08c452a089e10d2a788ee9540e6ffb37f19d7",
