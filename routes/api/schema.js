@@ -70,18 +70,33 @@ router.post("/", restrict.toEditor, function(req, res){
 
 // DELETE routes
 // DELETE specified schema (and all posts in it)
-router.delete("/:schema", restrict.toEditor, function(req, res){
-	let Schema = new ActiveRecord({
+router.delete("/:schema", restrict.toEditor, function(req, res, next){
+	const Schema = new ActiveRecord({
 		tableSlug: "_schema"
 	});
 
-	Schema.findBy({collectionSlug: req.params.schema}).then((schema) => {
-		schema.destroy().then(() => {
-			res.json({
-				status: "success",
-				message: "Schema deleted."
-			});
+	// NOT INTENDED, SHOULD REMOVE!
+	const Counter = new ActiveRecord({
+		tableSlug: "_counters"
+	});
+
+	const promises = [];
+
+	promises.push(Counter.findBy({collection: req.params.schema}).then((entry) => {
+		return entry.destroy();
+	}));
+
+	promises.push(Schema.findBy({collectionSlug: req.params.schema}).then((schema) => {
+		return schema.destroy();
+	}));
+
+	Promise.all(promises).then(() => {
+		res.json({
+			status: "success",
+			message: "Schema deleted."
 		});
+	}).catch((err) => {
+		next(err);
 	});
 });
 

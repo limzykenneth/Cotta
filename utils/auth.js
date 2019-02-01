@@ -58,7 +58,7 @@ auth.signup = function(name, pass, fn){
 // Change password function with authentication built in (ROUTE NOT ACTIVE)
 auth.changePassword = function(name, currentPassword, newPassword, fn){
 	// Authenticate with the provided username and password
-	this.authenticate(name, currentPassword, function(err, result){
+	auth.authenticate(name, currentPassword, function(err, result){
 		if(err) fn(err);
 
 		// Hash the new password

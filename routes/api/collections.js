@@ -190,7 +190,7 @@ router.delete("/:collectionSlug", restrict.toAuthor, function(req, res){
 });
 
 // DELETE specific model in a collection
-router.delete("/:collectionSlug/:modelID", restrict.toAuthor, function(req, res){
+router.delete("/:collectionSlug/:modelID", restrict.toAuthor, function(req, res, next){
 	let promises = [];
 	if(req.user.role != "administrator" && req.user.role != "editor"){
 		promises.push(ownModel(req.user.username, req.params.collectionSlug, req.params.modelID));
@@ -203,8 +203,9 @@ router.delete("/:collectionSlug/:modelID", restrict.toAuthor, function(req, res)
 		});
 		return Collection.findBy({"_uid": parseInt(req.params.modelID)});
 	}).then((model) => {
+		const retModel = _.cloneDeep(model.data);
 		model.destroy().then((col) => {
-			res.json(model.data);
+			res.json(retModel);
 		});
 	}).catch(function(err){
 		next(err);

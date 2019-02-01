@@ -8,7 +8,7 @@ const CharError = require("../../utils/charError.js");
 
 // Change password
 router.post("/change_password", function(req, res, next){
-	auth.changePassword(req.user.username, req.body.password, req.body.newPassword, function(err, result){
+	auth.changePassword(req.body.username, req.body.password, req.body.newPassword, function(err, result){
 		if(err) {
 			let error = new CharError();
 
@@ -24,7 +24,7 @@ router.post("/change_password", function(req, res, next){
 		}
 
 		res.json({
-			message: `User ${req.user.username}'s password changed`
+			message: `User ${req.body.username}'s password changed`
 		});
 	});
 });

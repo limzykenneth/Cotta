@@ -6,6 +6,7 @@ const auth = require("./auth.js");
 const schema = require("./schema.js");
 const users = require("./users.js");
 const collections = require("./collections.js");
+const account = require("./account.js");
 const tokens = require("./tokens.js");
 // const upload = require("./upload/upload.js");
 
@@ -25,7 +26,7 @@ router.use("/users", users);
 router.use("/collections", collections);
 
 // Mount account related routes
-router.use("/account", collections);
+router.use("/account", account);
 
 // Mount upload paths
 // router.use("upload", upload);
