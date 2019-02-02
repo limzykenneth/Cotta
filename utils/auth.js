@@ -36,7 +36,7 @@ auth.authenticate = function(name, pass, fn) {
 };
 
 // Sign up function
-auth.signup = function(name, pass, fn){
+auth.signup = function(name, pass, role, fn){
 	// Hash the password with bcrypt. Iterations might need to be adjusted
 	bcrypt.hash(pass, 10, function(err, hash){
 		if(err) return fn(new Error("Unexpected error occurred"));
@@ -44,7 +44,7 @@ auth.signup = function(name, pass, fn){
 		let user = new Users.Model({
 			"username": name,
 			"hash": hash,
-			"role": "author",
+			"role": role,
 			"date_created": moment.utc().format()
 		});
 		user.save().then(() => {

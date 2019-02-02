@@ -50,7 +50,7 @@ router.post("/", restrict.toAdministrator, function(req, res, next){
 	}
 
 	var data = req.body;
-	auth.signup(data.username, data.password, function(err, result){
+	auth.signup(data.username, data.password, "author", function(err, result){
 		if(err) {
 			if(err.name == "MongoError" && err.code == 11000){
 				// Duplicate username

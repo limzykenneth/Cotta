@@ -8,10 +8,14 @@ const users = require("./users.js");
 const collections = require("./collections.js");
 const account = require("./account.js");
 const tokens = require("./tokens.js");
+const signup = require("./signup.js");
 // const upload = require("./upload/upload.js");
 
 // Mount Token routes
 router.use("/tokens", tokens);
+
+// Mount Signup routes
+router.use("/signup", signup);
 
 // Authenticate all routes (auth.js determine if it's requried or not)
 router.use(auth);
