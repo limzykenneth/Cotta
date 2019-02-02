@@ -61,7 +61,9 @@ router.post("/", restrict.toAdministrator, function(req, res, next){
 			return;
 		}
 
-		res.json(result);
+		res.json({
+			"message": `User "${result}" created`
+		});
 	});
 });
 

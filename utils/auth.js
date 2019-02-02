@@ -48,7 +48,7 @@ auth.signup = function(name, pass, fn){
 			"date_created": moment.utc().format()
 		});
 		user.save().then(() => {
-			fn(null);
+			fn(null, user.data.username);
 		}).catch(function(err){
 			fn(err);
 		});
