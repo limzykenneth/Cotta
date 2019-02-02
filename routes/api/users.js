@@ -68,15 +68,26 @@ router.post("/", restrict.toAdministrator, function(req, res, next){
 });
 
 // POST to a user (edit existing user)
-// router.post("/:username", restrict.toAdministrator, function(req, res, next){
-// 	auth.changePassword(req.params.username, req.body.password, req.body.newPassword, function(err, user){
-// 		if(err) next(err);
-
-// 		res.json({
-// 			message: `User ${req.params.username}'s password changed`
-// 		});
-// 	});
-// });
+router.post("/:username", restrict.toAdministrator, function(req, res, next){
+	if(req.params.username === req.body.username){
+		if(req.body.role){
+			const username = req.body.username;
+			const newRole = req.body.role;
+			Users.findBy({"username": username}).then((user) => {
+				user.data.role = newRole;
+				user.save().then((result) => {
+					res.json({
+						"message": `User "${user.data.username}" changed`
+					});
+				});
+			});
+		}else{
+			next(new CharError("Request body missing field"));
+		}
+	}else{
+		next(new CharError("Request body does not match route"));
+	}
+});
 
 
 // DELETE routes
