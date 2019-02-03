@@ -1,20 +1,21 @@
 require("dotenv").config();
 const express = require("express");
 const path = require("path");
-const logger = require("morgan");
 const bodyParser = require("body-parser");
 const _ = require("lodash");
 const cors = require("cors");
+const morgan = require("morgan");
 
+const logger = require("./logger.js");
 const errors = require("./errors.js");
 
 // const index = require("./routes/index");
 const api = require("./routes/api/index.js");
 
 // Express
-let app = express();
+const app = express();
 
-app.use(logger("dev"));
+app.use(morgan("dev", { "stream": logger.stream }));
 
 app.use(cors());
 // Parsers
