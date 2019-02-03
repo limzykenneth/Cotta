@@ -1,7 +1,7 @@
 const winston = require("winston");
 const moment = require("moment");
 
-let charLogger = new (winston.Logger)({
+const charLogger = new (winston.Logger)({
 	colors:{
 		error: "red",
 		warn: "yellow",

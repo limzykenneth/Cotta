@@ -2,10 +2,10 @@ const bcrypt = require("bcrypt");
 const moment = require("moment");
 const ActiveRecord = require("active-record");
 
-let Users = new ActiveRecord({
+const Users = new ActiveRecord({
 	tableSlug: "_users_auth"
 });
-let auth = {};
+const auth = {};
 
 // Basic authentication
 // Compares user password bcrypt hash
@@ -41,7 +41,7 @@ auth.signup = function(name, pass, role, fn){
 	bcrypt.hash(pass, 10, function(err, hash){
 		if(err) return fn(new Error("Unexpected error occurred"));
 
-		let user = new Users.Model({
+		const user = new Users.Model({
 			"username": name,
 			"hash": hash,
 			"role": role,

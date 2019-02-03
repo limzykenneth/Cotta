@@ -10,7 +10,7 @@ const CharError = require("../../utils/charError.js");
 router.post("/change_password", function(req, res, next){
 	auth.changePassword(req.body.username, req.body.password, req.body.newPassword, function(err, result){
 		if(err) {
-			let error = new CharError();
+			const error = new CharError();
 
 			if(err.message == "invalid password"){
 				error.title = "Authentication Failed";

@@ -43,13 +43,13 @@ router.get("/:username", restrict.toAdministrator, function(req, res){
 // POST routes
 // POST to create a new user
 router.post("/", restrict.toAdministrator, function(req, res, next){
-	let reservedUsernames = ["Anonymous", "anonymous"];
+	const reservedUsernames = ["Anonymous", "anonymous"];
 	if(_.includes(reservedUsernames, req.body.username)){
 		next(new CharError("Username not available", `${req.body.username} is a reserved username and cannot be registered`));
 		return;
 	}
 
-	var data = req.body;
+	const data = req.body;
 	auth.signup(data.username, data.password, "author", function(err, result){
 		if(err) {
 			if(err.name == "MongoError" && err.code == 11000){
@@ -93,7 +93,7 @@ router.post("/:username", restrict.toAdministrator, function(req, res, next){
 // DELETE routes
 // DELETE specific user
 router.delete("/:username", restrict.toAdministrator, function(req, res){
-	let User = new ActiveRecord({
+	const User = new ActiveRecord({
 		tableSlug: "_users_auth"
 	});
 

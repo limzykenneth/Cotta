@@ -34,7 +34,7 @@ router.get("/:schema", restrict.toEditor, function(req, res){
 // POST routes
 // POST specified schema (add new and edit)
 router.post("/", restrict.toEditor, function(req, res){
-	let Schema = new ActiveRecord({
+	const Schema = new ActiveRecord({
 		tableSlug: "_schema"
 	});
 

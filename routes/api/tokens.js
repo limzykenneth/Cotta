@@ -22,7 +22,7 @@ router.post("/generate_new_token", function(req, res, next){
 	// First, authenticate username and password pair
 	auth.authenticate(req.body.username, req.body.password, function(err){
 		if(err) {
-			let error = new CharError();
+			const error = new CharError();
 
 			if(err.message == "invalid password"){
 				error.title = "Authentication Failed";

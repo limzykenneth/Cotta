@@ -18,7 +18,7 @@ const secret = process.env.JWT_SECRET;
 // GET routes
 // GET collection with slug
 router.get("/:collectionSlug", function(req, res){
-	let Collection = new ActiveRecord({
+	const Collection = new ActiveRecord({
 		tableSlug: req.params.collectionSlug
 	});
 	Collection.all().then((collection) => {
@@ -28,7 +28,7 @@ router.get("/:collectionSlug", function(req, res){
 
 // GET specific model from a collection
 router.get("/:collectionSlug/:modelID", function(req, res){
-	let Collection = new ActiveRecord({
+	const Collection = new ActiveRecord({
 		tableSlug: req.params.collectionSlug
 	});
 	Collection.findBy({"_uid": parseInt(req.params.modelID)}).then((collection) => {
@@ -41,22 +41,22 @@ router.get("/:collectionSlug/:modelID", function(req, res){
 // POST to specific collection (create new model)
 // Insert as is into database, just adding metadata and uid
 router.post("/:collectionSlug", restrict.toAuthor, function(req, res, next){
-	let jwtData = {
+	const jwtData = {
 		fields: []
 	};
 
-	let Collection = new ActiveRecord({
+	const Collection = new ActiveRecord({
 		tableSlug: req.params.collectionSlug
 	});
 
-	let schema = Collection.Schema;
+	const schema = Collection.Schema;
 	schema.read(req.params.collectionSlug).then(() => {
-		var fields = schema.definition;
-		var fieldsLength = schema.definition.length;
-		var count = 0;
+		const fields = schema.definition;
+		const fieldsLength = schema.definition.length;
+		let count = 0;
 		// Comparing the schema with the provided data fields
 		for(let i=0; i<fields.length; i++){
-			let slug = fields[i].slug;
+			const slug = fields[i].slug;
 			_.each(req.body, function(el, i){
 				if(slug === i){
 					count++;
@@ -82,7 +82,7 @@ router.post("/:collectionSlug", restrict.toAuthor, function(req, res, next){
 		}
 	}).then(() => {
 		// Process data
-		let data = req.body;
+		const data = req.body;
 
 		// Create metadata
 		data._metadata = {
@@ -92,7 +92,7 @@ router.post("/:collectionSlug", restrict.toAuthor, function(req, res, next){
 		};
 
 		// Insert data
-		let model = new Collection.Model(data);
+		const model = new Collection.Model(data);
 		return model.save().then(() => {
 			return Promise.resolve(model.data);
 		});
@@ -111,26 +111,26 @@ router.post("/:collectionSlug", restrict.toAuthor, function(req, res, next){
 
 // POST to specific model in a collection (edit existing model)
 router.post("/:collectionSlug/:modelID", restrict.toAuthor, function(req, res, next){
-	let promises = [];
+	const promises = [];
 	if(req.user.role != "administrator" && req.user.role != "editor"){
 		promises.push(ownModel(req.user.username, req.params.collectionSlug, req.params.modelID));
 	}
 
-	let data = req.body;
+	const data = req.body;
 
 	Promise.all(promises).then(function(val){
-		let Schema = new ActiveRecord({
+		const Schema = new ActiveRecord({
 			tableSlug: "_schema"
 		});
 
 		Schema.findBy({"collectionSlug": req.params.collectionSlug}).then((schema) => {
 			// Check input against schema
-			var fields = schema.data.fields;
-			var slugs = fields.map(function(el){
+			const fields = schema.data.fields;
+			const slugs = fields.map(function(el){
 				return el.slug;
 			});
-			var fieldsLength = fields.length;
-			var valid = true;
+			const fieldsLength = fields.length;
+			let valid = true;
 
 			_.each(req.body, function(el, key){
 				if(!(_.includes(slugs, key))){
@@ -149,7 +149,7 @@ router.post("/:collectionSlug/:modelID", restrict.toAuthor, function(req, res, n
 				return Promise.reject(new CharError("Invalid Schema", `The provided fields does not match schema entry of ${req.params.collectionSlug} in the database`), 400);
 			}
 		}).then(() => {
-			let Collection = new ActiveRecord({
+			const Collection = new ActiveRecord({
 				tableSlug: req.params.collectionSlug
 			});
 			Collection.findBy({"_uid": parseInt(req.params.modelID)}).then((model) => {
@@ -191,14 +191,14 @@ router.delete("/:collectionSlug", restrict.toAuthor, function(req, res){
 
 // DELETE specific model in a collection
 router.delete("/:collectionSlug/:modelID", restrict.toAuthor, function(req, res, next){
-	let promises = [];
+	const promises = [];
 	if(req.user.role != "administrator" && req.user.role != "editor"){
 		promises.push(ownModel(req.user.username, req.params.collectionSlug, req.params.modelID));
 	}
 
-	var data;
+	let data;
 	Promise.all(promises).then(function(val){
-		let Collection = new ActiveRecord({
+		const Collection = new ActiveRecord({
 			tableSlug: req.params.collectionSlug
 		});
 		return Collection.findBy({"_uid": parseInt(req.params.modelID)});
@@ -225,7 +225,7 @@ module.exports = router;
 
 // Utils
 function ownModel(username, collectionSlug, modelID){
-	let Collection = new ActiveRecord({
+	const Collection = new ActiveRecord({
 		tableSlug: collectionSlug
 	});
 	return Collection.findBy({"username": username}).then((user) => {
