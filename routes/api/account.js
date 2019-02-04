@@ -14,7 +14,7 @@ router.post("/change_password", function(req, res, next){
 
 			if(err.message == "invalid password"){
 				error.title = "Authentication Failed";
-				error.message = "Username or password provided is incorrect";
+				error.message = "Password provided is incorrect";
 				error.status = 401;
 			}
 
@@ -24,7 +24,7 @@ router.post("/change_password", function(req, res, next){
 		}
 
 		res.json({
-			message: `User ${req.body.username}'s password changed`
+			message: `User "${req.body.username}" password changed`
 		});
 	});
 });

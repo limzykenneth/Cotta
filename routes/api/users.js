@@ -45,7 +45,7 @@ router.get("/:username", restrict.toAdministrator, function(req, res){
 router.post("/", restrict.toAdministrator, function(req, res, next){
 	const reservedUsernames = ["Anonymous", "anonymous"];
 	if(_.includes(reservedUsernames, req.body.username)){
-		next(new CharError("Username not available", `${req.body.username} is a reserved username and cannot be registered`));
+		next(new CharError("Username not available", `"${req.body.username}" is a reserved username and cannot be registered`));
 		return;
 	}
 
@@ -54,7 +54,7 @@ router.post("/", restrict.toAdministrator, function(req, res, next){
 		if(err) {
 			if(err.name == "MongoError" && err.code == 11000){
 				// Duplicate username
-				next(new CharError("Username not available", `Username ${req.body.username} is already registered`));
+				next(new CharError("Username not available", `Username "${req.body.username}" is already registered`, 409));
 			}else{
 				next(new CharError());
 			}
@@ -100,7 +100,7 @@ router.delete("/:username", restrict.toAdministrator, function(req, res){
 	User.findBy({"username": req.params.username}).then((user) => {
 		user.destroy().then((col) => {
 			res.json({
-				message: `User ${req.params.username} deleted`
+				message: `User "${req.params.username}" deleted`
 			});
 		});
 	});

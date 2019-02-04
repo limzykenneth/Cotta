@@ -15,7 +15,7 @@ router.post("/", function(req, res, next){
 		if(err) {
 			if(err.name == "MongoError" && err.code == 11000){
 				// Duplicate username
-				next(new CharError("Username not available", `Username ${req.body.username} is already registered`));
+				next(new CharError("Username not available", `Username "${req.body.username}" is already registered`));
 			}else{
 				next(new CharError());
 			}
