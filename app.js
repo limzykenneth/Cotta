@@ -26,14 +26,9 @@ app.use(function(req, res, next){
 	next();
 });
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
 
 // Mount root to /public where custom front end lives
 app.use(express.static(path.join(__dirname, "public")));
-
-// WARN ----- Assets authentication should be considered
-// Mount /uploads where uploaded images goes
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Mount dynamic routes
 app.use("/api", api);

@@ -81,19 +81,21 @@ router.delete("/:schema", restrict.toEditor, function(req, res, next){
 	});
 
 	const promises = [];
+	let collectionName;
 
 	promises.push(Counter.findBy({collection: req.params.schema}).then((entry) => {
 		return entry.destroy();
 	}));
 
 	promises.push(Schema.findBy({collectionSlug: req.params.schema}).then((schema) => {
+		collectionName = schema.data.collectionName;
 		return schema.destroy();
 	}));
 
 	Promise.all(promises).then(() => {
 		res.json({
 			status: "success",
-			message: "Schema deleted."
+			message: `Schema "${collectionName}" deleted.`
 		});
 	}).catch((err) => {
 		next(err);
