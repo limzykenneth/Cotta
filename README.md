@@ -69,7 +69,7 @@ Requesting an upload begins by sending relevant metadata of the resource:
 * Owner (?)
 * File description (to bee used for aria)
 
-Next, the server evaluates the metadata: if file type is not acceptable, reject; if file size is too big, reject, etc. One checks passed, create an entry in the `_file_upload` table with the metadata fields plus two extra fields, one with timestamp of when the upload link will expire (`expire`), the other with a unique, one-time upload ID that defined the upload path for the resource. A response is then sent to the client with the route that they should upload the resource to and the expiry time of the upload path.
+Next, the server evaluates the metadata: if file type is not acceptable, reject; if file size is too big, reject, etc. Once checks passed, create an entry in the `_file_upload` table with the metadata fields plus two extra fields, one with timestamp of when the upload link will expire (`expire`), the other with a unique, one-time upload ID that defined the upload path for the resource. A response is then sent to the client with the route that they should upload the resource to and the expiry time of the upload path.
 
 Once the client receives the response, they check the expiry time to make sure it hasn't expired yet, if it has start from sending the metadata again. Then the client initiates raw file upload with the appropriate `Content-Type` header.
 
@@ -85,7 +85,7 @@ When the server received the upload:
 ```javascript
 {
 	"file_size": 1024,
-	"content-type": "audio/ogg"
+	"content-type": "audio/ogg",
 	"file_name": "sound.ogg",
 	"file_description": "Sound of silence"
 }
