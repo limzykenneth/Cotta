@@ -18,7 +18,7 @@ const restrict = require("../../utils/middlewares/restrict.js");
 // Configurations (hardcoded for now, should remove in the future)
 const limits = {
 	// Change to some integer value to limit file size
-	fileSize: 10000000,
+	fileSize: 1000000,
 	acceptedMIME: [
 		"audio/ogg",
 		"image/jpeg"
@@ -64,8 +64,6 @@ router.post("/:location", restrict.toAuthor, bodyParser.raw({
 }), function(req, res, next){
 	if(!_.includes(limits.acceptedMIME, req.headers["content-type"])){
 		return next(new CharError("Invalid MIME type", `File type "${req.headers["content-type"]}" is not supported`, 415));
-	}else if(req.headers["content-length"] > limits.fileSize || req.body.length > limits.fileSize){
-		return next(new CharError("File size too large", "File to be uploaded is over the limit accepted", 413));
 	}
 
 	Files.findBy({uploadLocation: req.params.location}).then((file) => {
@@ -82,11 +80,15 @@ router.post("/:location", restrict.toAuthor, bodyParser.raw({
 			file.data.file_name = `${fileNameArr.shift()}-${shortid.generate()}.${fileNameArr.join("")}`;
 			delete file.data.uploadExpire;
 			delete file.data.uploadLocation;
+			file.data.file_size = req.body.length;
 			file.data.modified_at = moment().format();
 			file.data.file_permalink = `${req.protocol}://${req.get("host")}/uploads/${file.data.file_name}`;
+
+			// Save uploaded file
 			fs.writeFile(path.join("./uploads/", file.data.file_name), req.body, (err) => {
 				if(err) return next(err);
 
+				// Save database entry of file
 				file.save().then(() => {
 					res.json({
 						resource_path: file.data.file_permalink

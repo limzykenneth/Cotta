@@ -1,4 +1,5 @@
 const logger = require("./logger.js");
+const CharError = require("./utils/charError.js");
 
 // Middlewares that directly handles errors passed from the application
 // Any new middleware added needs to be registered in app.js
@@ -16,6 +17,11 @@ errors.notFound = function(req, res, next) {
 
 // error handler
 errors.general = function(err, req, res, next) {
+	// Intercept errors coming from bodyParser
+	if(err.type === "entity.too.large"){
+		err = new CharError("File size too large", "File to be uploaded is over the limit accepted", 413);
+	}
+
 	// set locals, only providing error in development
 	res.locals.message = err.message;
 	res.locals.error = req.app.get("env") === "development" ? err : {};
