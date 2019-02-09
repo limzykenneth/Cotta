@@ -36,26 +36,59 @@ router.get("/", restrict.toAuthor, function(req, res, next) {
 });
 
 router.post("/", restrict.toAuthor, function(req, res, next){
-	if(!_.includes(limits.acceptedMIME, req.body["content-type"])){
-		return next(new CharError("Invalid MIME type", `File type "${req.body["content-type"]}" is not supported`, 415));
+	if(Array.isArray(req.body)){
+		const fileCollection = new Files.Collection(Files.Model, ...req.body);
+		const promises = [];
+		let err;
+		_.each(fileCollection, (file) => {
+			if(!_.includes(limits.acceptedMIME, file.data["content-type"])){
+				err = new CharError("Invalid MIME type", `File type "${file.data["content-type"]}" is not supported`, 415);
+				return false;
+			}else{
+				processFileMetadata(file);
+			}
+		});
+		if(err){
+			return next(err);
+		}else{
+			fileCollection.saveAll().then(() => {
+				const reply = fileCollection.map((file) => {
+					return {
+						location: `${req.protocol}://${req.get("host")}/api/upload/${file.data.uploadLocation}`,
+						uploadExpire: file.data.uploadExpire,
+						fileSizeLimit: limits.fileSize
+					};
+				});
+				res.json(reply);
+			});
+		}
+	}else{
+		const file = new Files.Model(req.body);
+
+		if(!_.includes(limits.acceptedMIME, file.data["content-type"])){
+			return next(new CharError("Invalid MIME type", `File type "${file.data["content-type"]}" is not supported`, 415));
+		}else{
+			processFileMetadata(file);
+			file.save().then(() => {
+				res.json({
+					location: `${req.protocol}://${req.get("host")}/api/upload/${file.data.uploadLocation}`,
+					uploadExpire: file.data.uploadExpire,
+					fileSizeLimit: limits.fileSize
+				});
+			});
+		}
 	}
 
-	const file = new Files.Model(req.body);
-	file.data.created_at = moment().format();
-	file.data.modified_at = moment().format();
-	file.data.file_owner = req.user.username;
-	file.data.uploadExpire = moment().add(1, "hours").format();
-	file.data.uploadLocation = shortid.generate();
-	if(!file.data.file_size){
-		file.data.file_size = limits.fileSize;
+	function processFileMetadata(file){
+		file.data.created_at = moment().format();
+		file.data.modified_at = moment().format();
+		file.data.file_owner = req.user.username;
+		file.data.uploadExpire = moment().add(1, "hours").format();
+		file.data.uploadLocation = shortid.generate();
+		if(!file.data.file_size){
+			file.data.file_size = limits.fileSize;
+		}
 	}
-	file.save().then(() => {
-		res.json({
-			location: `${req.protocol}://${req.get("host")}/api/upload/${file.data.uploadLocation}`,
-			uploadExpire: file.data.uploadExpire,
-			fileSizeLimit: limits.fileSize
-		});
-	});
 });
 
 router.post("/:location", restrict.toAuthor, bodyParser.raw({

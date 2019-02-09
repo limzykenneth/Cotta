@@ -6,7 +6,7 @@
     "server": "gulp server"
   },
   "dependencies": {
-    "active-record": "git+https://github.com/limzykenneth/absurd-raven.git#baebb085dfa84585b9ef4049f573b46105bdb55f",
+    "active-record": "git+https://github.com/limzykenneth/absurd-raven.git#73387eaea62638f7ed7092e0153aa1cc02ae9755",
     "bcrypt": "^3.0.3",
     "bluebird": "^3.5.2",
     "body-parser": "^1.18.3",
