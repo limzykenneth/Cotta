@@ -5,7 +5,7 @@ const Promise = require("bluebird");
 const path = require("path");
 const _ = require("lodash");
 const moment = require("moment");
-const shortid = require("shortid");
+const nanoid = require("nanoid");
 const ActiveRecord = require("active-record");
 const bodyParser = require("body-parser");
 
@@ -55,8 +55,7 @@ router.post("/", restrict.toAuthor, function(req, res, next){
 				const reply = fileCollection.map((file) => {
 					return {
 						location: `${req.protocol}://${req.get("host")}/api/upload/${file.data.uploadLocation}`,
-						uploadExpire: file.data.uploadExpire,
-						fileSizeLimit: limits.fileSize
+						uploadExpire: file.data.uploadExpire
 					};
 				});
 				res.json(reply);
@@ -71,9 +70,8 @@ router.post("/", restrict.toAuthor, function(req, res, next){
 			processFileMetadata(file);
 			file.save().then(() => {
 				res.json({
-					location: `${req.protocol}://${req.get("host")}/api/upload/${file.data.uploadLocation}`,
+					location: `${req.protocol}://${req.get("host")}/api/upload/${file.data.uid}`,
 					uploadExpire: file.data.uploadExpire,
-					fileSizeLimit: limits.fileSize
 				});
 			});
 		}
@@ -84,7 +82,10 @@ router.post("/", restrict.toAuthor, function(req, res, next){
 		file.data.modified_at = moment().format();
 		file.data.file_owner = req.user.username;
 		file.data.uploadExpire = moment().add(1, "hours").format();
-		file.data.uploadLocation = shortid.generate();
+		file.data.uid = nanoid(20);
+		const fileExt = path.extname(file.data.file_name) || "";
+		file.data.file_permalink = `${req.protocol}://${req.get("host")}/uploads/${file.data.uid}${fileExt}`;
+		file.data.saved_path = null;
 		if(!file.data.file_size){
 			file.data.file_size = limits.fileSize;
 		}
@@ -99,7 +100,7 @@ router.post("/:location", restrict.toAuthor, bodyParser.raw({
 		return next(new CharError("Invalid MIME type", `File type "${req.headers["content-type"]}" is not supported`, 415));
 	}
 
-	Files.findBy({uploadLocation: req.params.location}).then((file) => {
+	Files.findBy({uid: req.params.location}).then((file) => {
 		if(file.data === null){
 			next(new CharError("Invalid upload URL", "Upload URL is invalid", 400));
 		}else if(file.data["content-type"] !== req.headers["content-type"]){
@@ -107,18 +108,22 @@ router.post("/:location", restrict.toAuthor, bodyParser.raw({
 		}else if(moment(file.data.uploadExpire).isBefore(moment())){
 			file.destroy();
 			next(new CharError("Upload Link Expired", "This upload link has expired", 400));
+		}else if(file.data.saved_path !== null){
+			// File already exist
+			next(new CharError("Invalid upload URL", "Upload URL is invalid", 400));
 		}else{
-			// Set file name to be unique
-			var fileNameArr = file.data.file_name.split(".");
-			file.data.file_name = `${fileNameArr.shift()}-${shortid.generate()}.${fileNameArr.join("")}`;
+			// Get file extension
+			const fileExt = path.extname(file.data.file_name) || "";
+			const savedName = `${file.data.uid}${fileExt}`;
 			delete file.data.uploadExpire;
 			delete file.data.uploadLocation;
 			file.data.file_size = req.body.length;
 			file.data.modified_at = moment().format();
-			file.data.file_permalink = `${req.protocol}://${req.get("host")}/uploads/${file.data.file_name}`;
+			file.data.saved_path = path.join("./uploads/", savedName);
+			file.data.file_permalink = `${req.protocol}://${req.get("host")}/uploads/${savedName}`;
 
 			// Save uploaded file
-			fs.writeFile(path.join("./uploads/", file.data.file_name), req.body, (err) => {
+			fs.writeFile(file.data.saved_path, req.body, (err) => {
 				if(err) return next(err);
 
 				// Save database entry of file
