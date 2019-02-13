@@ -12,6 +12,7 @@ const path = require("path");
 Promise.promisifyAll(jwt);
 const restrict = require("../../utils/middlewares/restrict.js");
 const CharError = require("../../utils/charError.js");
+const uploadUtils = require("./uploadUtils.js");
 
 const secret = process.env.JWT_SECRET;
 
@@ -99,17 +100,9 @@ router.post("/:collectionSlug", restrict.toAuthor, function(req, res, next){
 								next(new CharError("Invalid MIME type", `File type "${file.data["content-type"]}" is not supported`, 415));
 								return false; // Exit _.each
 							}else{
-								processFileMetadata(file);
+								uploadUtils.processFileMetadata(file, req);
 								filePromises.push(file.save().then(() => {
-									// Model will save a reference to the uploaded file
-									// The client will be responsible for uploading the file
-									// so that the link saved in the model will work
-									entry.uid = file.data.uid;
-									entry.permalink = file.data.file_permalink;
-									// File link will be write once only
-									entry.upload_link = `${req.protocol}://${req.get("host")}/api/upload/${file.data.uid}`;
-									entry.upload_expire = file.data.uploadExpire;
-									return Promise.resolve(file);
+									return uploadUtils.setFileEntryMetadata(entry, file, req);
 								}));
 							}
 						});
@@ -122,17 +115,9 @@ router.post("/:collectionSlug", restrict.toAuthor, function(req, res, next){
 							next(new CharError("Invalid MIME type", `File type "${file.data["content-type"]}" is not supported`, 415));
 							return false;
 						}else{
-							processFileMetadata(file);
+							uploadUtils.processFileMetadata(file, req);
 							filePromises.push(file.save().then(() => {
-								// Model will save a reference to the uploaded file
-								// The client will be responsible for uploading the file
-								// so that the link saved in the model will work
-								model.data[el.slug].uid = file.data.uid;
-								model.data[el.slug].permalink = file.data.file_permalink;
-								// File link will be write once only
-								model.data[el.slug].upload_link = `${req.protocol}://${req.get("host")}/api/upload/${file.data.uid}`;
-								model.data[el.slug].upload_expire = file.data.uploadExpire;
-								return Promise.resolve(file);
+								return uploadUtils.setFileEntryMetadata(model.data[el.slug], file, req);
 							}));
 						}
 					}
@@ -144,19 +129,6 @@ router.post("/:collectionSlug", restrict.toAuthor, function(req, res, next){
 			});
 		}
 
-		function processFileMetadata(file){
-			file.data.created_at = moment().format();
-			file.data.modified_at = moment().format();
-			file.data.file_owner = req.user.username;
-			file.data.uploadExpire = moment().add(1, "hours").format();
-			file.data.uid = nanoid(20);
-			const fileExt = path.extname(file.data.file_name) || "";
-			file.data.file_permalink = `${req.protocol}://${req.get("host")}/uploads/${file.data.uid}${fileExt}`;
-			file.data.saved_path = null;
-			if(!file.data.file_size){
-				file.data.file_size = limits.fileSize;
-			}
-		}
 	}).then((model) => {
 		// Process data
 		// Create metadata

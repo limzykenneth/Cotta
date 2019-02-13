@@ -5,7 +5,6 @@ const Promise = require("bluebird");
 const path = require("path");
 const _ = require("lodash");
 const moment = require("moment");
-const nanoid = require("nanoid");
 const ActiveRecord = require("active-record");
 const bodyParser = require("body-parser");
 
@@ -14,6 +13,7 @@ const router = express.Router();
 
 const CharError = require("../../utils/charError.js");
 const restrict = require("../../utils/middlewares/restrict.js");
+const uploadUtils = require("./uploadUtils.js");
 
 // Configurations (hardcoded for now, should remove in the future)
 const limits = {
@@ -36,6 +36,7 @@ router.get("/", restrict.toAuthor, function(req, res, next) {
 });
 
 router.post("/", restrict.toAuthor, function(req, res, next){
+	// If given an array of images to process
 	if(Array.isArray(req.body)){
 		const fileCollection = new Files.Collection(Files.Model, ...req.body);
 		const promises = [];
@@ -45,7 +46,7 @@ router.post("/", restrict.toAuthor, function(req, res, next){
 				err = new CharError("Invalid MIME type", `File type "${file.data["content-type"]}" is not supported`, 415);
 				return false;
 			}else{
-				processFileMetadata(file);
+				uploadUtils.processFileMetadata(file, req);
 			}
 		});
 		if(err){
@@ -61,33 +62,21 @@ router.post("/", restrict.toAuthor, function(req, res, next){
 				res.json(reply);
 			});
 		}
+
+	// If given a single image to process
 	}else{
 		const file = new Files.Model(req.body);
 
 		if(!_.includes(limits.acceptedMIME, file.data["content-type"])){
 			return next(new CharError("Invalid MIME type", `File type "${file.data["content-type"]}" is not supported`, 415));
 		}else{
-			processFileMetadata(file);
+			uploadUtils.processFileMetadata(file, req);
 			file.save().then(() => {
 				res.json({
 					location: `${req.protocol}://${req.get("host")}/api/upload/${file.data.uid}`,
 					uploadExpire: file.data.uploadExpire,
 				});
 			});
-		}
-	}
-
-	function processFileMetadata(file){
-		file.data.created_at = moment().format();
-		file.data.modified_at = moment().format();
-		file.data.file_owner = req.user.username;
-		file.data.uploadExpire = moment().add(1, "hours").format();
-		file.data.uid = nanoid(20);
-		const fileExt = path.extname(file.data.file_name) || "";
-		file.data.file_permalink = `${req.protocol}://${req.get("host")}/uploads/${file.data.uid}${fileExt}`;
-		file.data.saved_path = null;
-		if(!file.data.file_size){
-			file.data.file_size = limits.fileSize;
 		}
 	}
 });
@@ -111,6 +100,7 @@ router.post("/:location", restrict.toAuthor, bodyParser.raw({
 		}else if(file.data.saved_path !== null){
 			// File already exist
 			next(new CharError("Invalid upload URL", "Upload URL is invalid", 400));
+
 		}else{
 			// Get file extension
 			const fileExt = path.extname(file.data.file_name) || "";
@@ -120,7 +110,6 @@ router.post("/:location", restrict.toAuthor, bodyParser.raw({
 			file.data.file_size = req.body.length;
 			file.data.modified_at = moment().format();
 			file.data.saved_path = path.join("./uploads/", savedName);
-			file.data.file_permalink = `${req.protocol}://${req.get("host")}/uploads/${savedName}`;
 
 			// Save uploaded file
 			fs.writeFile(file.data.saved_path, req.body, (err) => {
