@@ -21,8 +21,6 @@
     "morgan": "^1.9.1",
     "nanoid": "^2.0.1",
     "node-fetch": "^2.3.0",
-    "request": "^2.88.0",
-    "request-promise-any": "^1.0.7",
     "winston": "^3.2.1"
   },
   "devDependencies": {
