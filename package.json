@@ -3,7 +3,8 @@
   "version": "0.2.1",
   "scripts": {
     "start": "node ./bin/www",
-    "server": "gulp server"
+    "server": "gulp server",
+    "database": "mongod --auth --dbpath=./db"
   },
   "dependencies": {
     "active-record": "git+https://github.com/limzykenneth/absurd-raven.git#73387eaea62638f7ed7092e0153aa1cc02ae9755",
@@ -19,6 +20,9 @@
     "moment": "^2.24.0",
     "morgan": "^1.9.1",
     "nanoid": "^2.0.1",
+    "node-fetch": "^2.3.0",
+    "request": "^2.88.0",
+    "request-promise-any": "^1.0.7",
     "winston": "^3.2.1"
   },
   "devDependencies": {
