@@ -1,7 +1,7 @@
 // Main entry point for API uploading routes
 require("dotenv").config();
-const fs = require("fs");
 const Promise = require("bluebird");
+const fs = Promise.promisifyAll(require("fs"));
 const path = require("path");
 const _ = require("lodash");
 const moment = require("moment");
@@ -138,15 +138,13 @@ router.post("/:location", restrict.toAuthor, function(req, res, next){
 			file.data.modified_at = moment().format();
 			file.data.saved_path = path.join("./uploads/", savedName);
 
-			fs.writeFile(file.data.saved_path, buf, (err) => {
-				if(err) return Promise.reject(err);
-
-				file.save().then(() => {
+			return fs.writeFileAsync(file.data.saved_path, buf).then(() =>{
+				return file.save().then(() => {
 					res.json({
 						resource_path: file.data.file_permalink
 					});
 				}).catch((err) => {
-					next(err);
+					return Promise.reject(err);
 				});
 			});
 		}).catch((err) => {
@@ -182,16 +180,12 @@ router.post("/:location", restrict.toAuthor, function(req, res, next){
 				file.data.saved_path = path.join("./uploads/", savedName);
 
 				// Save uploaded file
-				fs.writeFile(file.data.saved_path, req.body, (err) => {
-					if(err) return next(err);
-
+				return fs.writeFileAsync(file.data.saved_path, req.body).then(() => {
 					// Save database entry of file
-					file.save().then(() => {
+					return file.save().then(() => {
 						res.json({
 							resource_path: file.data.file_permalink
 						});
-					}).catch((err) => {
-						next(err);
 					});
 				});
 			}
