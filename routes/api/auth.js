@@ -12,7 +12,7 @@ const secret = process.env.JWT_SECRET;
 // Catch all for authentication (temporary)
 router.use(function(req, res, next){
 	// Anonymous access to API
-	if(typeof req.token == "undefined" && process.env.ALLOW_ANNONYMOUS_TOKENS == "true"){
+	if(typeof req.token == "undefined" && process.env.ALLOW_UNAUTHORISED == "true"){
 		req.user = {
 			username: "Anonymous",
 			role: "anonymous"

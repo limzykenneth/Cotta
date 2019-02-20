@@ -1,3 +1,4 @@
+require("dotenv").config();
 const _ = require("lodash");
 const express = require("express");
 const ActiveRecord = require("active-record");
@@ -8,6 +9,15 @@ const restrict = require("../../utils/middlewares/restrict.js");
 const CharError = require("../../utils/charError.js");
 const Users = new ActiveRecord({
 	tableSlug: "_users_auth"
+});
+
+// Only allow signups if app setting allows it
+router.use(function(req, res, next){
+	if(process.env.ALLOW_SIGNUP === "true"){
+		next();
+	}else{
+		next(new CharError("Not Found", "Cannot find resource", 404));
+	}
 });
 
 router.post("/", function(req, res, next){

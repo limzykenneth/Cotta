@@ -4,6 +4,7 @@ const express = require("express");
 const ActiveRecord = require("active-record");
 const jwt = require("jsonwebtoken");
 const Promise = require("bluebird");
+const nanoid = require("nanoid");
 
 const router = express.Router();
 const auth = require("../../utils/auth.js");
@@ -49,9 +50,47 @@ router.post("/generate_new_token", function(req, res, next){
 	});
 });
 
-// router.post("/generate_anonymous_token", function(req, res, nex){
+router.post("/generate_anonymous_token", function(req, res, nex){
+	// First, authenticate username and password pair
+	auth.authenticate(req.body.username, req.body.password, function(err){
+		if(err) {
+			const error = new CharError();
 
-// });
+			if(err.message == "invalid password"){
+				error.title = "Authentication Failed";
+				error.message = "Username or password provided is incorrect";
+				error.status = 401;
+			}
+
+			next(error);
+			return;
+		}
+
+		// User sucessfully authenticated
+		// Next retrieve user info from database
+		Users.findBy({"username": req.body.username}).then((user) => {
+			const tokenID = nanoid(20);
+			if(Array.isArray(user.data.anonymous_tokens)){
+				user.data.anonymous_tokens.push(tokenID);
+			}else{
+				user.data.anonymous_tokens = [tokenID];
+			}
+
+			// Was meaning to save the token in the database but still need more implementation
+			// return user.save().then(() => {
+			return Promise.resolve(tokenID);
+			// });
+		}).then((tokenID) => {
+			return jwt.signAsync({
+				username: "anonymous",
+				role: "anonymous",
+				tokenID: tokenID
+			}, secret);
+		}).then((token) => {
+			res.json({"access_token": token});
+		});
+	});
+});
 
 router.use("/", function(req, res){
 	res.json({
