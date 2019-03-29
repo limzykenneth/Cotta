@@ -7,7 +7,7 @@
     "database": "mongod --auth --dbpath=./db"
   },
   "dependencies": {
-    "active-record": "git+https://github.com/limzykenneth/absurd-raven.git#855dfa0f6a8bd2bcf0a4b5d86ae75d8f59af4317",
+    "active-record": "git+https://github.com/limzykenneth/absurd-raven.git#d96273516d94d54695640c46bfa799306e88e5f0",
     "bcrypt": "^3.0.3",
     "bluebird": "^3.5.2",
     "body-parser": "^1.18.3",
