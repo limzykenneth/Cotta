@@ -22,7 +22,6 @@ app.use(cors());
 app.use(function(req, res, next){
 	if (req.headers.authorization && req.headers.authorization.split(" ")[0] === "Bearer") {
 		req.token = req.headers.authorization.split(" ")[1];
-		console.log(req.token);
 	}
 	next();
 });
