@@ -31,30 +31,34 @@ const Files = new ActiveRecord({
 	tableSlug: "files_upload"
 });
 
-router.get("/", restrict.toAuthor, function(req, res, next) {
-	res.json({
-		message: "Upload endpoint"
-	});
-});
-
+// File metadata post path
 router.post("/", restrict.toAuthor, function(req, res, next){
 	// If given an array of images to process
 	if(Array.isArray(req.body)){
 		const fileCollection = new Files.Collection(Files.Model, ...req.body);
 		const promises = [];
 		let err;
+
+		// Iterate over each model in collection
 		_.each(fileCollection, (file) => {
 			if(!_.includes(limits.acceptedMIME, file.data["content-type"])){
+				// Invalid file type
 				err = new CharError("Invalid MIME type", `File type "${file.data["content-type"]}" is not supported`, 415);
+				// No need to process further, halt loop immediately
 				return false;
 			}else{
+				// File type valid, populate metadata of model
 				uploadUtils.processFileMetadata(file, req);
 			}
 		});
+
 		if(err){
+			// Error found, return
 			return next(err);
 		}else{
+			// Save all entries into database
 			fileCollection.saveAll().then(() => {
+				// Get an array with relevant upload data of the collection
 				const reply = fileCollection.map((file) => {
 					return {
 						location: `${req.protocol}://${req.get("host")}/api/upload/${file.data.uploadLocation}`,
@@ -70,9 +74,12 @@ router.post("/", restrict.toAuthor, function(req, res, next){
 		const file = new Files.Model(req.body);
 
 		if(!_.includes(limits.acceptedMIME, file.data["content-type"])){
+			// Invalid file type, return
 			return next(new CharError("Invalid MIME type", `File type "${file.data["content-type"]}" is not supported`, 415));
 		}else{
+			// File type valid, populate metadata of model
 			uploadUtils.processFileMetadata(file, req);
+			// Save entry into database
 			file.save().then(() => {
 				res.json({
 					location: `${req.protocol}://${req.get("host")}/api/upload/${file.data.uid}`,
@@ -83,6 +90,7 @@ router.post("/", restrict.toAuthor, function(req, res, next){
 	}
 });
 
+// File upload path
 router.post("/:location", restrict.toAuthor, function(req, res, next){
 	if(req.headers["content-type"] === "application/json"){
 		bodyParser.json()(req, res, next);
@@ -110,6 +118,7 @@ router.post("/:location", restrict.toAuthor, function(req, res, next){
 				return Promise.resolve(file);
 			}
 		}).then((file) => {
+			// Fetch the file from remote URL
 			return fetch(req.body.url).then((response) => {
 				// Checks against fetched data
 				const contentType = response.headers.get("content-type");
@@ -129,22 +138,16 @@ router.post("/:location", restrict.toAuthor, function(req, res, next){
 				return Promise.reject(new CharError("File size too big", "The uploaded file is over the size limit acceptable.", 400));
 			}
 
-			// Get file extension
-			const fileExt = path.extname(file.data.file_name) || "";
-			const savedName = `${file.data.uid}${fileExt}`;
-			delete file.data.uploadExpire;
-			delete file.data.uploadLocation;
-			file.data.file_size = buf.length;
-			file.data.modified_at = moment().format();
-			file.data.saved_path = path.join("./uploads/", savedName);
+			// Set file size, file path, and last modified timestamp
+			setFileMetadata(file, buf);
 
-			return fs.writeFileAsync(file.data.saved_path, buf).then(() =>{
-				return file.save().then(() => {
-					res.json({
-						resource_path: file.data.file_permalink
-					});
-				}).catch((err) => {
-					return Promise.reject(err);
+			// Save uploaded file
+			return saveFileLocal(file.data, buf).then(() => {
+				// Save database entry of file
+				return file.save();
+			}).then(() => {
+				res.json({
+					resource_path: file.data.file_permalink
 				});
 			});
 		}).catch((err) => {
@@ -170,22 +173,16 @@ router.post("/:location", restrict.toAuthor, function(req, res, next){
 				return Promise.reject(new CharError("Invalid upload URL", "Upload URL is invalid", 400));
 
 			}else{
-				// Get file extension
-				const fileExt = path.extname(file.data.file_name) || "";
-				const savedName = `${file.data.uid}${fileExt}`;
-				delete file.data.uploadExpire;
-				delete file.data.uploadLocation;
-				file.data.file_size = req.body.length;
-				file.data.modified_at = moment().format();
-				file.data.saved_path = path.join("./uploads/", savedName);
+				// Set file size, file path, and last modified timestamp
+				setFileMetadata(file, req.body);
 
 				// Save uploaded file
-				return fs.writeFileAsync(file.data.saved_path, req.body).then(() => {
+				return saveFileLocal(file.data, req.body).then(() => {
 					// Save database entry of file
-					return file.save().then(() => {
-						res.json({
-							resource_path: file.data.file_permalink
-						});
+					return file.save();
+				}).then(() => {
+					res.json({
+						resource_path: file.data.file_permalink
 					});
 				});
 			}
@@ -194,5 +191,19 @@ router.post("/:location", restrict.toAuthor, function(req, res, next){
 		});
 	}
 });
+
+function saveFileLocal(fileMetadata, fileData){
+	return fs.writeFileAsync(fileMetadata.saved_path, fileData);
+}
+
+function setFileMetadata(file, buf){
+	const fileExt = path.extname(file.data.file_name) || "";
+	const savedName = `${file.data.uid}${fileExt}`;
+	delete file.data.uploadExpire;
+	delete file.data.uploadLocation;
+	file.data.file_size = buf.length;
+	file.data.modified_at = moment().format();
+	file.data.saved_path = path.join("./uploads/", savedName);
+}
 
 module.exports = router;

@@ -4,7 +4,7 @@ Char is a Express.js based API creation framework designed to be used by both be
 
 The project is still in development and in currently in early alpha. **Do not deploy this in a production server!** Any help with this project is extremely welcomed!
 
-Char is based on Express.js, using its route definitions and middlewares, Char makes creating forms for publishing data easy while automatically making those data available through an API. Char is meant to be a website or app's back end, although you can serve a static website through it, it is not recommended to render the front end with Char. Any front end that goes with Char should consume its API (including when serving static websites through Char).
+Char is based on Express.js, using its route definitions and middlewares, Char makes creating endpoints for publishing data easy while automatically making those data available through an API. Char is meant to be a website or app's back end, although you can serve a static website through it, it is not recommended to render the front end with Char. Any front end that goes with Char should consume its API (including when serving static websites through Char).
 
 ##### What Char is NOT:
 - A full-stack framework
@@ -12,7 +12,7 @@ Char is based on Express.js, using its route definitions and middlewares, Char m
 - Trying to invent new concepts
 
 ##### What Char is:
-- A quick an easy way to setup data structures that will be available through an API
+- A quick and easy way to setup data structures that will be available through an API
 - An Express server (if you know Express, you know Char)
 
 ## Features

@@ -1,3 +1,5 @@
+// This file contains utility functions used by both upload.js
+// and collections.js
 const moment = require("moment");
 const nanoid = require("nanoid");
 const path = require("path");
