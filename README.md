@@ -67,7 +67,7 @@ Requesting an upload begins by sending relevant metadata of the resource:
 * File size
 * File name
 * Owner (?)
-* File description (to bee used for aria)
+* File description (to be used for aria)
 
 Next, the server evaluates the metadata: if file type is not acceptable, reject; if file size is too big, reject, etc. Once checks passed, create an entry in the `_file_upload` table with the metadata fields plus two extra fields, one with timestamp of when the upload link will expire (`expire`), the other with a unique, one-time upload ID that defined the upload path for the resource. A response is then sent to the client with the route that they should upload the resource to and the expiry time of the upload path.
 
@@ -80,13 +80,6 @@ When the server received the upload:
 4. Once upload finished with no errors, save file locally or to a CDN (or stream the file as it comes in, delete what was saved if error occurred).
 5. Generate or retrieve the permanent URL for the resource, update it in the model if relevant, then respond to the client with a body containing the model (as currently designed and with resource permanent URL) or with the resource's permanent URL.
 
-#### `_file_upload` metadata fields
-
-```javascript
-{
-	"file_size": 1024,
-	"content-type": "audio/ogg",
-	"file_name": "sound.ogg",
-	"file_description": "Sound of silence"
-}
-```
+#### Next to implement for file upload
+- User defineable file save location (local disk, cloudinary, AWS S3, etc.)
+	- Will require the permalink to either be synced before upload or somehow updated in the model requiring the file after upload
