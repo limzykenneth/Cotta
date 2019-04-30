@@ -9,24 +9,12 @@ const restrict = require("../../utils/middlewares/restrict.js");
 
 // Change password
 router.post("/change_password", restrict.toAuthor, function(req, res, next){
-	auth.changePassword(req.body.username, req.body.password, req.body.newPassword, function(err, result){
-		if(err) {
-			const error = new CharError();
-
-			if(err.message == "invalid password"){
-				error.title = "Authentication Failed";
-				error.message = "Password provided is incorrect";
-				error.status = 401;
-			}
-
-			next(error);
-
-			return;
-		}
-
+	auth.changePassword(req.body.username, req.body.password, req.body.newPassword).then((result) => {
 		res.json({
 			message: `User "${req.body.username}" password changed`
 		});
+	}).catch((err) => {
+		next(new CharError("Invalid login details", "The username or password provided is incorrect.", 403));
 	});
 });
 

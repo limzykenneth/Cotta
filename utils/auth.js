@@ -1,6 +1,8 @@
 const bcrypt = require("bcrypt");
 const moment = require("moment");
+const Promise = require("bluebird");
 const ActiveRecord = require("active-record");
+const CharError = require("./charError.js");
 
 const Users = new ActiveRecord({
 	tableSlug: "_users_auth"
@@ -9,72 +11,70 @@ const auth = {};
 
 // Basic authentication
 // Compares user password bcrypt hash
-auth.authenticate = function(name, pass, fn) {
-	Users.findBy({"username": name}).then((user) => {
+auth.authenticate = function(name, pass){
+	let user;
+
+	return Users.findBy({"username": name}).then((res) => {
+		user = res;
 		// No user found, return generic failed message
 		if(!user){
-			return fn(new Error("invalid password"));
+			return Promise.reject(new CharError("Invalid login details", "The username or password provided is incorrect.", 403));
 		}
 
 		// Compare password and hash
-		bcrypt.compare(pass, user.data.hash, function(err, res) {
-			if (err) return fn(err);
+		return bcrypt.compare(pass, user.data.hash);
 
-			// Success, call callback with first argument as null
-			// second argument the user data sans password hash
-			if(res === true){
-				delete user.data.hash;
-				return fn(null, user.data);
-			// Fail, call callback with error object
-			}else{
-				fn(new Error("invalid password"));
-			}
-		});
+	}).then((res) => {
+		// Success return resolved promise with user data without hash
+		if(res === true){
+			delete user.data.hash;
+			delete user._original.hash;
+			return Promise.resolve(user);
+
+		// Fail, call callback with error object
+		}else{
+			return Promise.reject(new CharError("Invalid login details", "The username or password provided is incorrect.", 403));
+		}
+
 	}).catch(function(err){
-		fn(new Error("Unexpected error occurred"));
+		return Promise.reject(err);
 	});
 };
 
 // Sign up function
-auth.signup = function(name, pass, role, fn){
+auth.signup = function(name, pass, role){
 	// Hash the password with bcrypt. Iterations might need to be adjusted
-	bcrypt.hash(pass, 10, function(err, hash){
-		if(err) return fn(new Error("Unexpected error occurred"));
-
-		const user = new Users.Model({
+	let user;
+	return bcrypt.hash(pass, 10).then((hash) => {
+		user = new Users.Model({
 			"username": name,
 			"hash": hash,
 			"role": role,
 			"date_created": moment.utc().format()
 		});
-		user.save().then(() => {
-			fn(null, user.data.username);
-		}).catch(function(err){
-			fn(err);
-		});
+		return user.save();
+	}).then(() => {
+		return Promise.resolve(user.data.username);
+	}).catch((err) => {
+		return Promise.reject(err);
 	});
 };
 
-// Change password function with authentication built in (ROUTE NOT ACTIVE)
-auth.changePassword = function(name, currentPassword, newPassword, fn){
+// Change password function with authentication built in
+auth.changePassword = function(name, currentPassword, newPassword){
 	// Authenticate with the provided username and password
-	auth.authenticate(name, currentPassword, function(err, result){
-		if(err) {
-			fn(err);
-			return;
-		}
-
+	return auth.authenticate(name, currentPassword).then((user) => {
 		// Hash the new password
-		bcrypt.hash(newPassword, 10, function(err, hash){
-			Users.findBy({"username": name}).then((user) => {
-				user.data.hash = hash;
-				return user.save();
-			}).then(() => {
-				fn(null, result);
-			}).catch(function(err){
-				fn(err);
-			});
+		return bcrypt.hash(newPassword, 10);
+	}).then((hash) => {
+		return Users.findBy({"username": name}).then((user) => {
+			user.data.hash = hash;
+			return user.save();
+		}).then(() => {
+			return Promise.resolve();
 		});
+	}).catch((err) => {
+		return Promise.reject(err);
 	});
 };
 

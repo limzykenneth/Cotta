@@ -92,17 +92,23 @@ router.post("/:username", restrict.toAdministrator, function(req, res, next){
 
 // DELETE routes
 // DELETE specific user
-router.delete("/:username", restrict.toAdministrator, function(req, res){
+router.delete("/:username", restrict.toAdministrator, function(req, res, next){
 	const User = new ActiveRecord({
 		tableSlug: "_users_auth"
 	});
 
 	User.findBy({"username": req.params.username}).then((user) => {
-		user.destroy().then((col) => {
-			res.json({
-				message: `User "${req.params.username}" deleted`
-			});
+		return user.destroy();
+	}).then((col) => {
+		res.json({
+			message: `User "${req.params.username}" deleted`
 		});
+	}).catch((err) => {
+		if(err.message === "Model not saved in database yet."){
+			next(new CharError("User does not exist", "The user to be deleted does not exist.", 404));
+		}else{
+			next(err);
+		}
 	});
 });
 

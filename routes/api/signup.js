@@ -21,20 +21,17 @@ router.use(function(req, res, next){
 });
 
 router.post("/", function(req, res, next){
-	auth.signup(req.body.username, req.body.password, "unverified", function(err, result){
-		if(err) {
-			if(err.name == "MongoError" && err.code == 11000){
-				// Duplicate username
-				next(new CharError("Username not available", `Username "${req.body.username}" is already registered`));
-			}else{
-				next(new CharError());
-			}
-			return;
-		}
-
+	auth.signup(req.body.username, req.body.password, "unverified").then((result) => {
 		res.json({
 			"message": `User ${result} created`
 		});
+	}).catch((err) => {
+		if(err.name == "MongoError" && err.code == 11000){
+			// Duplicate username
+			next(new CharError("Username not available", `Username "${req.body.username}" is already registered`));
+		}else{
+			next(new CharError());
+		}
 	});
 });
 
