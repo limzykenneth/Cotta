@@ -1,10 +1,10 @@
 const bcrypt = require("bcrypt");
 const moment = require("moment");
 const Promise = require("bluebird");
-const ActiveRecord = require("active-record");
+const DynamicRecord = require("dynamic-record");
 const CharError = require("./charError.js");
 
-const Users = new ActiveRecord({
+const Users = new DynamicRecord({
 	tableSlug: "_users_auth"
 });
 const auth = {};

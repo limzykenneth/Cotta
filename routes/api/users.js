@@ -1,12 +1,12 @@
 const _ = require("lodash");
 const express = require("express");
-const ActiveRecord = require("active-record");
+const DynamicRecord = require("dynamic-record");
 
 const router = express.Router();
 const auth = require("../../utils/auth.js");
 const restrict = require("../../utils/middlewares/restrict.js");
 const CharError = require("../../utils/charError.js");
-const Users = new ActiveRecord({
+const Users = new DynamicRecord({
 	tableSlug: "_users_auth"
 });
 
@@ -50,20 +50,17 @@ router.post("/", restrict.toAdministrator, function(req, res, next){
 	}
 
 	const data = req.body;
-	auth.signup(data.username, data.password, "author", function(err, result){
-		if(err) {
-			if(err.name == "MongoError" && err.code == 11000){
-				// Duplicate username
-				next(new CharError("Username not available", `Username "${req.body.username}" is already registered`, 409));
-			}else{
-				next(new CharError());
-			}
-			return;
-		}
-
+	auth.signup(data.username, data.password, "author").then((result) => {
 		res.json({
 			"message": `User "${result}" created`
 		});
+	}).catch((err) => {
+		if(err.name == "MongoError" && err.code == 11000){
+			// Duplicate username
+			next(new CharError("Username not available", `Username "${req.body.username}" is already registered`, 409));
+		}else{
+			next(new CharError());
+		}
 	});
 });
 

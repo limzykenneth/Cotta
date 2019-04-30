@@ -17,23 +17,23 @@ router.use("/tokens", tokens);
 // Mount Signup routes
 router.use("/signup", signup);
 
-// Authenticate all routes (auth.js determine if it's requried or not)
+// // Authenticate all routes (auth.js determine if it's requried or not)
 router.use(auth);
 
-// Mount schema related routes
-router.use("/schema", schema);
+// // Mount schema related routes
+// router.use("/schema", schema);
 
-// Mount users related routes
+// // Mount users related routes
 router.use("/users", users);
 
-// Mount collections related routes
-router.use("/collections", collections);
+// // Mount collections related routes
+// router.use("/collections", collections);
 
-// Mount account related routes
+// // Mount account related routes
 router.use("/account", account);
 
-// Mount upload paths
-router.use("/upload", upload);
+// // Mount upload paths
+// router.use("/upload", upload);
 
 // Default
 router.use("/", function(req, res){

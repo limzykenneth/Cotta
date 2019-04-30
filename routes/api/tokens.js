@@ -1,7 +1,7 @@
 const _ = require("lodash");
 require("dotenv").config();
 const express = require("express");
-const ActiveRecord = require("active-record");
+const DynamicRecord = require("dynamic-record");
 const jwt = require("jsonwebtoken");
 const Promise = require("bluebird");
 const nanoid = require("nanoid");
@@ -10,7 +10,7 @@ const router = express.Router();
 const auth = require("../../utils/auth.js");
 Promise.promisifyAll(jwt);
 const CharError = require("../../utils/charError.js");
-const Users = new ActiveRecord({
+const Users = new DynamicRecord({
 	tableSlug: "_users_auth"
 });
 

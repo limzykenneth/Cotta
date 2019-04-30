@@ -1,13 +1,13 @@
 require("dotenv").config();
 const _ = require("lodash");
 const express = require("express");
-const ActiveRecord = require("active-record");
+const DynamicRecord = require("dynamic-record");
 
 const router = express.Router();
 const auth = require("../../utils/auth.js");
 const restrict = require("../../utils/middlewares/restrict.js");
 const CharError = require("../../utils/charError.js");
-const Users = new ActiveRecord({
+const Users = new DynamicRecord({
 	tableSlug: "_users_auth"
 });
 
