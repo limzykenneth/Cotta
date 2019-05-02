@@ -1,6 +1,7 @@
 const _ = require("lodash");
 const express = require("express");
 const ActiveRecord = require("active-record");
+const DynamicRecord = require("dynamic-record");
 
 const router = express.Router();
 const restrict = require("../../utils/middlewares/restrict.js");
@@ -8,6 +9,11 @@ const Schemas = new ActiveRecord({
 	tableSlug: "_schema"
 });
 const ActiveSchema = ActiveRecord.ActiveSchema;
+const AppCollections = new DynamicRecord({
+	tableSlug: "_app_collections"
+});
+const Schema = new DynamicRecord.DynamicSchema();
+
 //-----------------------
 // Pattern here is not in line with implemented active record pattern -----------
 //-----------------------
@@ -15,19 +21,30 @@ const ActiveSchema = ActiveRecord.ActiveSchema;
 
 // GET routes
 // GET all schemas
-router.get("/", restrict.toEditor, function(req, res){
-	// Better to cache it somehow maybe
-	// res.json(res.local.schemas);
+router.get("/", restrict.toEditor, function(req, res, next){
+	AppCollections.all().then((schemaNames) => {
+		let promises = [];
 
-	Schemas.all().then((schemas) => {
-		res.json(schemas.data);
+		_.each(schemaNames, (schemaName) => {
+			promises.push(Schema.read(schemaName.data._$id));
+		});
+
+		return Promise.all(promises);
+	}).then((schemas) => {
+		res.json(schemas);
+	}).catch((err) => {
+		next(err);
 	});
 });
 
 // GET specified schema
-router.get("/:schema", restrict.toEditor, function(req, res){
-	Schemas.findBy({collectionSlug: req.params.schema}).then((schema) => {
-		res.json(schema.data);
+router.get("/:schema", restrict.toEditor, function(req, res, next){
+	AppCollections.findBy({"_$id": req.params.schema}).then((schemaName) => {
+		return Schema.read(schemaName.data._$id);
+	}).then((schema) => {
+		res.json(schema);
+	}).catch((err) => {
+		next(err);
 	});
 });
 

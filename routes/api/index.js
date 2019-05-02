@@ -21,7 +21,7 @@ router.use("/signup", signup);
 router.use(auth);
 
 // // Mount schema related routes
-// router.use("/schema", schema);
+router.use("/schema", schema);
 
 // // Mount users related routes
 router.use("/users", users);
