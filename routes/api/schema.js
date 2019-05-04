@@ -12,7 +12,6 @@ const ActiveSchema = ActiveRecord.ActiveSchema;
 const AppCollections = new DynamicRecord({
 	tableSlug: "_app_collections"
 });
-const Schema = new DynamicRecord.DynamicSchema();
 
 //-----------------------
 // Pattern here is not in line with implemented active record pattern -----------
@@ -22,15 +21,30 @@ const Schema = new DynamicRecord.DynamicSchema();
 // GET routes
 // GET all schemas
 router.get("/", restrict.toEditor, function(req, res, next){
+	const appSchemas = [];
 	AppCollections.all().then((schemaNames) => {
-		let promises = [];
+		const promises = [];
 
 		_.each(schemaNames, (schemaName) => {
+			const Schema = new DynamicRecord.DynamicSchema();
+			appSchemas.push(schemaName);
 			promises.push(Schema.read(schemaName.data._$id));
 		});
 
 		return Promise.all(promises);
 	}).then((schemas) => {
+		_.each(schemas, (schema, i) => {
+			const appSchema = appSchemas[i];
+
+			delete schema.definition._metadata;
+			delete schema.definition._uid;
+
+			_.each(schema.definition, (field, key) => {
+				_.each(appSchema.data.fields[key], (val, prop) => {
+					field[prop] = val;
+				});
+			});
+		});
 		res.json(schemas);
 	}).catch((err) => {
 		next(err);
@@ -39,9 +53,21 @@ router.get("/", restrict.toEditor, function(req, res, next){
 
 // GET specified schema
 router.get("/:schema", restrict.toEditor, function(req, res, next){
+	const Schema = new DynamicRecord.DynamicSchema();
+
+	let appSchema;
 	AppCollections.findBy({"_$id": req.params.schema}).then((schemaName) => {
+		appSchema = schemaName;
 		return Schema.read(schemaName.data._$id);
 	}).then((schema) => {
+		delete schema.definition._metadata;
+		delete schema.definition._uid;
+		_.each(schema.definition, (field, key) => {
+			_.each(appSchema.data.fields[key], (val, prop) => {
+				field[prop] = val;
+			});
+		});
+
 		res.json(schema);
 	}).catch((err) => {
 		next(err);

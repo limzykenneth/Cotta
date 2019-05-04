@@ -8,5 +8,27 @@
 		"_$id":{
 			"type": "string",
 			"description": "Name of a user created collection's schema",
+		},
+		"fields": {
+			"type": "object",
+			"additionalProperties": {
+				"type": "object",
+				"properties": {
+					"app_title": {
+						"type": "string"
+					},
+					"app_type": {
+						"type": "string"
+					},
+					"app_values": {
+						"type": "object",
+						"additionalProperties": {
+							"type": ["string", "number"]
+						}
+					}
+				},
+				"required": ["app_title", "app_type"]
+			}
 		}
+	}
 }
