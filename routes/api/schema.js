@@ -1,14 +1,9 @@
 const _ = require("lodash");
 const express = require("express");
-const ActiveRecord = require("active-record");
 const DynamicRecord = require("dynamic-record");
 
 const router = express.Router();
 const restrict = require("../../utils/middlewares/restrict.js");
-const Schemas = new ActiveRecord({
-	tableSlug: "_schema"
-});
-const ActiveSchema = ActiveRecord.ActiveSchema;
 const AppCollections = new DynamicRecord({
 	tableSlug: "_app_collections"
 });
@@ -77,65 +72,140 @@ router.get("/:schema", restrict.toEditor, function(req, res, next){
 // POST routes
 // POST specified schema (add new and edit)
 router.post("/", restrict.toEditor, function(req, res){
-	const Schema = new ActiveRecord({
-		tableSlug: "_schema"
-	});
+	const Schema = new DynamicRecord.DynamicSchema();
 
-	// Find collection with duplicate slug, if found, edit it
-	Schema.where({collectionSlug: req.body.collectionSlug}).then((schemas) => {
-		if(schemas.length > 0){
-			// Edit schema
-			schemas[0].data = req.body;
-			return schemas[0].save();
+	AppCollections.findBy({"_$id": req.body.tableSlug}).then((appCollection) => {
+		const schemaDefinition = req.body.definition;
+		const regex = /^app_/;
+
+		if(appCollection.data === null){
+			// Insert new schema
+			appCollection.data = {};
+			appCollection.data._$id = req.body.tableSlug;
+			appCollection.data.fields = _.reduce(schemaDefinition, (result, el, key) => {
+				result[key] = {};
+
+				_.each(el, (val, prop) => {
+					if(regex.test(prop)){
+						result[key][prop] = val;
+					}
+				});
+				return result;
+			}, {});
+
+			const definition = _.reduce(schemaDefinition, (result, el, key) => {
+				result[key] = {};
+				_.each(el, (val, prop) => {
+					if(!regex.test(prop)){
+						result[key][prop] = val;
+					}
+				});
+
+				return result;
+			}, {});
+
+			definition._metadata = {
+				"type": "object",
+				"properties": {
+					"created_by": {
+						"type": "string"
+					},
+					"date_created": {
+						"type": "string"
+					},
+					"date_modified": {
+						"type": "string"
+					}
+				}
+			};
+			definition._uid = {
+				"type": "number",
+				"isAutoIncrement": "true"
+			};
+
+			Schema.createTable({
+				$schema: "http://json-schema.org/draft-07/schema#",
+				$id: req.body.tableSlug,
+				title: req.body.tableName,
+				properties: definition,
+				type: "object",
+				required: ["_metadata", "_uid"]
+			}).then(() => {
+				return appCollection.save();
+			}).then(() => {
+				res.json(Schema);
+			});
 		}else{
-			let table;
-			// Create new schema
-			return ActiveSchema.createTable({
-				tableSlug: req.body.collectionSlug,
-				tableName: req.body.collectionName,
-				indexColumns: {
-					name: "_uid",
-					unique: true,
-					autoIncrement: true
+			// Edit existing schema
+			_.each(schemaDefinition, (el, key) => {
+				_.each(el, (val, prop) => {
+					if(regex.test(prop)){
+						appCollection.data.fields[key][prop] = val;
+					}
+				});
+			});
+
+			appCollection.save().then(() => {
+				return Schema.read(req.body.tableSlug);
+			}).then(() => {
+				if(Schema.tableName !== req.body.tableName){
+					return Schema.renameTable(req.body.tableSlug, req.body.tableName);
+				}else{
+					return Promise.resolve(Schema);
 				}
 			}).then(() => {
-				return Schema.Schema.read(req.body.collectionSlug);
+				const definition = _.reduce(schemaDefinition, (result, el, key) => {
+					result[key] = {};
+					_.each(el, (val, prop) => {
+						if(!regex.test(prop)){
+							result[key][prop] = val;
+						}
+					});
+
+					return result;
+				}, {});
+
+				definition._metadata = {
+					"type": "object",
+					"properties": {
+						"created_by": {
+							"type": "string"
+						},
+						"date_created": {
+							"type": "string"
+						},
+						"date_modified": {
+							"type": "string"
+						}
+					}
+				};
+				definition._uid = {
+					"type": "number",
+					"isAutoIncrement": "true"
+				};
+
+				return Schema.define(definition);
 			}).then(() => {
-				return Schema.Schema.addColumns(req.body.fields);
+				res.json(Schema);
 			});
 		}
-	}).then(() => {
-		Schema.findBy({collectionSlug: req.body.collectionSlug}).then((schema) => {
-			res.json(schema.data);
-		});
 	});
 });
 
 // DELETE routes
 // DELETE specified schema (and all posts in it)
 router.delete("/:schema", restrict.toEditor, function(req, res, next){
-	const Schema = new ActiveRecord({
-		tableSlug: "_schema"
-	});
-
-	// NOT INTENDED, SHOULD REMOVE!
-	const Counter = new ActiveRecord({
-		tableSlug: "_counters"
-	});
-
-	const promises = [];
+	const Schema = new DynamicRecord.DynamicSchema();
 	let collectionName;
 
-	promises.push(Counter.findBy({collection: req.params.schema}).then((entry) => {
-		return entry.destroy();
-	}));
-
-	promises.push(Schema.findBy({collectionSlug: req.params.schema}).then((schema) => {
-		collectionName = schema.data.collectionName;
-		return schema.destroy();
-	}));
-
-	Promise.all(promises).then(() => {
+	Schema.read(req.params.schema).then(() => {
+		collectionName = Schema.tableName;
+		return Schema.dropTable();
+	}).then(() => {
+		return AppCollections.findBy({"_$id": req.params.schema});
+	}).then((appCollection) => {
+		return appCollection.destroy();
+	}).then(() => {
 		res.json({
 			status: "success",
 			message: `Schema "${collectionName}" deleted.`
