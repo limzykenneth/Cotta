@@ -7,14 +7,14 @@
     "database": "mongod --auth --dbpath=./db"
   },
   "dependencies": {
-    "active-record": "git+https://github.com/limzykenneth/absurd-raven.git#d96273516d94d54695640c46bfa799306e88e5f0",
-    "bcrypt": "^3.0.3",
+    "active-record": "git+https://github.com/limzykenneth/DynamicRecord.git#d96273516d94d54695640c46bfa799306e88e5f0",
+    "bcrypt": "^3.0.6",
     "bluebird": "^3.5.2",
     "body-parser": "^1.18.3",
     "cors": "^2.8.4",
     "debug": "^4.1.0",
     "dotenv": "^4.0.0",
-    "dynamic-record": "^0.4.2",
+    "dynamic-record": "^0.5.0",
     "express": "^4.16.4",
     "jsonwebtoken": "^8.4.0",
     "lodash": "^4.17.11",

@@ -8,8 +8,7 @@ const AppCollections = new DynamicRecord({
 	tableSlug: "_app_collections"
 });
 
-//-----------------------
-// Pattern here is not in line with implemented active record pattern -----------
+
 //-----------------------
 // Route: {root}/api/schema/...
 
@@ -120,7 +119,8 @@ router.post("/", restrict.toEditor, function(req, res){
 			};
 			definition._uid = {
 				"type": "number",
-				"isAutoIncrement": "true"
+				"isIndex": true,
+				"isAutoIncrement": true
 			};
 
 			Schema.createTable({

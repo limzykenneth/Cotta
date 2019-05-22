@@ -27,7 +27,7 @@ router.use("/schema", schema);
 router.use("/users", users);
 
 // // Mount collections related routes
-// router.use("/collections", collections);
+router.use("/collections", collections);
 
 // // Mount account related routes
 router.use("/account", account);

@@ -6,6 +6,7 @@ const jwt = require("jsonwebtoken");
 const router = express.Router();
 const Promise = require("bluebird");
 const ActiveRecord = require("active-record");
+const DynamicRecord = require("dynamic-record");
 const nanoid = require("nanoid");
 const path = require("path");
 
@@ -31,7 +32,7 @@ const limits = {
 // GET routes
 // GET collection with slug
 router.get("/:collectionSlug", function(req, res){
-	const Collection = new ActiveRecord({
+	const Collection = new DynamicRecord({
 		tableSlug: req.params.collectionSlug
 	});
 	Collection.all().then((collection) => {
@@ -40,12 +41,16 @@ router.get("/:collectionSlug", function(req, res){
 });
 
 // GET specific model from a collection
-router.get("/:collectionSlug/:modelID", function(req, res){
-	const Collection = new ActiveRecord({
+router.get("/:collectionSlug/:modelID", function(req, res, next){
+	const Collection = new DynamicRecord({
 		tableSlug: req.params.collectionSlug
 	});
 	Collection.findBy({"_uid": parseInt(req.params.modelID)}).then((collection) => {
-		res.json(collection.data);
+		if(collection){
+			res.json(collection.data);
+		}else{
+			next(new CharError("Model does not exist", `The requested model with ID ${req.params.modelID} does not exist.`, 404));
+		}
 	});
 });
 
@@ -54,31 +59,39 @@ router.get("/:collectionSlug/:modelID", function(req, res){
 // POST to specific collection (create new model)
 // Insert as is into database, just adding metadata and uid
 router.post("/:collectionSlug", restrict.toAuthor, function(req, res, next){
-	const Collection = new ActiveRecord({
+	const Collection = new DynamicRecord({
 		tableSlug: req.params.collectionSlug
 	});
+	const schema = new DynamicRecord.DynamicSchema();
+	const AppCollections = new DynamicRecord({
+		tableSlug: "_app_collections"
+	});
 
-	const schema = Collection.Schema;
-	schema.read(req.params.collectionSlug).then(() => {
-		const fields = schema.definition;
-		const fieldsLength = schema.definition.length;
+	let appCollection;
+	AppCollections.findBy({"_$id": req.params.collectionSlug}).then((result) => {
+		appCollection = result;
+		return schema.read(req.params.collectionSlug);
+	}).then(() => {
+		const fields = appCollection.data.fields;
+		const fieldsLength = _.size(appCollection.data.fields);
 		let count = 0;
+
 		// Comparing the schema with the provided data fields
-		for(let i=0; i<fields.length; i++){
-			const slug = fields[i].slug;
-			_.each(req.body, function(el, i){
+		_.each(fields, (el, key) => {
+			const slug = key;
+			_.each(req.body, (el, i) => {
 				if(slug === i){
 					count++;
 				}
 			});
-		}
+		});
 
 		if(count !== fieldsLength){
 			// Schema mismatched
 			return Promise.reject(new CharError("Invalid Schema", `The provided fields does not match schema entry of ${req.params.collectionSlug} in the database`, 400));
 		}else{
 			// Schema matched continue processing
-			const Files = new ActiveRecord({
+			const Files = new DynamicRecord({
 				tableSlug: "files_upload"
 			});
 
@@ -86,49 +99,48 @@ router.post("/:collectionSlug", restrict.toAuthor, function(req, res, next){
 			const filePromises = [];
 
 			// Check for file upload field
-			_.each(fields, function(el, i){
+			// _.each(fields, function(el, i){
 
-				// File upload field found
-				if(el.type == "file"){
+			// 	// File upload field found
+			// 	if(el.type == "file"){
 
-					// Check if uploading multiple files
-					if(Array.isArray(model.data[el.slug])){
-						_.each(model.data[el.slug], (entry) => {
-							const file = new Files.Model(_.cloneDeep(entry));
+			// 		// Check if uploading multiple files
+			// 		if(Array.isArray(model.data[el.slug])){
+			// 			_.each(model.data[el.slug], (entry) => {
+			// 				const file = new Files.Model(_.cloneDeep(entry));
 
-							if(!_.includes(limits.acceptedMIME, file.data["content-type"])){
-								next(new CharError("Invalid MIME type", `File type "${file.data["content-type"]}" is not supported`, 415));
-								return false; // Exit _.each
-							}else{
-								uploadUtils.processFileMetadata(file, req);
-								filePromises.push(file.save().then(() => {
-									return uploadUtils.setFileEntryMetadata(entry, file, req);
-								}));
-							}
-						});
+			// 				if(!_.includes(limits.acceptedMIME, file.data["content-type"])){
+			// 					next(new CharError("Invalid MIME type", `File type "${file.data["content-type"]}" is not supported`, 415));
+			// 					return false; // Exit _.each
+			// 				}else{
+			// 					uploadUtils.processFileMetadata(file, req);
+			// 					filePromises.push(file.save().then(() => {
+			// 						return uploadUtils.setFileEntryMetadata(entry, file, req);
+			// 					}));
+			// 				}
+			// 			});
 
-					// Uploading a single file
-					}else{
-						const file = new Files.Model(_.cloneDeep(model.data[el.slug]));
+			// 		// Uploading a single file
+			// 		}else{
+			// 			const file = new Files.Model(_.cloneDeep(model.data[el.slug]));
 
-						if(!_.includes(limits.acceptedMIME, file.data["content-type"])){
-							next(new CharError("Invalid MIME type", `File type "${file.data["content-type"]}" is not supported`, 415));
-							return false;
-						}else{
-							uploadUtils.processFileMetadata(file, req);
-							filePromises.push(file.save().then(() => {
-								return uploadUtils.setFileEntryMetadata(model.data[el.slug], file, req);
-							}));
-						}
-					}
-				}
-			});
+			// 			if(!_.includes(limits.acceptedMIME, file.data["content-type"])){
+			// 				next(new CharError("Invalid MIME type", `File type "${file.data["content-type"]}" is not supported`, 415));
+			// 				return false;
+			// 			}else{
+			// 				uploadUtils.processFileMetadata(file, req);
+			// 				filePromises.push(file.save().then(() => {
+			// 					return uploadUtils.setFileEntryMetadata(model.data[el.slug], file, req);
+			// 				}));
+			// 			}
+			// 		}
+			// 	}
+			// });
 
 			return Promise.all(filePromises).then((files) => {
 				return Promise.resolve(model);
 			});
 		}
-
 	}).then((model) => {
 		// Process data
 		// Create metadata
@@ -152,6 +164,8 @@ router.post("/:collectionSlug", restrict.toAuthor, function(req, res, next){
 		// 	});
 	}).then((data) => {
 		res.json(data);
+	}).catch((err) => {
+		next(err);
 	});
 });
 
@@ -164,42 +178,91 @@ router.post("/:collectionSlug/:modelID", restrict.toAuthor, function(req, res, n
 
 	const data = req.body;
 
-	Promise.all(promises).then(function(val){
-		const Schema = new ActiveRecord({
-			tableSlug: "_schema"
-		});
+	const Collection = new DynamicRecord({
+		tableSlug: req.params.collectionSlug
+	});
+	const schema = new DynamicRecord.DynamicSchema();
+	const AppCollections = new DynamicRecord({
+		tableSlug: "_app_collections"
+	});
 
-		Schema.findBy({"collectionSlug": req.params.collectionSlug}).then((schema) => {
-			// Check input against schema
-			const fields = schema.data.fields;
-			const slugs = fields.map(function(el){
-				return el.slug;
+	Promise.all(promises).then(function(){
+		let appCollection;
+		AppCollections.findBy({"_$id": req.params.collectionSlug}).then((result) => {
+			appCollection = result;
+			return schema.read(req.params.collectionSlug);
+		}).then(() => {
+			const fields = appCollection.data.fields;
+			const fieldsLength = _.size(appCollection.data.fields);
+			let count = 0;
+
+			// Comparing the schema with the provided data fields
+			_.each(fields, (el, key) => {
+				const slug = key;
+				_.each(req.body, (el, i) => {
+					if(slug === i){
+						count++;
+					}
+				});
 			});
-			const fieldsLength = fields.length;
-			let valid = true;
 
-			_.each(req.body, function(el, key){
-				if(!(_.includes(slugs, key))){
-					res.status(400);
-					res.json({
-						"message": "Invalid Schema"
-					});
-					valid = false;
-					return false;
-				}
-			});
-
-			if(valid) {
-				return Promise.resolve();
+			if(count !== fieldsLength){
+				// Schema mismatched
+				return Promise.reject(new CharError("Invalid Schema", `The provided fields does not match schema entry of ${req.params.collectionSlug} in the database`, 400));
 			}else{
-				return Promise.reject(new CharError("Invalid Schema", `The provided fields does not match schema entry of ${req.params.collectionSlug} in the database`), 400);
+				// Schema matched continue processing
+				const Files = new DynamicRecord({
+					tableSlug: "files_upload"
+				});
+
+				const model = new Collection.Model(req.body);
+				const filePromises = [];
+
+				// Check for file upload field
+				// _.each(fields, function(el, i){
+
+				// 	// File upload field found
+				// 	if(el.type == "file"){
+
+				// 		// Check if uploading multiple files
+				// 		if(Array.isArray(model.data[el.slug])){
+				// 			_.each(model.data[el.slug], (entry) => {
+				// 				const file = new Files.Model(_.cloneDeep(entry));
+
+				// 				if(!_.includes(limits.acceptedMIME, file.data["content-type"])){
+				// 					next(new CharError("Invalid MIME type", `File type "${file.data["content-type"]}" is not supported`, 415));
+				// 					return false; // Exit _.each
+				// 				}else{
+				// 					uploadUtils.processFileMetadata(file, req);
+				// 					filePromises.push(file.save().then(() => {
+				// 						return uploadUtils.setFileEntryMetadata(entry, file, req);
+				// 					}));
+				// 				}
+				// 			});
+
+				// 		// Uploading a single file
+				// 		}else{
+				// 			const file = new Files.Model(_.cloneDeep(model.data[el.slug]));
+
+				// 			if(!_.includes(limits.acceptedMIME, file.data["content-type"])){
+				// 				next(new CharError("Invalid MIME type", `File type "${file.data["content-type"]}" is not supported`, 415));
+				// 				return false;
+				// 			}else{
+				// 				uploadUtils.processFileMetadata(file, req);
+				// 				filePromises.push(file.save().then(() => {
+				// 					return uploadUtils.setFileEntryMetadata(model.data[el.slug], file, req);
+				// 				}));
+				// 			}
+				// 		}
+				// 	}
+				// });
+
+				return Promise.all(filePromises).then((files) => {
+					return Promise.resolve(model);
+				});
 			}
 		}).then(() => {
-			const Collection = new ActiveRecord({
-				tableSlug: req.params.collectionSlug
-			});
 			Collection.findBy({"_uid": parseInt(req.params.modelID)}).then((model) => {
-				// TO DO: Case where model don't exist
 				if(model.data == null){
 					res.json(model.data);
 					return Promise.reject(new CharError("Model not found", `Cannot edit model with ID: ${req.prarams.modelID}, model does not exist in the collection ${req.params.collectionSlug}`, 404));
@@ -213,16 +276,74 @@ router.post("/:collectionSlug/:modelID", restrict.toAuthor, function(req, res, n
 				}
 				// Insert into database
 				return model.save();
-			}).then(() => {
-				// Return with newly fetch model
-				Collection.findBy({"_uid": parseInt(req.params.modelID)}).then((model) => {
-					res.json(model.data);
-				});
+			}).then((model) => {
+				// Return with updated model
+				res.json(model.data);
 			});
 		}).catch(function(err){
 			next(err);
 		});
 	});
+
+	// Promise.all(promises).then(function(){
+	// 	const Schema = new ActiveRecord({
+	// 		tableSlug: "_schema"
+	// 	});
+
+	// 	Schema.findBy({"collectionSlug": req.params.collectionSlug}).then((schema) => {
+	// 		// Check input against schema
+	// 		const fields = schema.data.fields;
+	// 		const slugs = fields.map(function(el){
+	// 			return el.slug;
+	// 		});
+	// 		const fieldsLength = fields.length;
+	// 		let valid = true;
+
+	// 		_.each(req.body, function(el, key){
+	// 			if(!(_.includes(slugs, key))){
+	// 				res.status(400);
+	// 				res.json({
+	// 					"message": "Invalid Schema"
+	// 				});
+	// 				valid = false;
+	// 				return false;
+	// 			}
+	// 		});
+
+	// 		if(valid) {
+	// 			return Promise.resolve();
+	// 		}else{
+	// 			return Promise.reject(new CharError("Invalid Schema", `The provided fields does not match schema entry of ${req.params.collectionSlug} in the database`), 400);
+	// 		}
+	// 	}).then(() => {
+	// 		const Collection = new ActiveRecord({
+	// 			tableSlug: req.params.collectionSlug
+	// 		});
+	// 		Collection.findBy({"_uid": parseInt(req.params.modelID)}).then((model) => {
+	// 			// TO DO: Case where model don't exist
+	// 			if(model.data == null){
+	// 				res.json(model.data);
+	// 				return Promise.reject(new CharError("Model not found", `Cannot edit model with ID: ${req.prarams.modelID}, model does not exist in the collection ${req.params.collectionSlug}`, 404));
+	// 			}
+
+	// 			// Set metadata
+	// 			model.data._metadata.date_modified = moment.utc().format();
+	// 			// Set new data into model
+	// 			for(let key in data){
+	// 				model.data[key] = data[key];
+	// 			}
+	// 			// Insert into database
+	// 			return model.save();
+	// 		}).then(() => {
+	// 			// Return with newly fetch model
+	// 			Collection.findBy({"_uid": parseInt(req.params.modelID)}).then((model) => {
+	// 				res.json(model.data);
+	// 			});
+	// 		});
+	// 	}).catch(function(err){
+	// 		next(err);
+	// 	});
+	// });
 });
 
 
@@ -243,8 +364,8 @@ router.delete("/:collectionSlug/:modelID", restrict.toAuthor, function(req, res,
 	}
 
 	let data;
-	Promise.all(promises).then(function(val){
-		const Collection = new ActiveRecord({
+	Promise.all(promises).then(function(){
+		const Collection = new DynamicRecord({
 			tableSlug: req.params.collectionSlug
 		});
 		return Collection.findBy({"_uid": parseInt(req.params.modelID)});
@@ -270,8 +391,9 @@ module.exports = router;
 
 
 // Utils
+// Checks if the model belongs to the user, returns Promise
 function ownModel(username, collectionSlug, modelID){
-	const Collection = new ActiveRecord({
+	const Collection = new DynamicRecord({
 		tableSlug: collectionSlug
 	});
 	return Collection.findBy({"username": username}).then((user) => {
