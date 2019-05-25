@@ -33,7 +33,7 @@ router.use("/collections", collections);
 router.use("/account", account);
 
 // // Mount upload paths
-// router.use("/upload", upload);
+router.use("/upload", upload);
 
 // Default
 router.use("/", function(req, res){

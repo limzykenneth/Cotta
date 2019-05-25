@@ -7,7 +7,6 @@
     "database": "mongod --auth --dbpath=./db"
   },
   "dependencies": {
-    "active-record": "git+https://github.com/limzykenneth/DynamicRecord.git#d96273516d94d54695640c46bfa799306e88e5f0",
     "bcrypt": "^3.0.6",
     "bluebird": "^3.5.2",
     "body-parser": "^1.18.3",

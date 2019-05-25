@@ -70,14 +70,15 @@ router.get("/:schema", restrict.toEditor, function(req, res, next){
 
 // POST routes
 // POST specified schema (add new and edit)
-router.post("/", restrict.toEditor, function(req, res){
+router.post("/", restrict.toEditor, function(req, res, next){
 	const Schema = new DynamicRecord.DynamicSchema();
 
 	AppCollections.findBy({"_$id": req.body.tableSlug}).then((appCollection) => {
 		const schemaDefinition = req.body.definition;
 		const regex = /^app_/;
 
-		if(appCollection.data === null){
+		if(appCollection === null){
+			appCollection = new AppCollections.Model();
 			// Insert new schema
 			appCollection.data = {};
 			appCollection.data._$id = req.body.tableSlug;

@@ -90,7 +90,7 @@ router.post("/:username", restrict.toAdministrator, function(req, res, next){
 // DELETE routes
 // DELETE specific user
 router.delete("/:username", restrict.toAdministrator, function(req, res, next){
-	const User = new ActiveRecord({
+	const User = new DynamicRecord({
 		tableSlug: "_users_auth"
 	});
 

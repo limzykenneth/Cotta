@@ -5,7 +5,7 @@ const fs = Promise.promisifyAll(require("fs"));
 const path = require("path");
 const _ = require("lodash");
 const moment = require("moment");
-const ActiveRecord = require("active-record");
+const DynamicRecord = require("dynamic-record");
 const bodyParser = require("body-parser");
 const fetch = require("node-fetch");
 fetch.Promise = Promise;
@@ -27,7 +27,7 @@ const limits = {
 	]
 };
 
-const Files = new ActiveRecord({
+const Files = new DynamicRecord({
 	tableSlug: "files_upload"
 });
 
@@ -66,6 +66,8 @@ router.post("/", restrict.toAuthor, function(req, res, next){
 					};
 				});
 				res.json(reply);
+			}).catch((err) => {
+				next(err);
 			});
 		}
 
@@ -85,6 +87,8 @@ router.post("/", restrict.toAuthor, function(req, res, next){
 					location: `${req.protocol}://${req.get("host")}/api/upload/${file.data.uid}`,
 					uploadExpire: file.data.uploadExpire,
 				});
+			}).catch((err) => {
+				next(err);
 			});
 		}
 	}

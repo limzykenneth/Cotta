@@ -5,7 +5,6 @@ const moment = require("moment");
 const jwt = require("jsonwebtoken");
 const router = express.Router();
 const Promise = require("bluebird");
-const ActiveRecord = require("active-record");
 const DynamicRecord = require("dynamic-record");
 const nanoid = require("nanoid");
 const path = require("path");
@@ -99,43 +98,42 @@ router.post("/:collectionSlug", restrict.toAuthor, function(req, res, next){
 			const filePromises = [];
 
 			// Check for file upload field
-			// _.each(fields, function(el, i){
+			_.each(fields, function(el, key){
 
-			// 	// File upload field found
-			// 	if(el.type == "file"){
+				// File upload field found
+				if(el.app_type == "file"){
+					// Check if uploading multiple files
+					if(Array.isArray(model.data[key])){
+						_.each(model.data[key], (entry) => {
+							const file = new Files.Model(_.cloneDeep(entry));
 
-			// 		// Check if uploading multiple files
-			// 		if(Array.isArray(model.data[el.slug])){
-			// 			_.each(model.data[el.slug], (entry) => {
-			// 				const file = new Files.Model(_.cloneDeep(entry));
+							if(!_.includes(limits.acceptedMIME, file.data["content-type"])){
+								next(new CharError("Invalid MIME type", `File type "${file.data["content-type"]}" is not supported`, 415));
+								return false; // Exit _.each
+							}else{
+								uploadUtils.processFileMetadata(file, req);
+								filePromises.push(file.save().then(() => {
+									return uploadUtils.setFileEntryMetadata(entry, file, req);
+								}));
+							}
+						});
 
-			// 				if(!_.includes(limits.acceptedMIME, file.data["content-type"])){
-			// 					next(new CharError("Invalid MIME type", `File type "${file.data["content-type"]}" is not supported`, 415));
-			// 					return false; // Exit _.each
-			// 				}else{
-			// 					uploadUtils.processFileMetadata(file, req);
-			// 					filePromises.push(file.save().then(() => {
-			// 						return uploadUtils.setFileEntryMetadata(entry, file, req);
-			// 					}));
-			// 				}
-			// 			});
+					// Uploading a single file
+					}else{
+						const file = new Files.Model(_.cloneDeep(model.data[key]));
 
-			// 		// Uploading a single file
-			// 		}else{
-			// 			const file = new Files.Model(_.cloneDeep(model.data[el.slug]));
-
-			// 			if(!_.includes(limits.acceptedMIME, file.data["content-type"])){
-			// 				next(new CharError("Invalid MIME type", `File type "${file.data["content-type"]}" is not supported`, 415));
-			// 				return false;
-			// 			}else{
-			// 				uploadUtils.processFileMetadata(file, req);
-			// 				filePromises.push(file.save().then(() => {
-			// 					return uploadUtils.setFileEntryMetadata(model.data[el.slug], file, req);
-			// 				}));
-			// 			}
-			// 		}
-			// 	}
-			// });
+						if(!_.includes(limits.acceptedMIME, file.data["content-type"])){
+							next(new CharError("Invalid MIME type", `File type "${file.data["content-type"]}" is not supported`, 415));
+							return false;
+						}else{
+							uploadUtils.processFileMetadata(file, req);
+							filePromises.push(file.save().then((m) => {
+								return uploadUtils.setFileEntryMetadata(model.data[key], file, req);
+							}));
+						}
+					}
+				}
+			});
 
 			return Promise.all(filePromises).then((files) => {
 				return Promise.resolve(model);
@@ -219,43 +217,43 @@ router.post("/:collectionSlug/:modelID", restrict.toAuthor, function(req, res, n
 				const filePromises = [];
 
 				// Check for file upload field
-				// _.each(fields, function(el, i){
+				_.each(fields, function(el, key){
 
-				// 	// File upload field found
-				// 	if(el.type == "file"){
+					// File upload field found
+					if(el.type == "file"){
 
-				// 		// Check if uploading multiple files
-				// 		if(Array.isArray(model.data[el.slug])){
-				// 			_.each(model.data[el.slug], (entry) => {
-				// 				const file = new Files.Model(_.cloneDeep(entry));
+						// Check if uploading multiple files
+						if(Array.isArray(model.data[key])){
+							_.each(model.data[key], (entry) => {
+								const file = new Files.Model(_.cloneDeep(entry));
 
-				// 				if(!_.includes(limits.acceptedMIME, file.data["content-type"])){
-				// 					next(new CharError("Invalid MIME type", `File type "${file.data["content-type"]}" is not supported`, 415));
-				// 					return false; // Exit _.each
-				// 				}else{
-				// 					uploadUtils.processFileMetadata(file, req);
-				// 					filePromises.push(file.save().then(() => {
-				// 						return uploadUtils.setFileEntryMetadata(entry, file, req);
-				// 					}));
-				// 				}
-				// 			});
+								if(!_.includes(limits.acceptedMIME, file.data["content-type"])){
+									next(new CharError("Invalid MIME type", `File type "${file.data["content-type"]}" is not supported`, 415));
+									return false; // Exit _.each
+								}else{
+									uploadUtils.processFileMetadata(file, req);
+									filePromises.push(file.save().then(() => {
+										return uploadUtils.setFileEntryMetadata(entry, file, req);
+									}));
+								}
+							});
 
-				// 		// Uploading a single file
-				// 		}else{
-				// 			const file = new Files.Model(_.cloneDeep(model.data[el.slug]));
+						// Uploading a single file
+						}else{
+							const file = new Files.Model(_.cloneDeep(model.data[key]));
 
-				// 			if(!_.includes(limits.acceptedMIME, file.data["content-type"])){
-				// 				next(new CharError("Invalid MIME type", `File type "${file.data["content-type"]}" is not supported`, 415));
-				// 				return false;
-				// 			}else{
-				// 				uploadUtils.processFileMetadata(file, req);
-				// 				filePromises.push(file.save().then(() => {
-				// 					return uploadUtils.setFileEntryMetadata(model.data[el.slug], file, req);
-				// 				}));
-				// 			}
-				// 		}
-				// 	}
-				// });
+							if(!_.includes(limits.acceptedMIME, file.data["content-type"])){
+								next(new CharError("Invalid MIME type", `File type "${file.data["content-type"]}" is not supported`, 415));
+								return false;
+							}else{
+								uploadUtils.processFileMetadata(file, req);
+								filePromises.push(file.save().then(() => {
+									return uploadUtils.setFileEntryMetadata(model.data[key], file, req);
+								}));
+							}
+						}
+					}
+				});
 
 				return Promise.all(filePromises).then((files) => {
 					return Promise.resolve(model);
@@ -284,66 +282,6 @@ router.post("/:collectionSlug/:modelID", restrict.toAuthor, function(req, res, n
 			next(err);
 		});
 	});
-
-	// Promise.all(promises).then(function(){
-	// 	const Schema = new ActiveRecord({
-	// 		tableSlug: "_schema"
-	// 	});
-
-	// 	Schema.findBy({"collectionSlug": req.params.collectionSlug}).then((schema) => {
-	// 		// Check input against schema
-	// 		const fields = schema.data.fields;
-	// 		const slugs = fields.map(function(el){
-	// 			return el.slug;
-	// 		});
-	// 		const fieldsLength = fields.length;
-	// 		let valid = true;
-
-	// 		_.each(req.body, function(el, key){
-	// 			if(!(_.includes(slugs, key))){
-	// 				res.status(400);
-	// 				res.json({
-	// 					"message": "Invalid Schema"
-	// 				});
-	// 				valid = false;
-	// 				return false;
-	// 			}
-	// 		});
-
-	// 		if(valid) {
-	// 			return Promise.resolve();
-	// 		}else{
-	// 			return Promise.reject(new CharError("Invalid Schema", `The provided fields does not match schema entry of ${req.params.collectionSlug} in the database`), 400);
-	// 		}
-	// 	}).then(() => {
-	// 		const Collection = new ActiveRecord({
-	// 			tableSlug: req.params.collectionSlug
-	// 		});
-	// 		Collection.findBy({"_uid": parseInt(req.params.modelID)}).then((model) => {
-	// 			// TO DO: Case where model don't exist
-	// 			if(model.data == null){
-	// 				res.json(model.data);
-	// 				return Promise.reject(new CharError("Model not found", `Cannot edit model with ID: ${req.prarams.modelID}, model does not exist in the collection ${req.params.collectionSlug}`, 404));
-	// 			}
-
-	// 			// Set metadata
-	// 			model.data._metadata.date_modified = moment.utc().format();
-	// 			// Set new data into model
-	// 			for(let key in data){
-	// 				model.data[key] = data[key];
-	// 			}
-	// 			// Insert into database
-	// 			return model.save();
-	// 		}).then(() => {
-	// 			// Return with newly fetch model
-	// 			Collection.findBy({"_uid": parseInt(req.params.modelID)}).then((model) => {
-	// 				res.json(model.data);
-	// 			});
-	// 		});
-	// 	}).catch(function(err){
-	// 		next(err);
-	// 	});
-	// });
 });
 
 
