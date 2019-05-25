@@ -190,6 +190,8 @@ router.post("/", restrict.toEditor, function(req, res, next){
 				res.json(Schema);
 			});
 		}
+	}).catch((err) => {
+		next(err);
 	});
 });
 

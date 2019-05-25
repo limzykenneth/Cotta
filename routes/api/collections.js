@@ -2,19 +2,13 @@ require("dotenv").config();
 const _ = require("lodash");
 const express = require("express");
 const moment = require("moment");
-const jwt = require("jsonwebtoken");
 const router = express.Router();
 const Promise = require("bluebird");
 const DynamicRecord = require("dynamic-record");
-const nanoid = require("nanoid");
-const path = require("path");
 
-Promise.promisifyAll(jwt);
 const restrict = require("../../utils/middlewares/restrict.js");
 const CharError = require("../../utils/charError.js");
 const uploadUtils = require("./uploadUtils.js");
-
-const secret = process.env.JWT_SECRET;
 
 // Configurations (hardcoded for now, should remove in the future)
 const limits = {
@@ -30,12 +24,14 @@ const limits = {
 
 // GET routes
 // GET collection with slug
-router.get("/:collectionSlug", function(req, res){
+router.get("/:collectionSlug", function(req, res, next){
 	const Collection = new DynamicRecord({
 		tableSlug: req.params.collectionSlug
 	});
 	Collection.all().then((collection) => {
 		res.json(collection.data);
+	}).catch((err) => {
+		next(err);
 	});
 });
 
@@ -50,6 +46,8 @@ router.get("/:collectionSlug/:modelID", function(req, res, next){
 		}else{
 			next(new CharError("Model does not exist", `The requested model with ID ${req.params.modelID} does not exist.`, 404));
 		}
+	}).catch((err) => {
+		next(err);
 	});
 });
 
@@ -278,9 +276,9 @@ router.post("/:collectionSlug/:modelID", restrict.toAuthor, function(req, res, n
 				// Return with updated model
 				res.json(model.data);
 			});
-		}).catch(function(err){
-			next(err);
 		});
+	}).catch((err) => {
+		next(err);
 	});
 });
 
@@ -302,7 +300,7 @@ router.delete("/:collectionSlug/:modelID", restrict.toAuthor, function(req, res,
 	}
 
 	let data;
-	Promise.all(promises).then(function(){
+	Promise.all(promises).then(() => {
 		const Collection = new DynamicRecord({
 			tableSlug: req.params.collectionSlug
 		});
@@ -312,7 +310,7 @@ router.delete("/:collectionSlug/:modelID", restrict.toAuthor, function(req, res,
 		model.destroy().then((col) => {
 			res.json(retModel);
 		});
-	}).catch(function(err){
+	}).catch((err) => {
 		next(err);
 	});
 });

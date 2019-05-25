@@ -1,5 +1,5 @@
-const _ = require("lodash");
 require("dotenv").config();
+const _ = require("lodash");
 const express = require("express");
 const DynamicRecord = require("dynamic-record");
 const jwt = require("jsonwebtoken");

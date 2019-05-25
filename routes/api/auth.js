@@ -1,3 +1,4 @@
+require("dotenv").config();
 const _ = require("lodash");
 const express = require("express");
 const router = express.Router();
@@ -5,7 +6,6 @@ const jwt = require("jsonwebtoken");
 const CharError = require("../../utils/charError.js");
 const Promise = require("bluebird");
 Promise.promisifyAll(jwt);
-require("dotenv").config();
 
 const secret = process.env.JWT_SECRET;
 

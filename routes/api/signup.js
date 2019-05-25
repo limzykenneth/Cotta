@@ -5,7 +5,6 @@ const DynamicRecord = require("dynamic-record");
 
 const router = express.Router();
 const auth = require("../../utils/auth.js");
-const restrict = require("../../utils/middlewares/restrict.js");
 const CharError = require("../../utils/charError.js");
 const Users = new DynamicRecord({
 	tableSlug: "_users_auth"
