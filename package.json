@@ -3,8 +3,9 @@
   "version": "0.3.0",
   "scripts": {
     "start": "node ./bin/www",
-    "server": "gulp server",
-    "database": "mongod --auth --dbpath=./db"
+    "server": "nodemon ./bin/www",
+    "database": "mongod --auth --dbpath=./db",
+    "test": "mocha"
   },
   "dependencies": {
     "bcrypt": "^3.0.6",
@@ -25,12 +26,14 @@
   },
   "devDependencies": {
     "chai": "^3.5.0",
-    "gulp": "^4.0.0",
-    "gulp-mocha": "^6.0.0",
-    "gulp-nodemon": "^2.4.2",
-    "gulp-util": "^3.0.8",
-    "nodemon": "^1.18.9",
-    "supertest": "^3.3.0",
-    "supertest-session": "^3.3.0"
+    "chai-http": "^4.3.0",
+    "mocha": "^6.1.4",
+    "nodemon": "^1.19.1"
+  },
+  "nodemonConfig": {
+    "ignore": [
+      "test/**/*",
+      "public/**/*"
+    ]
   }
 }
