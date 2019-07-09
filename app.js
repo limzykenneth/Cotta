@@ -9,7 +9,6 @@ const morgan = require("morgan");
 const logger = require("./logger.js");
 const errors = require("./errors.js");
 
-// const index = require("./routes/index");
 const api = require("./routes/api/index.js");
 
 // Express

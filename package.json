@@ -5,7 +5,8 @@
     "start": "node ./bin/www",
     "server": "nodemon ./bin/www",
     "database": "mongod --auth --dbpath=./db",
-    "test": "mocha"
+    "pretest": "dynamic-record init -s mongodb://localhost:27017 -u test -p test -d tests",
+    "test": "mongo_db_name='tests' mongo_user='test' mongo_pass='test' mocha"
   },
   "dependencies": {
     "bcrypt": "^3.0.6",
@@ -25,7 +26,7 @@
     "winston": "^3.2.1"
   },
   "devDependencies": {
-    "chai": "^3.5.0",
+    "chai": "^4.2.0",
     "chai-http": "^4.3.0",
     "mocha": "^6.1.4",
     "nodemon": "^1.19.1"

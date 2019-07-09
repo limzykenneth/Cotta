@@ -1,7 +1,6 @@
 // Main entry point for API routes
 const _ = require("lodash");
-const express = require("express");
-const router = express.Router();
+const router = require("express").Router();
 const auth = require("./auth.js");
 const schema = require("./schema.js");
 const users = require("./users.js");

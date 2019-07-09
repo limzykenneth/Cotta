@@ -1,0 +1,35 @@
+{
+    "_$id" : "test_1",
+    "fields" : {
+        "field_1" : {
+            "app_type" : "wysiwyg",
+            "app_title" : "Field 1"
+        },
+        "field_2" : {
+            "app_type" : "string",
+            "app_title" : "Field 2"
+        },
+        "field_3" : {
+            "app_type" : "email",
+            "app_title" : "Field 3"
+        },
+        "field_4" : {
+            "app_type" : "checkbox",
+            "app_title" : "Field 4",
+            "app_values" : {
+                "One" : "one",
+                "Two" : "two",
+                "Three" : "three"
+            }
+        },
+        "field_5" : {
+            "app_type" : "radio",
+            "app_title" : "Field 5",
+            "app_values" : {
+                "One" : "one",
+                "Two" : "two",
+                "Three" : "three"
+            }
+        }
+    }
+}
