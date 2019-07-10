@@ -4,8 +4,8 @@ const _ = require("lodash");
 const chaiHttp = require("chai-http");
 chai.use(chaiHttp);
 const assert = chai.assert;
-const testSchema = require("./test.schema.json");
-const testAppCollectionSchema = require("./testAppCollection.schema.json");
+const testSchema = require("./json/test_1.schema.json");
+const testAppCollection = require("./json/test_1_AppCollection.json");
 
 const app = require("../app.js");
 
@@ -47,7 +47,7 @@ after(function() {
 	return Promise.all([appCollectionsCleanup, fileUploadCleanup]);
 });
 
-
+// Data definitions (module specific)
 const schemaResponse = Object.freeze({
 	tableName: "Test 1",
 	tableSlug: "test_1",
@@ -93,7 +93,27 @@ const schemaResponse = Object.freeze({
 	jsonSchema: _.cloneDeep(testSchema)
 });
 
-// Test suites
+const schemaRequest = Object.freeze({
+	"tableName": "Test 3",
+	"tableSlug": "test_3",
+	"definition": {
+		"field_1": {
+			"type": "string",
+			"app_type": "wysiwyg",
+			"app_title": "Field 1"
+		},
+		"field_2": {
+			"type": "string",
+			"app_type": "string",
+			"app_title": "Field 2"
+		}
+	}
+});
+
+
+/////////////////////////////////////////
+//             Test suites             //
+/////////////////////////////////////////
 describe("GET /api/schema", function() {
 	const AppCollections = new DynamicRecord({
 		tableSlug: "_app_collections"
@@ -104,8 +124,8 @@ describe("GET /api/schema", function() {
 		const promises = [];
 		promises.push(Schema.createTable(testSchema));
 
-		const testAppCollection = new AppCollections.Model(testAppCollectionSchema);
-		promises.push(testAppCollection.save());
+		const appCollection = new AppCollections.Model(testAppCollection);
+		promises.push(appCollection.save());
 
 		return Promise.all(promises);
 	});
@@ -139,8 +159,8 @@ describe("GET /api/schema/:slug", function(){
 		const promises = [];
 		promises.push(Schema.createTable(testSchema));
 
-		const testAppCollection = new AppCollections.Model(testAppCollectionSchema);
-		promises.push(testAppCollection.save());
+		const appCollection = new AppCollections.Model(testAppCollection);
+		promises.push(appCollection.save());
 
 		return Promise.all(promises);
 	});
@@ -164,23 +184,6 @@ describe("GET /api/schema/:slug", function(){
 	});
 });
 
-const schemaRequest = Object.freeze({
-	"tableName": "Test 3",
-	"tableSlug": "test_3",
-	"definition": {
-		"field_1": {
-			"type": "string",
-			"app_type": "wysiwyg",
-			"app_title": "Field 1"
-		},
-		"field_2": {
-			"type": "string",
-			"app_type": "string",
-			"app_title": "Field 2"
-		}
-	}
-});
-
 describe("POST /api/schema", function(){
 	const AppCollections = new DynamicRecord({
 		tableSlug: "_app_collections"
@@ -191,8 +194,8 @@ describe("POST /api/schema", function(){
 		const promises = [];
 		promises.push(Schema.createTable(testSchema));
 
-		const testAppCollection = new AppCollections.Model(testAppCollectionSchema);
-		promises.push(testAppCollection.save());
+		const appCollection = new AppCollections.Model(testAppCollection);
+		promises.push(appCollection.save());
 
 		return Promise.all(promises);
 	});
@@ -242,8 +245,8 @@ describe("DEL /api/schema/", function(){
 		const promises = [];
 		promises.push(Schema.createTable(testSchema));
 
-		const testAppCollection = new AppCollections.Model(testAppCollectionSchema);
-		promises.push(testAppCollection.save());
+		const appCollection = new AppCollections.Model(testAppCollection);
+		promises.push(appCollection.save());
 
 		return Promise.all(promises);
 	});
