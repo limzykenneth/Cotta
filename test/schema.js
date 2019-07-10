@@ -31,9 +31,8 @@ after(function() {
 			promises.push(el.destroy());
 		});
 		return Promise.all(promises);
-	}).then(() => {
-		return AppCollections.closeConnection();
 	});
+
 	const FileUpload = new DynamicRecord({
 		tableSlug: "file_upload"
 	});
@@ -44,6 +43,7 @@ after(function() {
 		});
 		return Promise.all(promises);
 	});
+
 	return Promise.all([appCollectionsCleanup, fileUploadCleanup]);
 });
 

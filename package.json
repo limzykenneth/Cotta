@@ -6,7 +6,7 @@
     "server": "nodemon ./bin/www",
     "database": "mongod --auth --dbpath=./db",
     "pretest": "dynamic-record init -s mongodb://localhost:27017 -u test -p test -d tests",
-    "test": "mongo_db_name='tests' mongo_user='test' mongo_pass='test' mocha"
+    "test": "mongo_db_name='tests' mongo_user='test' mongo_pass='test' mocha --exit"
   },
   "dependencies": {
     "bcrypt": "^3.0.6",
