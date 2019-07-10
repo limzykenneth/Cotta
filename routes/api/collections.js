@@ -29,6 +29,9 @@ router.get("/:collectionSlug", function(req, res, next){
 		tableSlug: req.params.collectionSlug
 	});
 	Collection.all().then((collection) => {
+		_.each(collection.data, (el) => {
+			delete el._id;
+		});
 		res.json(collection.data);
 	}).catch((err) => {
 		next(err);
@@ -42,6 +45,7 @@ router.get("/:collectionSlug/:modelID", function(req, res, next){
 	});
 	Collection.findBy({"_uid": parseInt(req.params.modelID)}).then((collection) => {
 		if(collection){
+			delete collection.data._id;
 			res.json(collection.data);
 		}else{
 			next(new CharError("Model does not exist", `The requested model with ID ${req.params.modelID} does not exist.`, 404));
