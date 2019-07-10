@@ -1,0 +1,13 @@
+{
+    "_$id" : "test_3",
+    "fields" : {
+        "field_1" : {
+            "app_type" : "wysiwyg",
+            "app_title" : "Field 1"
+        },
+        "field_2" : {
+            "app_type" : "string",
+            "app_title" : "Field 2"
+        }
+    }
+}

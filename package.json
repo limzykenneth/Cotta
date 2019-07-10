@@ -36,5 +36,8 @@
       "test/**/*",
       "public/**/*"
     ]
+  },
+  "mocha": {
+    "file": ["./test/_test_setup.js"]
   }
 }
