@@ -6,7 +6,12 @@
       "one",
       "three"
     ],
-    "field_5": "two"
+    "field_5": "two",
+    "_metadata": {
+        "created_by": "admin",
+        "date_created": "2018-11-08T11:34:30Z",
+        "date_modified": "2018-11-08T11:34:30Z"
+    }
 },
 {
     "field_1": "<p style=\"font-family: 'Fira Sans', sans-serif;\">Beef burger battered skate jacket potato cheeseburger battered cod onion rings cheeseburger skate beef & onion pie chicken burger.</p>",
@@ -15,5 +20,10 @@
     "field_4": [
       "two"
     ],
-    "field_5": "one"
+    "field_5": "one",
+    "_metadata": {
+        "created_by": "admin",
+        "date_created": "2018-11-08T12:00:00Z",
+        "date_modified": "2018-11-08T12:00:00Z"
+    }
 }]

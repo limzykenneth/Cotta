@@ -36,7 +36,9 @@
         },
         "_uid" : {
             "type" : "number",
-            "isAutoIncrement" : true
+            "isAutoIncrement" : true,
+            "isIndex": true,
+            "isUnique": true
         }
     },
     "required" : [

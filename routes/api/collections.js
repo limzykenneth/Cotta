@@ -163,6 +163,7 @@ router.post("/:collectionSlug", restrict.toAuthor, function(req, res, next){
 		// 		}
 		// 	});
 	}).then((data) => {
+		delete data._id;
 		res.json(data);
 	}).catch((err) => {
 		next(err);
@@ -249,9 +250,11 @@ router.post("/:collectionSlug/:modelID", restrict.toAuthor, function(req, res, n
 								return false;
 							}else{
 								uploadUtils.processFileMetadata(file, req);
-								filePromises.push(file.save().then(() => {
-									return uploadUtils.setFileEntryMetadata(model.data[key], file, req);
-								}));
+								filePromises.push(
+									file.save().then(() => {
+										return uploadUtils.setFileEntryMetadata(model.data[key], file, req);
+									})
+								);
 							}
 						}
 					}
@@ -275,7 +278,9 @@ router.post("/:collectionSlug/:modelID", restrict.toAuthor, function(req, res, n
 					model.data[key] = data[key];
 				}
 				// Insert into database
-				return model.save();
+				return model.save().catch((err) => {
+					return next(new CharError("Invalid Schema", `The provided fields does not match schema entry of ${req.params.collectionSlug} in the database`, 400));
+				});
 			}).then((model) => {
 				// Return with updated model
 				res.json(model.data);
@@ -310,10 +315,15 @@ router.delete("/:collectionSlug/:modelID", restrict.toAuthor, function(req, res,
 		});
 		return Collection.findBy({"_uid": parseInt(req.params.modelID)});
 	}).then((model) => {
-		const retModel = _.cloneDeep(model.data);
-		model.destroy().then((col) => {
-			res.json(retModel);
-		});
+		if(model !== null){
+			const retModel = _.cloneDeep(model.data);
+			model.destroy().then((col) => {
+				res.json(retModel);
+			});
+		}else{
+			console.log("over here");
+			return next(new CharError("Model does not exist", `The requested model with ID ${req.params.modelID} does not exist.`, 404));
+		}
 	}).catch((err) => {
 		next(err);
 	});
