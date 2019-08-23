@@ -6,7 +6,7 @@
     "server": "nodemon ./bin/www",
     "database": "mongod --auth --dbpath=./db",
     "pretest": "dynamic-record init -s mongodb://localhost:27017 -u test -p test -d tests",
-    "test": "mongo_db_name='tests' mongo_user='test' mongo_pass='test' mocha --exit"
+    "test": "mongo_db_name='tests' mongo_user='test' mongo_pass='test' mocha"
   },
   "dependencies": {
     "bcrypt": "^3.0.6",
@@ -15,10 +15,10 @@
     "cors": "^2.8.4",
     "debug": "^4.1.0",
     "dotenv": "^4.0.0",
-    "dynamic-record": "^0.5.0",
+    "dynamic-record": "^0.5.1",
     "express": "^4.16.4",
     "jsonwebtoken": "^8.4.0",
-    "lodash": "^4.17.11",
+    "lodash": "^4.17.15",
     "moment": "^2.24.0",
     "morgan": "^1.9.1",
     "nanoid": "^2.0.1",
@@ -38,6 +38,8 @@
     ]
   },
   "mocha": {
-    "file": ["./test/_test_setup.js"]
+    "file": [
+      "./test/_test_setup.js"
+    ]
   }
 }

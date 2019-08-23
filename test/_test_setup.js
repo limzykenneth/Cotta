@@ -53,7 +53,9 @@ after(function(){
 
 	const dropTestSchema = TestSchema.dropTable();
 
-	return Promise.all([appCollectionsCleanup, fileUploadCleanup, dropTestSchema]);
+	return Promise.all([appCollectionsCleanup, fileUploadCleanup, dropTestSchema]).then(() => {
+		FileUpload.closeConnection();
+	});
 });
 
 // Reset database state after each test
