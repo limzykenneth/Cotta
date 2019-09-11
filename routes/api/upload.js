@@ -6,6 +6,7 @@ const path = require("path");
 const _ = require("lodash");
 const moment = require("moment");
 const DynamicRecord = require("dynamic-record");
+const DynamicCollection = DynamicRecord.DynamicCollection;
 const bodyParser = require("body-parser");
 const fetch = require("node-fetch");
 fetch.Promise = Promise;
@@ -42,7 +43,7 @@ const Files = new DynamicRecord({
 router.post("/", restrict.toAuthor, function(req, res, next){
 	// If given an array of images to process
 	if(Array.isArray(req.body)){
-		const fileCollection = new Files.Collection(Files.Model, ...req.body);
+		const fileCollection = new DynamicCollection(Files.Model, ...req.body);
 		const promises = [];
 		let err;
 
@@ -68,7 +69,7 @@ router.post("/", restrict.toAuthor, function(req, res, next){
 				// Get an array with relevant upload data of the collection
 				const reply = fileCollection.map((file) => {
 					return {
-						location: `${req.protocol}://${req.get("host")}/api/upload/${file.data.uploadLocation}`,
+						location: `${req.protocol}://${req.get("host")}/api/upload/${file.data.uid}`,
 						uploadExpire: file.data.uploadExpire
 					};
 				});
