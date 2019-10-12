@@ -5,6 +5,7 @@ const moment = require("moment");
 const router = express.Router();
 const Promise = require("bluebird");
 const DynamicRecord = require("dynamic-record");
+const sanitizeHtml = require("sanitize-html");
 
 const restrict = require("../../utils/middlewares/restrict.js");
 const CharError = require("../../utils/charError.js");
@@ -19,6 +20,8 @@ const limits = {
 		"image/jpeg"
 	]
 };
+
+const sanitizerAllowedTags = sanitizeHtml.defaults.allowedTags.concat(["h1", "h2", "u"]);
 
 // Route: {root}/api/collections/...
 
@@ -99,7 +102,7 @@ router.post("/:collectionSlug", restrict.toAuthor, function(req, res, next){
 			const model = new Collection.Model(req.body);
 			const filePromises = [];
 
-			// Check for file upload field
+			// Individual field's operation
 			_.each(fields, function(el, key){
 
 				// File upload field found
@@ -134,6 +137,14 @@ router.post("/:collectionSlug", restrict.toAuthor, function(req, res, next){
 							}));
 						}
 					}
+				}
+
+				// WYSIWYG field found
+				if(el.app_type == "wysiwyg"){
+					// Sanitize HTML input
+					model.data[key] = sanitizeHtml(model.data[key], {
+						allowedTags: sanitizerAllowedTags
+					});
 				}
 			});
 
