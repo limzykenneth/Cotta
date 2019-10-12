@@ -1,5 +1,5 @@
 [{
-    "field_1": "<p style=\"font-family: 'Fira Sans', sans-serif;\">Chippy ipsum dolor amet burger gravy burger battered plaice nuggets battered fish pickled egg chips. Battered scampi vegetarian burger scampi saveloy battered fish vegetarian burger battered plaice curry chips. Brown sauce cod pickled egg battered saveloy beef & onion pie scampi plaice.</p>",
+    "field_1": "<p>Chippy ipsum dolor amet burger gravy burger battered plaice nuggets battered fish pickled egg chips. Battered scampi vegetarian burger scampi saveloy battered fish vegetarian burger battered plaice curry chips. Brown sauce cod pickled egg battered saveloy beef & onion pie scampi plaice.</p>",
     "field_2": "Battered scampi vegetarian burger",
     "field_3": "onionpie@hotmail.com",
     "field_4": [
@@ -14,7 +14,7 @@
     }
 },
 {
-    "field_1": "<p style=\"font-family: 'Fira Sans', sans-serif;\">Beef burger battered skate jacket potato cheeseburger battered cod onion rings cheeseburger skate beef & onion pie chicken burger.</p>",
+    "field_1": "<p>Beef burger battered skate jacket potato cheeseburger battered cod onion rings cheeseburger skate beef & onion pie chicken burger.</p>",
     "field_2": "Coleslaw scampi onion rings",
     "field_3": "batteredsaveloy@gmail.com",
     "field_4": [

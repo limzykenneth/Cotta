@@ -8,7 +8,7 @@ const testSchema = require("./json/test_1.schema.json");
 const testAppCollection = require("./json/test_1_AppCollection.json");
 const testData = Object.freeze(_.cloneDeep(require("./json/test_1_data.json")));
 const newModel = Object.freeze({
-	"field_1": "<p style=\"font-family: 'Fira Sans', sans-serif;\">Fish cake coleslaw roe, chicken burger skate battered roe roe roe jacket potato gravy beef burger. </p>",
+	"field_1": "<p>Fish cake coleslaw roe, chicken burger skate battered roe roe roe jacket potato gravy beef burger. </p>",
 	"field_2": "chicken burger peas fish cake",
 	"field_3": "mayonaisemayonaise@hotmail.com",
 	"field_4": [
