@@ -138,6 +138,8 @@ router.post("/", restrict.toEditor, function(req, res, next){
 			});
 		}else{
 			// Edit existing schema
+			// NOTE: confusion between editing existing schema and an incorrect
+			// schema with duplicate name
 			_.each(schemaDefinition, (el, key) => {
 				_.each(el, (val, prop) => {
 					if(regex.test(prop)){

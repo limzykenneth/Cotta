@@ -232,40 +232,46 @@ router.post("/:collectionSlug/:modelID", restrict.toAuthor, function(req, res, n
 
 				// Check for file upload field
 				_.each(fields, function(el, key){
+					if(el.app_type == "file"){
+						// File upload field found
 
-					// File upload field found
-					if(el.type == "file"){
-
-						// Check if uploading multiple files
 						if(Array.isArray(model.data[key])){
+							// Uploading multiple files
+
 							_.each(model.data[key], (entry) => {
-								const file = new Files.Model(_.cloneDeep(entry));
+								if(!entry.permalink){
+									const file = new Files.Model(_.cloneDeep(entry));
+
+									if(!_.includes(limits.acceptedMIME, file.data["content-type"])){
+										next(new CharError("Invalid MIME type", `File type "${file.data["content-type"]}" is not supported`, 415));
+										return false; // Exit _.each
+									}else{
+										uploadUtils.processFileMetadata(file, req);
+										filePromises.push(file.save().then(() => {
+											return uploadUtils.setFileEntryMetadata(entry, file, req);
+										}));
+									}
+								}
+							});
+						}else{
+							// Uploading a single file
+
+							// Check if incoming entries has `permalink` field
+							if(!model.data[key].permalink){
+								// Incoming file entry changed
+								const file = new Files.Model(_.cloneDeep(model.data[key]));
 
 								if(!_.includes(limits.acceptedMIME, file.data["content-type"])){
 									next(new CharError("Invalid MIME type", `File type "${file.data["content-type"]}" is not supported`, 415));
-									return false; // Exit _.each
+									return false;
 								}else{
 									uploadUtils.processFileMetadata(file, req);
-									filePromises.push(file.save().then(() => {
-										return uploadUtils.setFileEntryMetadata(entry, file, req);
-									}));
+									filePromises.push(
+										file.save().then(() => {
+											return uploadUtils.setFileEntryMetadata(model.data[key], file, req);
+										})
+									);
 								}
-							});
-
-						// Uploading a single file
-						}else{
-							const file = new Files.Model(_.cloneDeep(model.data[key]));
-
-							if(!_.includes(limits.acceptedMIME, file.data["content-type"])){
-								next(new CharError("Invalid MIME type", `File type "${file.data["content-type"]}" is not supported`, 415));
-								return false;
-							}else{
-								uploadUtils.processFileMetadata(file, req);
-								filePromises.push(
-									file.save().then(() => {
-										return uploadUtils.setFileEntryMetadata(model.data[key], file, req);
-									})
-								);
 							}
 						}
 					}
@@ -290,11 +296,13 @@ router.post("/:collectionSlug/:modelID", restrict.toAuthor, function(req, res, n
 				}
 				// Insert into database
 				return model.save().catch((err) => {
-					return next(new CharError("Invalid Schema", `The provided fields does not match schema entry of ${req.params.collectionSlug} in the database`, 400));
+					return Promise.reject(new CharError("Invalid Schema", `The provided fields does not match schema entry of ${req.params.collectionSlug} in the database`, 400));
 				});
 			}).then((model) => {
 				// Return with updated model
 				res.json(model.data);
+			}).catch((err) => {
+				next(err);
 			});
 		});
 	}).catch((err) => {
@@ -332,7 +340,6 @@ router.delete("/:collectionSlug/:modelID", restrict.toAuthor, function(req, res,
 				res.json(retModel);
 			});
 		}else{
-			console.log("over here");
 			return next(new CharError("Model does not exist", `The requested model with ID ${req.params.modelID} does not exist.`, 404));
 		}
 	}).catch((err) => {
