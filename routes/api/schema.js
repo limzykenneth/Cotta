@@ -4,6 +4,7 @@ const DynamicRecord = require("dynamic-record");
 
 const router = express.Router();
 const restrict = require("../../utils/middlewares/restrict.js");
+const CharError = require("../../utils/charError.js");
 const AppCollections = new DynamicRecord({
 	tableSlug: "_app_collections"
 });
@@ -137,9 +138,24 @@ router.post("/", restrict.toEditor, function(req, res, next){
 				res.json(Schema);
 			});
 		}else{
-			// Edit existing schema
-			// NOTE: confusion between editing existing schema and an incorrect
-			// schema with duplicate name
+			return Promise.reject(new CharError("Schema exist", `Schema with name ${req.body.tableSlug} already exist`, 400));
+		}
+	}).catch((err) => {
+		next(err);
+	});
+});
+
+router.post("/:schema", restrict.toEditor, function(req, res, next){
+	const Schema = new DynamicRecord.DynamicSchema();
+
+	AppCollections.findBy({"_$id": req.params.schema}).then((appCollection) => {
+		if(appCollection === null){
+			// Schema does not exist in database
+			return Promise.reject(new CharError("Not Found", `Schema with slug "${req.params.schema}" does not exist.`, 404));
+		}else{
+			const schemaDefinition = req.body.definition;
+			const regex = /^app_/;
+
 			_.each(schemaDefinition, (el, key) => {
 				_.each(el, (val, prop) => {
 					if(regex.test(prop)){
@@ -148,49 +164,70 @@ router.post("/", restrict.toEditor, function(req, res, next){
 				});
 			});
 
-			appCollection.save().then(() => {
-				return Schema.read(req.body.tableSlug);
-			}).then(() => {
-				if(Schema.tableName !== req.body.tableName){
-					return Schema.renameTable(req.body.tableSlug, req.body.tableName);
-				}else{
-					return Promise.resolve(Schema);
-				}
-			}).then(() => {
-				const definition = _.reduce(schemaDefinition, (result, el, key) => {
-					result[key] = {};
-					_.each(el, (val, prop) => {
-						if(!regex.test(prop)){
-							result[key][prop] = val;
-						}
-					});
-
-					return result;
-				}, {});
-
-				definition._metadata = {
-					"type": "object",
-					"properties": {
-						"created_by": {
-							"type": "string"
-						},
-						"date_created": {
-							"type": "string"
-						},
-						"date_modified": {
-							"type": "string"
-						}
+			if(req.params.schema === req.body.tableSlug){
+				// Table name did not change
+				appCollection.save().then(() => {
+					return Schema.read(req.params.schema);
+				}).then(() => {
+					if(Schema.tableName !== req.body.tableName){
+						return Promise.reject(new CharError("Not implemented", "Changing name or slug of collection not yet implemented", 501));
+						// return Schema.renameTable(req.params.schema, req.body.tableName);
+					}else{
+						return Promise.resolve(Schema);
 					}
-				};
-				definition._uid = {
-					"type": "number",
-					"isAutoIncrement": "true"
-				};
+				}).then(() => {
+					const definition = _.reduce(schemaDefinition, (result, el, key) => {
+						result[key] = {};
+						_.each(el, (val, prop) => {
+							if(!regex.test(prop)){
+								result[key][prop] = val;
+							}
+						});
 
-				return Schema.define(definition);
-			}).then(() => {
-				res.json(Schema);
-			});
+						return result;
+					}, {});
+
+					definition._metadata = {
+						"type": "object",
+						"properties": {
+							"created_by": {
+								"type": "string"
+							},
+							"date_created": {
+								"type": "string"
+							},
+							"date_modified": {
+								"type": "string"
+							}
+						}
+					};
+					definition._uid = {
+						"type": "number",
+						"isAutoIncrement": "true"
+					};
+
+					return Schema.define(definition);
+				}).then(() => {
+					_.each(schemaDefinition, (el, key) => {
+						Schema.definition[key] = el;
+					});
+					res.json(Schema);
+				}).catch((err) => {
+					next(err);
+				});
+			}else{
+				// Table name changed
+				// NOTE: implementation pending
+				return Promise.resolve(new AppCollections.Model());
+			}
+		}
+	}).then((appCollection) => {
+		// appCollection.save().then(() => {
+		// });
+		if(appCollection){
+			return Promise.reject(new CharError("Not implemented", "Changing name or slug of collection not yet implemented", 501));
+		}else{
+			return;
 		}
 	}).catch((err) => {
 		next(err);

@@ -158,6 +158,9 @@ describe("Schema Routes", function(){
 			promises.push(Col.read("test_3").then((col) => {
 				return col.dropTable();
 			}));
+			promises.push(AppCollections.findBy({"_$id": "test_3"}).then((col) => {
+				return col.destroy();
+			}));
 
 			return Promise.all(promises);
 		});
@@ -181,7 +184,56 @@ describe("Schema Routes", function(){
 		});
 	});
 
-	describe("DEL /api/schema/", function(){
+	describe("POST /api/schema/:slug", function(){
+		const AppCollections = new DynamicRecord({
+			tableSlug: "_app_collections"
+		});
+
+		beforeEach(function() {
+			const promises = [];
+			return Promise.all(promises);
+		});
+
+		afterEach(function() {
+			const promises = [];
+
+			const Col = new DynamicRecord.DynamicSchema();
+			promises.push(Col.read("test_3").then((col) => {
+				return col.dropTable();
+			}));
+			promises.push(AppCollections.findBy({"_$id": "test_3"}).then((col) => {
+				return col.destroy();
+			}));
+
+			return Promise.all(promises);
+		});
+
+		it("should edit the fields of the specified schema", function(){
+			const modifiedSchema = _.cloneDeep(schemaRequest);
+			modifiedSchema.definition.field_1.app_type = "text";
+			modifiedSchema.definition.field_2.app_type = "radio";
+
+			return chai.request(app)
+				.post("/api/schema")
+				.set("Content-Type", "application/json")
+				.set("Authorization", `Bearer ${token}`)
+				.send(schemaRequest)
+				.then((res) => {
+					return chai.request(app)
+						.post("/api/schema/test_3")
+						.set("Content-Type", "application/json")
+						.set("Authorization", `Bearer ${token}`)
+						.send(modifiedSchema);
+				}).then((res) => {
+					assert.equal(res.body.tableName, modifiedSchema.tableName);
+					assert.equal(res.body.tableSlug, modifiedSchema.tableSlug);
+					assert.deepEqual(res.body.definition.field_1, modifiedSchema.definition.field_1);
+					assert.deepEqual(res.body.definition.field_2, modifiedSchema.definition.field_2);
+				});
+		});
+	});
+
+	describe("DEL /api/schema/:slug", function(){
 		const AppCollections = new DynamicRecord({
 			tableSlug: "_app_collections"
 		});
