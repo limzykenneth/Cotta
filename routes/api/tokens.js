@@ -9,7 +9,6 @@ const nanoid = require("nanoid");
 const router = express.Router();
 const auth = require("../../utils/auth.js");
 Promise.promisifyAll(jwt);
-const CharError = require("../../utils/charError.js");
 const Users = new DynamicRecord({
 	tableSlug: "_users_auth"
 });

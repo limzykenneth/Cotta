@@ -1,28 +1,28 @@
-# Char (working title)
+# Cotta
 
-Char is a Express.js based API creation framework designed to be used by both beginners and advanced users: you can get started easily creating a basic API, while still have access to the knitty gritty details that can help you create a full featured API.
+Cotta is a Express.js based API creation framework designed to be used by both beginners and advanced users: you can get started easily creating a basic API, while still have access to the knitty gritty details that can help you create a full featured API.
 
 The project is still in development and in currently in early alpha. **Do not deploy this in a production server!** Any help with this project is extremely welcomed!
 
-Char is based on Express.js, using its route definitions and middlewares, Char makes creating endpoints for publishing data easy while automatically making those data available through an API. Char is meant to be a website or app's back end, although you can serve a static website through it, it is not recommended to render the front end with Char. Any front end that goes with Char should consume its API (including when serving static websites through Char).
+Cotta is based on Express.js, using its route definitions and middlewares, Cotta makes creating endpoints for publishing data easy while automatically making those data available through an API. Cotta is meant to be a website or app's back end, although you can serve a static website through it, it is not recommended to render the front end with Cotta. Any front end that goes with Cotta should consume its API (including when serving static websites through Cotta).
 
-##### What Char is NOT:
+##### What Cotta is NOT:
 - A full-stack framework
 - A highly opinionated framework
 - Trying to invent new concepts
 
-##### What Char is:
+##### What Cotta is:
 - A quick and easy way to setup data structures that will be available through an API
-- An Express server (if you know Express, you know Char)
+- An Express server (if you know Express, you know Cotta)
 
 ## Features
-Char by default exposes an API under the `/api/` route and whatever is under the `public` directory under the `/` route (where you should put your static site if you wish to serve it with Char).
+Cotta by default exposes an API under the `/api/` route and whatever is under the `public` directory under the `/` route (where you should put your static site if you wish to serve it with Cotta).
 
-Char uses an implmentation of [active record](https://github.com/limzykenneth/absurd-raven) that I wrote from scratch, currently only works with MongoDB but there are plans for other databases once the API is stable.
+Cotta uses an implmentation of [active record](https://github.com/limzykenneth/absurd-raven) that I wrote from scratch, currently only works with MongoDB but there are plans for other databases once the API is stable.
 
-There is a separate control panel front end built side by side with Char but it is maintained separately. Char will only be concerned with the REST API endpoints and back end logic, the control panel simply consumes the API exposed. The control panel provides utilities for easy creation of HTML fields including text, radio boxes, checkboxes, file/image upload, etc. This will be made available when the project goes into beta (when? I don't know).
+There is a separate control panel front end built side by side with Cotta but it is maintained separately. Cotta will only be concerned with the REST API endpoints and back end logic, the control panel simply consumes the API exposed. The control panel provides utilities for easy creation of HTML fields including text, radio boxes, checkboxes, file/image upload, etc. This will be made available when the project goes into beta (when? I don't know).
 
-Char uses a MVC-like structure inspired by backbone.js. Each piece of data (document in MongoDB, model in backbone.js) is a model, a set of models are grouped under a collection and a collection are defined by its schema which the models adhere to. There is no view layer.
+Cotta uses a MVC-like structure inspired by backbone.js. Each piece of data (document in MongoDB, model in backbone.js) is a model, a set of models are grouped under a collection and a collection are defined by its schema which the models adhere to. There is no view layer.
 
 ## Usage
 Setup a MongoDB database and include your database credentials and information as follows into a `.env` file at the root of the project:

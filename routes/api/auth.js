@@ -3,7 +3,7 @@ const _ = require("lodash");
 const express = require("express");
 const router = express.Router();
 const jwt = require("jsonwebtoken");
-const CharError = require("../../utils/charError.js");
+const CottaError = require("../../utils/CottaError.js");
 const Promise = require("bluebird");
 Promise.promisifyAll(jwt);
 
@@ -30,7 +30,7 @@ router.use(function(req, res, next){
 		};
 		next();
 	}).catch(function(err){
-		next(new CharError("Auth Token Invalid", err.message, 403));
+		next(new CottaError("Auth Token Invalid", err.message, 403));
 	});
 });
 

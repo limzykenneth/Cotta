@@ -8,7 +8,7 @@ const DynamicRecord = require("dynamic-record");
 const sanitizeHtml = require("sanitize-html");
 
 const restrict = require("../../utils/middlewares/restrict.js");
-const CharError = require("../../utils/charError.js");
+const CottaError = require("../../utils/CottaError.js");
 const uploadUtils = require("./uploadUtils.js");
 
 // Configurations (hardcoded for now, should remove in the future)
@@ -51,7 +51,7 @@ router.get("/:collectionSlug/:modelID", function(req, res, next){
 			delete collection.data._id;
 			res.json(collection.data);
 		}else{
-			next(new CharError("Model does not exist", `The requested model with ID ${req.params.modelID} does not exist.`, 404));
+			next(new CottaError("Model does not exist", `The requested model with ID ${req.params.modelID} does not exist.`, 404));
 		}
 	}).catch((err) => {
 		next(err);
@@ -92,7 +92,7 @@ router.post("/:collectionSlug", restrict.toAuthor, function(req, res, next){
 
 		if(count !== fieldsLength){
 			// Schema mismatched
-			return Promise.reject(new CharError("Invalid Schema", `The provided fields does not match schema entry of ${req.params.collectionSlug} in the database`, 400));
+			return Promise.reject(new CottaError("Invalid Schema", `The provided fields does not match schema entry of ${req.params.collectionSlug} in the database`, 400));
 		}else{
 			// Schema matched continue processing
 			const Files = new DynamicRecord({
@@ -113,7 +113,7 @@ router.post("/:collectionSlug", restrict.toAuthor, function(req, res, next){
 							const file = new Files.Model(_.cloneDeep(entry));
 
 							if(!_.includes(limits.acceptedMIME, file.data["content-type"])){
-								next(new CharError("Invalid MIME type", `File type "${file.data["content-type"]}" is not supported`, 415));
+								next(new CottaError("Invalid MIME type", `File type "${file.data["content-type"]}" is not supported`, 415));
 								return false; // Exit _.each
 							}else{
 								uploadUtils.processFileMetadata(file, req);
@@ -128,7 +128,7 @@ router.post("/:collectionSlug", restrict.toAuthor, function(req, res, next){
 						const file = new Files.Model(_.cloneDeep(model.data[key]));
 
 						if(!_.includes(limits.acceptedMIME, file.data["content-type"])){
-							next(new CharError("Invalid MIME type", `File type "${file.data["content-type"]}" is not supported`, 415));
+							next(new CottaError("Invalid MIME type", `File type "${file.data["content-type"]}" is not supported`, 415));
 							return false;
 						}else{
 							uploadUtils.processFileMetadata(file, req);
@@ -220,7 +220,7 @@ router.post("/:collectionSlug/:modelID", restrict.toAuthor, function(req, res, n
 
 			if(count !== fieldsLength){
 				// Schema mismatched
-				return Promise.reject(new CharError("Invalid Schema", `The provided fields does not match schema entry of ${req.params.collectionSlug} in the database`, 400));
+				return Promise.reject(new CottaError("Invalid Schema", `The provided fields does not match schema entry of ${req.params.collectionSlug} in the database`, 400));
 			}else{
 				// Schema matched continue processing
 				const Files = new DynamicRecord({
@@ -243,7 +243,7 @@ router.post("/:collectionSlug/:modelID", restrict.toAuthor, function(req, res, n
 									const file = new Files.Model(_.cloneDeep(entry));
 
 									if(!_.includes(limits.acceptedMIME, file.data["content-type"])){
-										next(new CharError("Invalid MIME type", `File type "${file.data["content-type"]}" is not supported`, 415));
+										next(new CottaError("Invalid MIME type", `File type "${file.data["content-type"]}" is not supported`, 415));
 										return false; // Exit _.each
 									}else{
 										uploadUtils.processFileMetadata(file, req);
@@ -262,7 +262,7 @@ router.post("/:collectionSlug/:modelID", restrict.toAuthor, function(req, res, n
 								const file = new Files.Model(_.cloneDeep(model.data[key]));
 
 								if(!_.includes(limits.acceptedMIME, file.data["content-type"])){
-									next(new CharError("Invalid MIME type", `File type "${file.data["content-type"]}" is not supported`, 415));
+									next(new CottaError("Invalid MIME type", `File type "${file.data["content-type"]}" is not supported`, 415));
 									return false;
 								}else{
 									uploadUtils.processFileMetadata(file, req);
@@ -285,7 +285,7 @@ router.post("/:collectionSlug/:modelID", restrict.toAuthor, function(req, res, n
 			Collection.findBy({"_uid": parseInt(req.params.modelID)}).then((model) => {
 				if(model.data == null){
 					res.json(model.data);
-					return Promise.reject(new CharError("Model not found", `Cannot edit model with ID: ${req.prarams.modelID}, model does not exist in the collection ${req.params.collectionSlug}`, 404));
+					return Promise.reject(new CottaError("Model not found", `Cannot edit model with ID: ${req.prarams.modelID}, model does not exist in the collection ${req.params.collectionSlug}`, 404));
 				}
 
 				// Set metadata
@@ -296,7 +296,7 @@ router.post("/:collectionSlug/:modelID", restrict.toAuthor, function(req, res, n
 				}
 				// Insert into database
 				return model.save().catch((err) => {
-					return Promise.reject(new CharError("Invalid Schema", `The provided fields does not match schema entry of ${req.params.collectionSlug} in the database`, 400));
+					return Promise.reject(new CottaError("Invalid Schema", `The provided fields does not match schema entry of ${req.params.collectionSlug} in the database`, 400));
 				});
 			}).then((model) => {
 				// Return with updated model
@@ -340,7 +340,7 @@ router.delete("/:collectionSlug/:modelID", restrict.toAuthor, function(req, res,
 				res.json(retModel);
 			});
 		}else{
-			return next(new CharError("Model does not exist", `The requested model with ID ${req.params.modelID} does not exist.`, 404));
+			return next(new CottaError("Model does not exist", `The requested model with ID ${req.params.modelID} does not exist.`, 404));
 		}
 	}).catch((err) => {
 		next(err);
@@ -368,7 +368,7 @@ function ownModel(username, collectionSlug, modelID){
 		if(_.includes(user.models, `${collectionSlug}.${modelID}`)){
 			return Promise.resolve();
 		}else{
-			return Promise.reject(new CharError("Forbidden", "User not allowed to modify this resource", 403));
+			return Promise.reject(new CottaError("Forbidden", "User not allowed to modify this resource", 403));
 		}
 	});
 }

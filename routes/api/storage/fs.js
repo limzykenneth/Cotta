@@ -5,7 +5,7 @@ const fs = require("fs");
 const path = require("path");
 const promisify = require("util").promisify;
 const mkdirp = require("mkdirp");
-const CharError = require("../../../utils/charError.js");
+const CottaError = require("../../../utils/CottaError.js");
 
 const stat = promisify(fs.stat);
 
@@ -42,7 +42,7 @@ class FSStorage{
 			file.on("data", (data) => {
 				fileSize += data.length;
 				if(fileSize > this.limit){
-					fstream.destroy(new CharError("File size too big", "The uploaded file is over the size limit acceptable.", 413));
+					fstream.destroy(new CottaError("File size too big", "The uploaded file is over the size limit acceptable.", 413));
 				}
 			});
 

@@ -1,13 +1,13 @@
 const express = require("express");
 const path = require("path");
-const CharError = require("../charError.js");
+const CottaError = require("../CottaError.js");
 
 // Middleware to make sure user is logged in
 var restrict = function(req, res, next){
 	if (req.user) {
 		next();
 	} else {
-		let err = new CharError("Missing Auth Token", "Auth Token must be provided");
+		let err = new CottaError("Missing Auth Token", "Auth Token must be provided");
 		err.status = 403;
 		next(err);
 	}
@@ -18,7 +18,7 @@ restrict.toAdministrator = function(req, res, next){
 	if(req.user.role == "administrator"){
 		next();
 	}else{
-		let err = new CharError("Forbidden", "User not allowed this resource");
+		let err = new CottaError("Forbidden", "User not allowed this resource");
 		err.status = 403;
 		next(err);
 	}
@@ -29,7 +29,7 @@ restrict.toEditor = function(req, res, next){
 	if(req.user.role == "administrator" || req.user.role == "editor"){
 		next();
 	}else{
-		let err = new CharError("Forbidden", "User not allowed this resource");
+		let err = new CottaError("Forbidden", "User not allowed this resource");
 		err.status = 403;
 		next(err);
 	}
@@ -40,7 +40,7 @@ restrict.toAuthor = function(req, res, next){
 	if(req.user.role == "administrator" || req.user.role == "editor" || req.user.role == "author"){
 		next();
 	}else{
-		let err = new CharError("Forbidden", "User not allowed this resource");
+		let err = new CottaError("Forbidden", "User not allowed this resource");
 		err.status = 403;
 		next(err);
 	}

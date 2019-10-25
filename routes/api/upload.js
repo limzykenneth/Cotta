@@ -14,7 +14,7 @@ fetch.Promise = Promise;
 const express = require("express");
 const router = express.Router();
 
-const CharError = require("../../utils/charError.js");
+const CottaError = require("../../utils/CottaError.js");
 const restrict = require("../../utils/middlewares/restrict.js");
 const uploadUtils = require("./uploadUtils.js");
 // NOTE: storage solution should be chosen by admin config
@@ -51,7 +51,7 @@ router.post("/", restrict.toAuthor, function(req, res, next){
 		_.each(fileCollection, (file) => {
 			if(!_.includes(limits.acceptedMIME, file.data["content-type"])){
 				// Invalid file type
-				err = new CharError("Invalid MIME type", `File type "${file.data["content-type"]}" is not supported`, 415);
+				err = new CottaError("Invalid MIME type", `File type "${file.data["content-type"]}" is not supported`, 415);
 				// No need to process further, halt loop immediately
 				return false;
 			}else{
@@ -85,7 +85,7 @@ router.post("/", restrict.toAuthor, function(req, res, next){
 
 		if(!_.includes(limits.acceptedMIME, file.data["content-type"])){
 			// Invalid file type, return
-			return next(new CharError("Invalid MIME type", `File type "${file.data["content-type"]}" is not supported`, 415));
+			return next(new CottaError("Invalid MIME type", `File type "${file.data["content-type"]}" is not supported`, 415));
 		}else{
 			// File type valid, populate metadata of model
 			uploadUtils.processFileMetadata(file, req);
@@ -115,13 +115,13 @@ router.post("/:location", restrict.toAuthor, function(req, res, next){
 		Files.findBy({uid: req.params.location}).then((file) => {
 			// Do checks on the database entry
 			if(file === null){
-				return Promise.reject(new CharError("Invalid upload URL", "Upload URL is invalid", 400));
+				return Promise.reject(new CottaError("Invalid upload URL", "Upload URL is invalid", 400));
 			}else if(moment(file.data.uploadExpire).isBefore(moment())){
 				file.destroy();
-				return Promise.reject(new CharError("Upload Link Expired", "This upload link has expired", 400));
+				return Promise.reject(new CottaError("Upload Link Expired", "This upload link has expired", 400));
 			}else if(file.data.saved_path !== null){
 				// File already exist
-				return Promise.reject(new CharError("Invalid upload URL", "Upload URL is invalid", 400));
+				return Promise.reject(new CottaError("Invalid upload URL", "Upload URL is invalid", 400));
 			}else{
 				// All tests passed
 				return Promise.resolve(file);
@@ -132,9 +132,9 @@ router.post("/:location", restrict.toAuthor, function(req, res, next){
 				// Checks against fetched data
 				const contentType = response.headers.get("content-type");
 				if(!response.ok){
-					return Promise.reject(new CharError("Non-OK response code returned", `Request for resource at ${req.body.url} returned a non-OK response code.`, 400));
+					return Promise.reject(new CottaError("Non-OK response code returned", `Request for resource at ${req.body.url} returned a non-OK response code.`, 400));
 				}else if(file.data["content-type"] !== contentType){
-					return Promise.reject(new CharError("MIME Type Mismatch", `File type "${contentType}" does not match metadata entry`, 400));
+					return Promise.reject(new CottaError("MIME Type Mismatch", `File type "${contentType}" does not match metadata entry`, 400));
 				}
 
 				// Set file path, and last modified timestamp
@@ -159,20 +159,20 @@ router.post("/:location", restrict.toAuthor, function(req, res, next){
 	}else{
 		// Upload raw image
 		if(!_.includes(limits.acceptedMIME, req.headers["content-type"])){
-			return Promise.reject(new CharError("Invalid MIME type", `File type "${req.headers["content-type"]}" is not supported`, 415));
+			return Promise.reject(new CottaError("Invalid MIME type", `File type "${req.headers["content-type"]}" is not supported`, 415));
 		}
 
 		return Files.findBy({uid: req.params.location}).then((file) => {
 			if(file === null){
-				return Promise.reject(new CharError("Invalid upload URL", "Upload URL is invalid", 400));
+				return Promise.reject(new CottaError("Invalid upload URL", "Upload URL is invalid", 400));
 			}else if(file.data["content-type"] !== req.headers["content-type"]){
-				return Promise.reject(new CharError("MIME Type Mismatch", `File type "${req.headers["content-type"]}" does not match metadata entry`, 400));
+				return Promise.reject(new CottaError("MIME Type Mismatch", `File type "${req.headers["content-type"]}" does not match metadata entry`, 400));
 			}else if(moment(file.data.uploadExpire).isBefore(moment())){
 				file.destroy();
-				return Promise.reject(new CharError("Upload Link Expired", "This upload link has expired", 400));
+				return Promise.reject(new CottaError("Upload Link Expired", "This upload link has expired", 400));
 			}else if(file.data.saved_path !== null){
 				// File already exist
-				return Promise.reject(new CharError("Invalid upload URL", "Upload URL is invalid", 400));
+				return Promise.reject(new CottaError("Invalid upload URL", "Upload URL is invalid", 400));
 
 			}else{
 				// Set file path, and last modified timestamp

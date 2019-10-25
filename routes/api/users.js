@@ -5,7 +5,7 @@ const DynamicRecord = require("dynamic-record");
 const router = express.Router();
 const auth = require("../../utils/auth.js");
 const restrict = require("../../utils/middlewares/restrict.js");
-const CharError = require("../../utils/charError.js");
+const CottaError = require("../../utils/CottaError.js");
 const Users = new DynamicRecord({
 	tableSlug: "_users_auth"
 });
@@ -45,7 +45,7 @@ router.get("/:username", restrict.toAdministrator, function(req, res){
 router.post("/", restrict.toAdministrator, function(req, res, next){
 	const reservedUsernames = ["Anonymous", "anonymous"];
 	if(_.includes(reservedUsernames, req.body.username)){
-		next(new CharError("Username not available", `"${req.body.username}" is a reserved username and cannot be registered`));
+		next(new CottaError("Username not available", `"${req.body.username}" is a reserved username and cannot be registered`));
 		return;
 	}
 
@@ -57,9 +57,9 @@ router.post("/", restrict.toAdministrator, function(req, res, next){
 	}).catch((err) => {
 		if(err.name == "MongoError" && err.code == 11000){
 			// Duplicate username
-			next(new CharError("Username not available", `Username "${req.body.username}" is already registered`, 409));
+			next(new CottaError("Username not available", `Username "${req.body.username}" is already registered`, 409));
 		}else{
-			next(new CharError());
+			next(new CottaError());
 		}
 	});
 });
@@ -79,10 +79,10 @@ router.post("/:username", restrict.toAdministrator, function(req, res, next){
 				});
 			});
 		}else{
-			next(new CharError("Request body missing field"));
+			next(new CottaError("Request body missing field"));
 		}
 	}else{
-		next(new CharError("Request body does not match route"));
+		next(new CottaError("Request body does not match route"));
 	}
 });
 
@@ -102,7 +102,7 @@ router.delete("/:username", restrict.toAdministrator, function(req, res, next){
 		});
 	}).catch((err) => {
 		if(err.message === "Model not saved in database yet."){
-			next(new CharError("User does not exist", "The user to be deleted does not exist.", 404));
+			next(new CottaError("User does not exist", "The user to be deleted does not exist.", 404));
 		}else{
 			next(err);
 		}

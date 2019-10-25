@@ -4,7 +4,7 @@ const DynamicRecord = require("dynamic-record");
 
 const router = express.Router();
 const restrict = require("../../utils/middlewares/restrict.js");
-const CharError = require("../../utils/charError.js");
+const CottaError = require("../../utils/CottaError.js");
 const AppCollections = new DynamicRecord({
 	tableSlug: "_app_collections"
 });
@@ -138,7 +138,7 @@ router.post("/", restrict.toEditor, function(req, res, next){
 				res.json(Schema);
 			});
 		}else{
-			return Promise.reject(new CharError("Schema exist", `Schema with name ${req.body.tableSlug} already exist`, 400));
+			return Promise.reject(new CottaError("Schema exist", `Schema with name ${req.body.tableSlug} already exist`, 400));
 		}
 	}).catch((err) => {
 		next(err);
@@ -151,7 +151,7 @@ router.post("/:schema", restrict.toEditor, function(req, res, next){
 	AppCollections.findBy({"_$id": req.params.schema}).then((appCollection) => {
 		if(appCollection === null){
 			// Schema does not exist in database
-			return Promise.reject(new CharError("Not Found", `Schema with slug "${req.params.schema}" does not exist.`, 404));
+			return Promise.reject(new CottaError("Not Found", `Schema with slug "${req.params.schema}" does not exist.`, 404));
 		}else{
 			const schemaDefinition = req.body.definition;
 			const regex = /^app_/;
@@ -170,7 +170,7 @@ router.post("/:schema", restrict.toEditor, function(req, res, next){
 					return Schema.read(req.params.schema);
 				}).then(() => {
 					if(Schema.tableName !== req.body.tableName){
-						return Promise.reject(new CharError("Not implemented", "Changing name or slug of collection not yet implemented", 501));
+						return Promise.reject(new CottaError("Not implemented", "Changing name or slug of collection not yet implemented", 501));
 						// return Schema.renameTable(req.params.schema, req.body.tableName);
 					}else{
 						return Promise.resolve(Schema);
@@ -225,7 +225,7 @@ router.post("/:schema", restrict.toEditor, function(req, res, next){
 		// appCollection.save().then(() => {
 		// });
 		if(appCollection){
-			return Promise.reject(new CharError("Not implemented", "Changing name or slug of collection not yet implemented", 501));
+			return Promise.reject(new CottaError("Not implemented", "Changing name or slug of collection not yet implemented", 501));
 		}else{
 			return;
 		}

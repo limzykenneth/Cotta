@@ -5,7 +5,7 @@ const DynamicRecord = require("dynamic-record");
 
 const router = express.Router();
 const auth = require("../../utils/auth.js");
-const CharError = require("../../utils/charError.js");
+const CottaError = require("../../utils/CottaError.js");
 const Users = new DynamicRecord({
 	tableSlug: "_users_auth"
 });
@@ -15,7 +15,7 @@ router.use(function(req, res, next){
 	if(process.env.ALLOW_SIGNUP === "true"){
 		next();
 	}else{
-		next(new CharError("Not Found", "Cannot find resource", 404));
+		next(new CottaError("Not Found", "Cannot find resource", 404));
 	}
 });
 
@@ -27,9 +27,9 @@ router.post("/", function(req, res, next){
 	}).catch((err) => {
 		if(err.name == "MongoError" && err.code == 11000){
 			// Duplicate username
-			next(new CharError("Username not available", `Username "${req.body.username}" is already registered`));
+			next(new CottaError("Username not available", `Username "${req.body.username}" is already registered`));
 		}else{
-			next(new CharError());
+			next(new CottaError());
 		}
 	});
 });

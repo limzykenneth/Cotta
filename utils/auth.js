@@ -2,7 +2,7 @@ const bcrypt = require("bcrypt");
 const moment = require("moment");
 const Promise = require("bluebird");
 const DynamicRecord = require("dynamic-record");
-const CharError = require("./charError.js");
+const CottaError = require("./CottaError.js");
 
 const Users = new DynamicRecord({
 	tableSlug: "_users_auth"
@@ -18,7 +18,7 @@ auth.authenticate = function(name, pass){
 		user = res;
 		// No user found, return generic failed message
 		if(!user){
-			return Promise.reject(new CharError("Invalid login details", "The username or password provided is incorrect.", 403));
+			return Promise.reject(new CottaError("Invalid login details", "The username or password provided is incorrect.", 403));
 		}
 
 		// Compare password and hash
@@ -33,7 +33,7 @@ auth.authenticate = function(name, pass){
 
 		// Fail, call callback with error object
 		}else{
-			return Promise.reject(new CharError("Invalid login details", "The username or password provided is incorrect.", 403));
+			return Promise.reject(new CottaError("Invalid login details", "The username or password provided is incorrect.", 403));
 		}
 
 	}).catch(function(err){
