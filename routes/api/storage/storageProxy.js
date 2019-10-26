@@ -31,6 +31,7 @@ module.exports = function(strategy){
 				storage.contentType(req.params.id)
 			];
 			Promise.all(promises).then(([length, contentType]) => {
+				res.set("Cache-Control", "public, max-age=0");
 				res.set("Content-Type", contentType);
 				res.set("Content-Length", length);
 				storage.getStream(req.params.id).pipe(res);

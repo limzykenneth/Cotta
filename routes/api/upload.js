@@ -17,9 +17,6 @@ const router = express.Router();
 const CottaError = require("../../utils/CottaError.js");
 const restrict = require("../../utils/middlewares/restrict.js");
 const uploadUtils = require("./uploadUtils.js");
-// NOTE: storage solution should be chosen by admin config
-// let Storage = require("./storage/fs.js");
-let Storage = require("./storage/mongodb.js");
 
 // Configurations (hardcoded for now, should remove in the future)
 const limits = {
@@ -31,15 +28,21 @@ const limits = {
 	]
 };
 
-// const storage = new Storage({
-// 	fileDir: "./uploads/",
-// 	limit: limits.fileSize
-// });
-
-const storage = new Storage({
-	uri: `mongodb://${process.env.mongo_user}:${process.env.mongo_pass}@${process.env.mongo_server}/${process.env.mongo_db_name}`,
-	limit: limits.fileSize
-});
+let Storage;
+let storage;
+if(process.env.STORAGE_STRATEGY === "fs"){
+	Storage = require("./storage/fs.js");
+	storage = new Storage({
+		fileDir: "./uploads/",
+		limit: limits.fileSize
+	});
+}else if(process.env.STORAGE_STRATEGY === "mongodb"){
+	Storage = require("./storage/mongodb.js");
+	storage = new Storage({
+		uri: `mongodb://${process.env.mongo_user}:${process.env.mongo_pass}@${process.env.mongo_server}/${process.env.mongo_db_name}`,
+		limit: limits.fileSize
+	});
+}
 
 const Files = new DynamicRecord({
 	tableSlug: "files_upload"

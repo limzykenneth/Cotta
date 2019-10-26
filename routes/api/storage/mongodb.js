@@ -12,6 +12,10 @@ class MongoDBStorage{
 		this.limit = config.limit;
 	}
 
+	close(){
+		this.client.close();
+	}
+
 	async length(id){
 		await this.connection;
 		const db = this.client.db();
