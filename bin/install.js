@@ -69,11 +69,25 @@ try{
 			const bcrypt = require("bcrypt");
 			const moment = require("moment");
 
+			// NOTE: Schemas for _users_auth, _app_collections, and file_upload
+			const tableSchemas = [
+				require("../schemas/_app_collections.schema.json"),
+				require("../schemas/_users_auth.schema.json"),
+				require("../schemas/file_upload.schema.json")
+			];
+			const schema = new DynamicRecord.DynamicSchema();
+
+			const promises = _.map(tableSchemas, (tableSchema) => {
+				return schema.createTable(tableSchema);
+			});
+
 			const Users = new DynamicRecord({
 				tableSlug: "_users_auth"
 			});
 
-			return Users.where({role: "administrator"}).then((models) => {
+			return Promise.all(promises).then(() => {
+				return Users.where({role: "administrator"});
+			}).then((models) => {
 				if(models.length === 0){
 					return bcrypt.hash(answers.password, 10);
 				}else{
@@ -140,6 +154,7 @@ try{
 		]).then((answers) => {
 			const jwtSecret = nanoid();
 			const output =
+			// NOTE: Address needs to strip protocol
 `
 # Database credentials
 mongo_server=${answers.database_address}

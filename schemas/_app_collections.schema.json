@@ -7,7 +7,7 @@
 	"properties":{
 		"_$id":{
 			"type": "string",
-			"description": "Name of a user created collection's schema",
+			"description": "Name of a user created collection's schema"
 		},
 		"fields": {
 			"type": "object",

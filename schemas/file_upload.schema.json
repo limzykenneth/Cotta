@@ -1,0 +1,21 @@
+{
+    "$schema" : "http://json-schema.org/draft-07/schema#",
+    "$id" : "files_upload",
+    "title" : "Files Upload",
+    "description" : "Metadata of uploaded files",
+    "type" : "object",
+    "properties" : {
+        "content-type" : {
+            "type" : "string",
+            "description" : "MIME type of the file"
+        },
+        "file_name" : {
+            "type" : "string",
+            "description" : "File name of the file"
+        },
+        "file_description" : {
+            "type" : "string",
+            "description" : "Description of the file"
+        }
+    }
+}
