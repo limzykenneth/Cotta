@@ -9,6 +9,8 @@ const CottaError = require("../../../utils/CottaError.js");
 
 const stat = promisify(fs.stat);
 
+// NOTE: implement mime type return
+
 class FSStorage{
 	constructor(config){
 		this.dir = config.fileDir;

@@ -18,7 +18,8 @@ const CottaError = require("../../utils/CottaError.js");
 const restrict = require("../../utils/middlewares/restrict.js");
 const uploadUtils = require("./uploadUtils.js");
 // NOTE: storage solution should be chosen by admin config
-let Storage = require("./storage/fs.js");
+// let Storage = require("./storage/fs.js");
+let Storage = require("./storage/mongodb.js");
 
 // Configurations (hardcoded for now, should remove in the future)
 const limits = {
@@ -30,8 +31,13 @@ const limits = {
 	]
 };
 
+// const storage = new Storage({
+// 	fileDir: "./uploads/",
+// 	limit: limits.fileSize
+// });
+
 const storage = new Storage({
-	fileDir: "./uploads/",
+	uri: `mongodb://${process.env.mongo_user}:${process.env.mongo_pass}@${process.env.mongo_server}/${process.env.mongo_db_name}`,
 	limit: limits.fileSize
 });
 
@@ -197,7 +203,7 @@ router.post("/:location", restrict.toAuthor, function(req, res, next){
 });
 
 function saveFileLocal(fileMetadata, fileData){
-	return storage.set(fileMetadata.saved_path, fileData);
+	return storage.set(fileMetadata.saved_path, fileData, fileMetadata["content-type"]);
 }
 
 function setFileMetadata(file){

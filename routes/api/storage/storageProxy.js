@@ -1,0 +1,44 @@
+const express = require("express");
+const router = express.Router();
+const CottaError = require("../../../utils/CottaError.js");
+const Strategies = {
+	mongodb: require("./mongodb.js")
+};
+
+// Configurations (hardcoded for now, should remove in the future)
+const limits = {
+	// Change to some integer value to limit file size
+	fileSize: 1000000,
+	acceptedMIME: [
+		"audio/ogg",
+		"image/jpeg"
+	]
+};
+
+module.exports = function(strategy){
+	let storage;
+	if(strategy === "mongodb"){
+		storage = new Strategies.mongodb({
+			uri: `mongodb://${process.env.mongo_user}:${process.env.mongo_pass}@${process.env.mongo_server}/${process.env.mongo_db_name}`,
+			limit: limits.fileSize
+		});
+	}
+
+	router.get("/:id", function(req, res, next){
+		if(storage){
+			const promises = [
+				storage.length(req.params.id),
+				storage.contentType(req.params.id)
+			];
+			Promise.all(promises).then(([length, contentType]) => {
+				res.set("Content-Type", contentType);
+				res.set("Content-Length", length);
+				storage.getStream(req.params.id).pipe(res);
+			});
+		}else{
+			next(new CottaError("Storage strategy undefined", `Storage strategy "${strategy}" is not defined.`, 500));
+		}
+	});
+
+	return router;
+};

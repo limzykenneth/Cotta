@@ -10,6 +10,7 @@ const logger = require("./logger.js");
 const errors = require("./errors.js");
 
 const api = require("./routes/api/index.js");
+const storageProxy = require("./routes/api/storage/storageProxy.js");
 
 // Express
 const app = express();
@@ -28,11 +29,18 @@ app.use(bodyParser.json());
 
 // Mount root to /public where custom front end lives
 app.use(express.static(path.join(__dirname, "public")));
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Mount dynamic routes
 app.use("/api", api);
 
+// Mount file access routes
+if(process.env.STORAGE_STRATEGY === "fs"){
+	// Straightforward links to on disc files
+	app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+}else if(process.env.STORAGE_STRATEGY === "mongodb"){
+	// Use mongodb as file storage
+	app.use("/uploads", storageProxy("mongodb"));
+}
 
 
 ////////////
