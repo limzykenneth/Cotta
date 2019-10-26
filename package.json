@@ -17,6 +17,7 @@
     "dotenv": "^4.0.0",
     "dynamic-record": "^0.5.2",
     "express": "^4.17.1",
+    "inquirer": "^7.0.0",
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.15",
     "mkdirp": "^0.5.1",
