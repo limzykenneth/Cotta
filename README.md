@@ -39,9 +39,6 @@ Cotta uses a MVC-like structure inspired by [Backbone.js](https://backbonejs.org
 	# Change this to `production` when deploying
 	NODE_ENV=development
 	JWT_SECRET=SECRET_KEY
-	ALLOW_ANNONYMOUS_TOKENS=true
-	ALLOW_UNAUTHORISED=false
-	ALLOW_SIGNUP=true
 	```
 
 2. Run `npm start` to start the production server, `npm run server` to run the development servers that automatically restarts the server on file change. See `gulpfile.js` for more elaborated uses of the build steps.

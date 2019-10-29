@@ -9,14 +9,19 @@ const CottaError = require("../../utils/CottaError.js");
 const Users = new DynamicRecord({
 	tableSlug: "_users_auth"
 });
+const Config = new DynamicRecord({
+	tableSlug: "_configurations"
+});
 
 // Only allow signups if app setting allows it
 router.use(function(req, res, next){
-	if(process.env.ALLOW_SIGNUP === "true"){
-		next();
-	}else{
-		next(new CottaError("Not Found", "Cannot find resource", 404));
-	}
+	Config.findBy({"config_name": "allow_signup"}).then((allowSignup) => {
+		if(allowSignup === "true"){
+			next();
+		}else{
+			next(new CottaError("Not Found", "Cannot find resource", 404));
+		}
+	});
 });
 
 router.post("/", function(req, res, next){

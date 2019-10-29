@@ -1,5 +1,6 @@
 require("dotenv").config();
 const _ = require("lodash");
+const DynamicRecord = require("dynamic-record");
 const express = require("express");
 const router = express.Router();
 const jwt = require("jsonwebtoken");
@@ -8,22 +9,27 @@ const Promise = require("bluebird");
 Promise.promisifyAll(jwt);
 
 const secret = process.env.JWT_SECRET;
+const Config = new DynamicRecord({
+	tableSlug: "_configurations"
+});
 
 // Catch all for authentication (temporary)
 router.use(function(req, res, next){
 	// Anonymous access to API
-	if(typeof req.token == "undefined" && process.env.ALLOW_UNAUTHORISED == "true"){
-		req.user = {
-			username: "Anonymous",
-			role: "anonymous"
-		};
-		next();
-		return;
-	}
+	Config.findBy({"config_name": "allow_unauthorised"}).then((allowUnauthorised) => {
+		if(typeof req.token == "undefined" && allowUnauthorised == "true"){
+			req.user = {
+				username: "Anonymous",
+				role: "anonymous"
+			};
+			next();
+			return;
+		}
 
-	// Authenticate here and also set the logged in users role accordingly
-	// Verify auth token
-	jwt.verifyAsync(req.token, secret).then(function(payload){
+		// Authenticate here and also set the logged in users role accordingly
+		// Verify auth token
+		return jwt.verifyAsync(req.token, secret);
+	}).then((payload) => {
 		req.user = {
 			username: payload.username,
 			role: payload.role
