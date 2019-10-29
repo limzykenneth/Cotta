@@ -1,0 +1,16 @@
+{
+    "$schema" : "http://json-schema.org/draft-07/schema#",
+    "$id" : "_configurations",
+    "title" : "Configurations",
+    "description" : "Site configurations",
+    "type" : "object",
+    "properties" : {
+        "config_name": {
+            "type": "string",
+            "isUnique": true
+        },
+        "config_value": {
+            "type": "string"
+        }
+    }
+}

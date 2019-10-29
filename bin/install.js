@@ -39,7 +39,31 @@ try{
 				return Promise.resolve();
 			}
 		}).then(() => {
-			console.log("🌱 Creating default tables for Cotta...\n");
+			console.log("🌱 Creating default tables for Cotta...");
+			const DynamicRecord = require("dynamic-record");
+
+			const tableSchemas = [
+				require("../schemas/_app_collections.schema.json"),
+				require("../schemas/_users_auth.schema.json"),
+				require("../schemas/file_upload.schema.json"),
+				require("../schemas/_configurations.schema.json")
+			];
+			const schema = new DynamicRecord.DynamicSchema();
+
+			const promises = _.map(tableSchemas, (tableSchema) => {
+				const existing = new DynamicRecord.DynamicSchema();
+				return existing.read(tableSchema.$id).then(() => {
+					if(existing.tableName){
+						console.log(`🌱 Table ${tableSchema.$id} already exist, skipping...`);
+					}else{
+						return schema.createTable(tableSchema);
+					}
+				});
+			});
+
+			return Promise.all(promises);
+		}).then(() => {
+			console.log("🌱 Successfully created default tables for Cotta\n");
 			return inquirer.prompt([
 				{
 					type: "input",
@@ -62,47 +86,134 @@ try{
 					filter: function(value){
 						return value.trim();
 					}
+				},
+				{
+					type: "password",
+					name: "password_confirm",
+					message: "Please choose an admin password for Cotta:",
+					validate: function(value){
+						return value.trim().length > 0 ? true : "Password cannot be empty";
+					},
+					filter: function(value){
+						return value.trim();
+					}
+				}
+			]);
+		}).then((answers) => {
+			if(answers.password === answers.password_confirm){
+				const DynamicRecord = require("dynamic-record");
+				const bcrypt = require("bcrypt");
+				const moment = require("moment");
+
+				const Users = new DynamicRecord({
+					tableSlug: "_users_auth"
+				});
+
+				return Users.where({role: "administrator"}).then((models) => {
+					if(models.length === 0){
+						return bcrypt.hash(answers.password, 10);
+					}else{
+						console.log("\n🌱 Refusing to create new admin user where at least one already exist.\n");
+						return Promise.resolve(false);
+					}
+				}).then((hash) => {
+					if(hash !== false){
+						const user = new Users.Model({
+							"username": answers.username,
+							"hash": hash,
+							"role": "administrator",
+							"date_created": moment.utc().format()
+						});
+						return user.save();
+					}else{
+						return Promise.resolve();
+					}
+				});
+			}else{
+				return Promise.reject(new Error("Passwords do not match"));
+			}
+		}).then(() => {
+			return inquirer.prompt([
+				{
+					type: "number",
+					name: "bcrypt_hash_cost",
+					message: "Please choose a cost factor for bcrypt:",
+					default: 10
+				},
+				{
+					type: "confirm",
+					name: "allow_anonymous_tokens",
+					message: "Do you want to allow anonymous tokens?",
+					default: false
+				},
+				{
+					type: "confirm",
+					name: "allow_unauthorised",
+					message: "Do you want to allow unauthorised access to the API? (Only GET routes)",
+					default: false
+				},
+				{
+					type: "confirm",
+					name: "allow_signup",
+					message: "Do you want to allow new user sign ups?",
+					default: false
 				}
 			]);
 		}).then((answers) => {
 			const DynamicRecord = require("dynamic-record");
-			const bcrypt = require("bcrypt");
-			const moment = require("moment");
-
-			// NOTE: Schemas for _users_auth, _app_collections, and file_upload
-			const tableSchemas = [
-				require("../schemas/_app_collections.schema.json"),
-				require("../schemas/_users_auth.schema.json"),
-				require("../schemas/file_upload.schema.json")
-			];
-			const schema = new DynamicRecord.DynamicSchema();
-
-			const promises = _.map(tableSchemas, (tableSchema) => {
-				return schema.createTable(tableSchema);
+			const Configs = new DynamicRecord({
+				tableSlug: "_configurations"
 			});
 
-			const Users = new DynamicRecord({
-				tableSlug: "_users_auth"
+			const bcryptCost = new Configs.Model({
+				"config_name": "bcrypt_hash_cost",
+				"config_value": answers.bcrypt_hash_cost.toString()
 			});
+			const allowAnonymous = new Configs.Model({
+				"config_name": "allow_anonymous_tokens",
+				"config_value": answers.allow_anonymous_tokens.toString()
+			});
+			const allowUnauthorised = new Configs.Model({
+				"config_name": "allow_unauthorised",
+				"config_value": answers.allow_unauthorised.toString()
+			});
+			const allowSignup = new Configs.Model({
+				"config_name": "allow_signup",
+				"config_value": answers.allow_signup.toString()
+			});
+			const collection = new DynamicRecord.DynamicCollection(Configs.Model);
 
-			return Promise.all(promises).then(() => {
-				return Users.where({role: "administrator"});
-			}).then((models) => {
-				if(models.length === 0){
-					return bcrypt.hash(answers.password, 10);
+			return Configs.findBy({"config_name": "bcrypt_hash_cost"}).then((m) => {
+				if(m === null){
+					collection.push(bcryptCost);
 				}else{
-					return Promise.reject(new Error("Refusing to create new admin user where at least one already exist."));
+					console.log("🌱 Config \"bcrypt_hash_cost\" already exist, skipping...");
 				}
-			}).then((hash) => {
-				const user = new Users.Model({
-					"username": answers.username,
-					"hash": hash,
-					"role": "administrator",
-					"date_created": moment.utc().format()
-				});
-				return user.save();
+				return Configs.findBy({"config_name": "allow_anonymous_tokens"});
+
+			}).then((m) => {
+				if(m === null){
+					collection.push(allowAnonymous);
+				}else{
+					console.log("🌱 Config \"allow_anonymous_tokens\" already exist, skipping...");
+				}
+				return Configs.findBy({"config_name": "allow_unauthorised"});
+			}).then((m) => {
+				if(m === null){
+					collection.push(allowUnauthorised);
+				}else{
+					console.log("🌱 Config \"allow_unauthorised\" already exist, skipping...");
+				}
+				return Configs.findBy({"config_name": "allow_signup"});
+			}).then((m) => {
+				if(m === null){
+					collection.push(allowSignup);
+				}else{
+					console.log("🌱 Config \"allow_signup\" already exist, skipping...");
+				}
+				return collection.saveAll();
 			}).then(() => {
-				return Users.closeConnection();
+				return Configs.closeConnection();
 			});
 		}).then(() => {
 			console.log("\n🌱 Cotta is all setup and ready to go!\n");
