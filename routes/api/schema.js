@@ -125,15 +125,15 @@ router.post("/", restrict.toEditor, function(req, res, next){
 				"isAutoIncrement": true
 			};
 
-			Schema.createTable({
-				$schema: "http://json-schema.org/draft-07/schema#",
-				$id: req.body.tableSlug,
-				title: req.body.tableName,
-				properties: definition,
-				type: "object",
-				required: ["_metadata", "_uid"]
-			}).then(() => {
-				return appCollection.save();
+			return appCollection.save().then(() => {
+				return Schema.createTable({
+					$schema: "http://json-schema.org/draft-07/schema#",
+					$id: req.body.tableSlug,
+					title: req.body.tableName,
+					properties: definition,
+					type: "object",
+					required: ["_metadata", "_uid"]
+				});
 			}).then(() => {
 				res.json(Schema);
 			});
