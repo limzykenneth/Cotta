@@ -18,35 +18,12 @@ const templatePJSON = {
 		"start": "node ./bin/www",
 		"server": "nodemon ./bin/www"
 	},
-	"dependencies": {
-		"bcrypt": "^3.0.6",
-		"bluebird": "^3.7.1",
-		"body-parser": "^1.19.0",
-		"cors": "^2.8.5",
-		"debug": "^4.1.1",
-		"dotenv": "^4.0.0",
-		"dynamic-record": "^0.5.2",
-		"express": "^4.17.1",
-		"inquirer": "^7.0.0",
-		"jsonwebtoken": "^8.5.1",
-		"lodash": "^4.17.15",
-		"mkdirp": "^0.5.1",
-		"moment": "^2.24.0",
-		"mongodb": "^3.3.3",
-		"morgan": "^1.9.1",
-		"nanoid": "^2.1.6",
-		"node-fetch": "^2.6.0",
-		"sanitize-html": "^1.20.1",
-		"winston": "^3.2.1"
-	},
+	"engine": pjson.engine,
+	"dependencies": pjson.dependencies,
 	"devDependencies": {
 		"nodemon": "^1.19.4"
 	},
-	"nodemonConfig": {
-		"ignore": [
-			"public/**/*"
-		]
-	},
+	"nodemonConfig": pjson.nodemonConfig,
 };
 
 archive.on("warning", function(err) {
