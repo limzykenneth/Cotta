@@ -6,6 +6,7 @@ const path = require("path");
 const pjson = require("../package.json");
 
 const output = fs.createWriteStream(path.join("releases", `cotta-${pjson.version}.zip`));
+
 const archive = archiver("zip", {
 	zlib: { level: 9 } // Sets the compression level.
 });
@@ -21,8 +22,9 @@ const templatePJSON = {
 	"engine": pjson.engine,
 	"dependencies": pjson.dependencies,
 	"devDependencies": {
-		"nodemon": "^1.19.4",
-		"semver": "^6.3.0"
+		"nodemon": pjson.devDependencies.nodemon,
+		"semver": pjson.devDependencies.semver,
+		"yauzl": pjson.devDependencies.yauzl
 	},
 	"nodemonConfig": pjson.nodemonConfig,
 	"cotta": {
@@ -52,9 +54,9 @@ archive.directory("schemas/", "schemas");
 archive.directory("utils/", "utils");
 archive.file("app.js");
 archive.file("errors.js");
-archive.file("LICENSE.md");
+archive.file("LICENSE.md", {name: "Cotta-LICENSE.md"});
 archive.file("logger.js");
-archive.append(JSON.stringify(templatePJSON), {name: "package.json"});
+archive.append(JSON.stringify(templatePJSON, null, 2), {name: "package.json"});
 archive.file("README.md");
 
 archive.finalize();

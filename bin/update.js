@@ -24,6 +24,8 @@ inquirer.prompt([{
 			const latestVersion = semver.clean(info.tag_name);
 			if(semver.gt(latestVersion, pjson.cotta.version)){
 				return fetch(info.assets[0].browser_download_url);
+			}else{
+				return Promise.reject(new Error("No update required"));
 			}
 		}).then((res) => {
 			return res.buffer();
@@ -101,7 +103,11 @@ inquirer.prompt([{
 				});
 			});
 		}).catch((err) => {
-			console.log(err);
+			if(err.message === "No update required"){
+				console.log("\n🌱 Cotta is already up to date.");
+			}else{
+				console.log(err);
+			}
 		});
 	}
 });
