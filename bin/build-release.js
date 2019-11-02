@@ -21,9 +21,13 @@ const templatePJSON = {
 	"engine": pjson.engine,
 	"dependencies": pjson.dependencies,
 	"devDependencies": {
-		"nodemon": "^1.19.4"
+		"nodemon": "^1.19.4",
+		"semver": "^6.3.0"
 	},
 	"nodemonConfig": pjson.nodemonConfig,
+	"cotta": {
+		"version": pjson.version
+	}
 };
 
 archive.on("warning", function(err) {

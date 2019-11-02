@@ -96,10 +96,7 @@ Temporary Items
 
 # End of https://www.gitignore.io/api/macos
 
-test-data.json
-.env
 insertData.js
-uploads
-db_backup
+uploads/
 db/
 releases
