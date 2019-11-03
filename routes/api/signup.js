@@ -16,7 +16,7 @@ const Config = new DynamicRecord({
 // Only allow signups if app setting allows it
 router.use(function(req, res, next){
 	Config.findBy({"config_name": "allow_signup"}).then((allowSignup) => {
-		if(allowSignup.config_value === "true"){
+		if(allowSignup.data.config_value === "true"){
 			next();
 		}else{
 			next(new CottaError("Not Found", "Cannot find resource", 404));
