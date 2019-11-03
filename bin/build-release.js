@@ -65,6 +65,10 @@ archive.file("errors.js");
 archive.file("LICENSE.md", {name: "Cotta-LICENSE.md"});
 archive.file("logger.js");
 archive.append(JSON.stringify(templatePJSON, null, 2), {name: "package.json"});
-archive.file("README.md");
+archive.append(
+	`# Untitled
+### A Cotta project
+	`
+	, {name: "README.md"});
 
 archive.finalize();
