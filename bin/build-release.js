@@ -48,10 +48,18 @@ archive.pipe(output);
 
 archive.file("bin/www", {name: "bin/www"});
 archive.file("bin/install.js", {name: "bin/install.js"});
-archive.directory("public/", "public");
-archive.directory("routes/", "routes");
-archive.directory("schemas/", "schemas");
-archive.directory("utils/", "utils");
+archive.directory("public/**/*", {
+	ignore: ["./DS_Store"]
+});
+archive.glob("routes/**/*", {
+	ignore: ["./DS_Store"]
+});
+archive.glob("schemas/**/*", {
+	ignore: ["./DS_Store"]
+});
+archive.glob("utils/**/*", {
+	ignore: ["./DS_Store"]
+});
 archive.file("app.js");
 archive.file("errors.js");
 archive.file("LICENSE.md", {name: "Cotta-LICENSE.md"});
