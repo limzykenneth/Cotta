@@ -17,13 +17,13 @@ const Config = new DynamicRecord({
 router.use(function(req, res, next){
 	// Anonymous access to API
 	Config.findBy({"config_name": "allow_unauthorised"}).then((allowUnauthorised) => {
-		if(typeof req.token == "undefined" && allowUnauthorised == "true"){
+		if(typeof req.token == "undefined" && allowUnauthorised.data.config_value === "true"){
 			req.user = {
 				username: "Anonymous",
 				role: "anonymous"
 			};
 			next();
-			return;
+			return Promise.reject(new Error("Canceling promise"));
 		}
 
 		// Authenticate here and also set the logged in users role accordingly
@@ -36,7 +36,9 @@ router.use(function(req, res, next){
 		};
 		next();
 	}).catch(function(err){
-		next(new CottaError("Auth Token Invalid", err.message, 403));
+		if(err.message !== "Canceling promise"){
+			next(new CottaError("Auth Token Invalid", err.message, 403));
+		}
 	});
 });
 
