@@ -43,8 +43,8 @@ router.get("/:username", restrict.toAdministrator, function(req, res){
 // POST routes
 // POST to create a new user
 router.post("/", restrict.toAdministrator, function(req, res, next){
-	const reservedUsernames = ["Anonymous", "anonymous"];
-	if(_.includes(reservedUsernames, req.body.username)){
+	const reservedUsernames = ["anonymous"];
+	if(_.includes(reservedUsernames, req.body.username.toLowerCase())){
 		next(new CottaError("Username not available", `"${req.body.username}" is a reserved username and cannot be registered`));
 		return;
 	}
