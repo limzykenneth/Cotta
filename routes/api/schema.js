@@ -79,6 +79,7 @@ router.post("/", restrict.toEditor, function(req, res, next){
 		const regex = /^app_/;
 
 		if(appCollection === null){
+			console.log("here?");
 			appCollection = new AppCollections.Model();
 			// Insert new schema
 			appCollection.data = {};
@@ -138,6 +139,7 @@ router.post("/", restrict.toEditor, function(req, res, next){
 				res.json(Schema);
 			});
 		}else{
+			console.log(appCollection);
 			return Promise.reject(new CottaError("Schema exist", `Schema with name ${req.body.tableSlug} already exist`, 400));
 		}
 	}).catch((err) => {
@@ -157,6 +159,9 @@ router.post("/:schema", restrict.toEditor, function(req, res, next){
 			const regex = /^app_/;
 
 			_.each(schemaDefinition, (el, key) => {
+				if(appCollection.data.fields[key] === undefined){
+					appCollection.data.fields[key] = {};
+				}
 				_.each(el, (val, prop) => {
 					if(regex.test(prop)){
 						appCollection.data.fields[key][prop] = val;
