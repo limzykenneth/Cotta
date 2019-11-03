@@ -18,7 +18,7 @@ const CottaError = require("../../utils/CottaError.js");
 const restrict = require("../../utils/middlewares/restrict.js");
 const uploadUtils = require("./uploadUtils.js");
 
-// Configurations (hardcoded for now, should remove in the future)
+// NOTE: Configurations (hardcoded for now, should remove in the future)
 const limits = {
 	// Change to some integer value to limit file size
 	fileSize: 1000000,
