@@ -18,38 +18,52 @@ const CottaError = require("../../utils/CottaError.js");
 const restrict = require("../../utils/middlewares/restrict.js");
 const uploadUtils = require("./uploadUtils.js");
 
-// NOTE: Configurations (hardcoded for now, should remove in the future)
+// Initial values for limits, to be overwritten by database entries
 const limits = {
-	// Change to some integer value to limit file size
-	fileSize: 1000000,
-	acceptedMIME: [
-		"audio/ogg",
-		"image/jpeg"
-	]
+	fileSize: 0,
+	acceptedMIME: []
 };
+const Config = new DynamicRecord({
+	tableSlug: "_configurations"
+});
 
 let Storage;
 let storage;
-if(process.env.STORAGE_STRATEGY === "fs"){
-	Storage = require("./storage/fs.js");
-	storage = new Storage({
-		fileDir: "./uploads/",
-		limit: limits.fileSize
-	});
-}else if(process.env.STORAGE_STRATEGY === "mongodb"){
-	Storage = require("./storage/mongodb.js");
-	storage = new Storage({
-		uri: `mongodb://${process.env.mongo_user}:${process.env.mongo_pass}@${process.env.mongo_server}/${process.env.mongo_db_name}`,
-		limit: limits.fileSize
-	});
-}
+
+let ready = Config.findBy({"config_name": "upload_file_size_max"}).then((m) => {
+	if(m !== null){
+		limits.fileSize = parseInt(m.data.config_value);
+	}
+
+	if(process.env.STORAGE_STRATEGY === "fs"){
+		Storage = require("./storage/fs.js");
+		storage = new Storage({
+			fileDir: "./uploads/",
+			limit: limits.fileSize
+		});
+	}else if(process.env.STORAGE_STRATEGY === "mongodb"){
+		Storage = require("./storage/mongodb.js");
+		storage = new Storage({
+			uri: `mongodb://${process.env.mongo_user}:${process.env.mongo_pass}@${process.env.mongo_server}/${process.env.mongo_db_name}`,
+			limit: limits.fileSize
+		});
+	}
+	return Config.findBy({"config_name": "upload_file_accepted_MIME"});
+}).then((m) => {
+	if(m !== null){
+		limits.acceptedMIME = m.data.config_value;
+	}
+	return Promise.resolve(null);
+});
 
 const Files = new DynamicRecord({
 	tableSlug: "files_upload"
 });
 
 // File metadata post path
-router.post("/", restrict.toAuthor, function(req, res, next){
+router.post("/", restrict.toAuthor, async function(req, res, next){
+	await ready;
+
 	// If given an array of images to process
 	if(Array.isArray(req.body)){
 		const fileCollection = new DynamicCollection(Files.Model, ...req.body);
@@ -118,7 +132,9 @@ router.post("/:location", restrict.toAuthor, function(req, res, next){
 	}else{
 		next();
 	}
-}, function(req, res, next){
+}, async function(req, res, next){
+	await ready;
+
 	if(req.headers["content-type"] === "application/json"){
 		// Upload with URL
 		Files.findBy({uid: req.params.location}).then((file) => {

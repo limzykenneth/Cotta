@@ -157,6 +157,28 @@ try{
 					name: "allow_signup",
 					message: "Do you want to allow new user sign ups?",
 					default: false
+				},
+				{
+					type: "number",
+					name: "upload_file_max",
+					message: "What is the maximum allowed file size in bytes for uploads?",
+					default: 1000000,
+					validate: function(num){
+						return num > 0;
+					}
+				},
+				{
+					type: "input",
+					name: "upload_file_types",
+					message: "What are the allowed file MIME types for uploads? (Please enter any MIME types seperated by a comma ',')",
+					default: "image/jpeg,image/png",
+					filter: function(input){
+						if(input.trim().length === 0){
+							return [];
+						}else{
+							return input.split(",");
+						}
+					}
 				}
 			]);
 		}).then((answers) => {
@@ -180,6 +202,14 @@ try{
 			const allowSignup = new Configs.Model({
 				"config_name": "allow_signup",
 				"config_value": answers.allow_signup.toString()
+			});
+			const uploadFileMax = new Configs.Model({
+				"config_name": "upload_file_size_max",
+				"config_value": answers.upload_file_max.toString()
+			});
+			const uploadFileTypes = new Configs.Model({
+				"config_name": "upload_file_accepted_MIME",
+				"config_value": answers.upload_file_types
 			});
 			const collection = new DynamicRecord.DynamicCollection(Configs.Model);
 
@@ -211,6 +241,23 @@ try{
 				}else{
 					console.log("🌱 Config \"allow_signup\" already exist, skipping...");
 				}
+
+				return Configs.findBy({"config_name": "upload_file_size_max"});
+			}).then((m) => {
+				if(m === null){
+					collection.push(uploadFileMax);
+				}else{
+					console.log("🌱 Config \"upload_file_size_max\" already exist, skipping...");
+				}
+
+				return Configs.findBy({"config_name": "upload_file_accepted_MIME"});
+			}).then((m) => {
+				if(m === null){
+					collection.push(uploadFileTypes);
+				}else{
+					console.log("🌱 Config \"upload_file_accepted_MIME\" already exist, skipping...");
+				}
+
 				return collection.saveAll();
 			}).then(() => {
 				return Configs.closeConnection();

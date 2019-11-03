@@ -10,7 +10,7 @@
             "isUnique": true
         },
         "config_value": {
-            "type": "string"
+            "type": ["string", "object", "array"]
         }
     }
 }
