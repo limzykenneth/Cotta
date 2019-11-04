@@ -25,28 +25,22 @@ Cotta uses an ORM inspired by Ruby's Active Record called [DynamicRecord](https:
 Cotta uses a MVC-like structure inspired by [Backbone.js](https://backbonejs.org/). Each piece of data (document in MongoDB, model in Backbone.js) is a model, a set of models are grouped under a collection and a collection are defined by its schema which the models adhere to. There is no view layer.
 
 ## Usage
-1. Setup a MongoDB database and include your database credentials and information as follows into a `.env` file at the root of the project:
-	```
-	# MongoDB connection information
-	mongo_server=PATH_TO_SERVER # (eg. localhost:27017)
-	mongo_db_name=DATABASE_NAME
-	mongo_user=USERNAME
-	mongo_pass=PASSWORD
-	```
+1. Setup a MongoDB database with the approriate user with read/write permission.
 
-	You will also need to set these entries in the `.env` file, change them where necessary:
-	```
-	# Change this to `production` when deploying
-	NODE_ENV=development
-	JWT_SECRET=SECRET_KEY
-	```
+1. Download the latest release of Cotta and extract it to where you want it to be.
 
-2. Run `npm start` to start the production server, `npm run server` to run the development servers that automatically restarts the server on file change. See `gulpfile.js` for more elaborated uses of the build steps.
+1. Run `npm install` to install dependencies.
+
+1. Run the install script with `node bin/install.js` and follow the prompts to setup your installation.
+
+1. Run `npm start` to start the production server or `npm run server` to run the development servers that automatically restarts the server on file change.
+
+An update script is also available (`bin/update.js`) to update your Cotta version automatically but it is still experimental so use it at your own risk.
 
 More documentation to follow when Cotta reached beta.
 
 ## Develop
-All contributions, ideas, advice, pull request are all highly valued. Setup for development is the same as for using it.
+All contributions, ideas, advice, pull request are all highly valued. Setup for development is the same as for using it, jsut clone the repo instead of downloading the release.
 
 I made Cotta because I couldn't find something that met my needs, namely a framework to fulfill all of the following:
 - Arbitrarily define a model's schema without any preconception of what an entry's structure should be
