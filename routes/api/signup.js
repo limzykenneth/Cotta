@@ -13,6 +13,15 @@ const Config = new DynamicRecord({
 	tableSlug: "_configurations"
 });
 
+// GET whether the server allows signups
+router.get("/", function(req, res, next){
+	Config.findBy({"config_name": "allow_signup"}).then((allowSignup) => {
+		res.json({
+			allow_signup: allowSignup.data.config_value
+		});
+	});
+});
+
 // Only allow signups if app setting allows it
 router.use(function(req, res, next){
 	Config.findBy({"config_name": "allow_signup"}).then((allowSignup) => {
