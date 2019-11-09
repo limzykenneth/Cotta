@@ -60,10 +60,13 @@ const Files = new DynamicRecord({
 	tableSlug: "files_upload"
 });
 
-// File metadata post path
-router.post("/", restrict.toAuthor, async function(req, res, next){
+router.use(async function(req, res, next){
 	await ready;
+	next();
+});
 
+// File metadata post path
+router.post("/", restrict.toAuthor, function(req, res, next){
 	// If given an array of images to process
 	if(Array.isArray(req.body)){
 		const fileCollection = new DynamicCollection(Files.Model, ...req.body);
@@ -79,7 +82,7 @@ router.post("/", restrict.toAuthor, async function(req, res, next){
 				return false;
 			}else{
 				// File type valid, populate metadata of model
-				uploadUtils.processFileMetadata(file, req);
+				uploadUtils.processFileMetadata(file, req, limits);
 			}
 		});
 
@@ -111,7 +114,7 @@ router.post("/", restrict.toAuthor, async function(req, res, next){
 			return next(new CottaError("Invalid MIME type", `File type "${file.data["content-type"]}" is not supported`, 415));
 		}else{
 			// File type valid, populate metadata of model
-			uploadUtils.processFileMetadata(file, req);
+			uploadUtils.processFileMetadata(file, req, limits);
 			// Save entry into database
 			file.save().then(() => {
 				res.json({
@@ -132,9 +135,7 @@ router.post("/:location", restrict.toAuthor, function(req, res, next){
 	}else{
 		next();
 	}
-}, async function(req, res, next){
-	await ready;
-
+}, function(req, res, next){
 	if(req.headers["content-type"] === "application/json"){
 		// Upload with URL
 		Files.findBy({uid: req.params.location}).then((file) => {

@@ -11,19 +11,35 @@ const restrict = require("../../utils/middlewares/restrict.js");
 const CottaError = require("../../utils/CottaError.js");
 const uploadUtils = require("./uploadUtils.js");
 
-// Configurations (hardcoded for now, should remove in the future)
+// Initial values for limits, to be overwritten by database entries
 const limits = {
-	// Change to some integer value to limit file size
-	fileSize: 1000000,
-	acceptedMIME: [
-		"audio/ogg",
-		"image/jpeg"
-	]
+	fileSize: 0,
+	acceptedMIME: []
 };
+const Config = new DynamicRecord({
+	tableSlug: "_configurations"
+});
+
+let ready = Config.findBy({"config_name": "upload_file_size_max"}).then((m) => {
+	if(m !== null){
+		limits.fileSize = parseInt(m.data.config_value);
+	}
+	return Config.findBy({"config_name": "upload_file_accepted_MIME"});
+}).then((m) => {
+	if(m !== null){
+		limits.acceptedMIME = m.data.config_value;
+	}
+	return Promise.resolve(null);
+});
 
 const sanitizerAllowedTags = sanitizeHtml.defaults.allowedTags.concat(["h1", "h2", "u"]);
 
 // Route: {root}/api/collections/...
+
+router.use(async function(req, res, next){
+	await ready;
+	next();
+});
 
 // GET routes
 // GET collection with slug
@@ -116,9 +132,9 @@ router.post("/:collectionSlug", restrict.toAuthor, function(req, res, next){
 								next(new CottaError("Invalid MIME type", `File type "${file.data["content-type"]}" is not supported`, 415));
 								return false; // Exit _.each
 							}else{
-								uploadUtils.processFileMetadata(file, req);
+								uploadUtils.processFileMetadata(file, req, limits);
 								filePromises.push(file.save().then(() => {
-									return uploadUtils.setFileEntryMetadata(entry, file, req);
+									return uploadUtils.setFileEntryMetadata(entry, file, req, limits);
 								}));
 							}
 						});
@@ -131,9 +147,9 @@ router.post("/:collectionSlug", restrict.toAuthor, function(req, res, next){
 							next(new CottaError("Invalid MIME type", `File type "${file.data["content-type"]}" is not supported`, 415));
 							return false;
 						}else{
-							uploadUtils.processFileMetadata(file, req);
+							uploadUtils.processFileMetadata(file, req, limits);
 							filePromises.push(file.save().then((m) => {
-								return uploadUtils.setFileEntryMetadata(model.data[key], file, req);
+								return uploadUtils.setFileEntryMetadata(model.data[key], file, req, limits);
 							}));
 						}
 					}
@@ -246,9 +262,9 @@ router.post("/:collectionSlug/:modelID", restrict.toAuthor, function(req, res, n
 										next(new CottaError("Invalid MIME type", `File type "${file.data["content-type"]}" is not supported`, 415));
 										return false; // Exit _.each
 									}else{
-										uploadUtils.processFileMetadata(file, req);
+										uploadUtils.processFileMetadata(file, req, limits);
 										filePromises.push(file.save().then(() => {
-											return uploadUtils.setFileEntryMetadata(entry, file, req);
+											return uploadUtils.setFileEntryMetadata(entry, file, req, limits);
 										}));
 									}
 								}
@@ -265,10 +281,10 @@ router.post("/:collectionSlug/:modelID", restrict.toAuthor, function(req, res, n
 									next(new CottaError("Invalid MIME type", `File type "${file.data["content-type"]}" is not supported`, 415));
 									return false;
 								}else{
-									uploadUtils.processFileMetadata(file, req);
+									uploadUtils.processFileMetadata(file, req, limits);
 									filePromises.push(
 										file.save().then(() => {
-											return uploadUtils.setFileEntryMetadata(model.data[key], file, req);
+											return uploadUtils.setFileEntryMetadata(model.data[key], file, req, limits);
 										})
 									);
 								}
