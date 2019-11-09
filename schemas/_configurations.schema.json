@@ -11,6 +11,9 @@
         },
         "config_value": {
             "type": ["string", "object", "array", "number", "boolean"]
+        },
+        "config_type": {
+            "type": "string"
         }
     }
 }
