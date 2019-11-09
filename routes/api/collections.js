@@ -104,6 +104,7 @@ router.post("/:collectionSlug", restrict.toAuthor, function(req, res, next){
 			const model = new Collection.Model(req.body);
 			const filePromises = [];
 
+			let eachCompleted = true;
 			// Individual field's operation
 			_.each(fields, function(el, key){
 
@@ -116,6 +117,7 @@ router.post("/:collectionSlug", restrict.toAuthor, function(req, res, next){
 
 							if(!_.includes(limits.acceptedMIME, file.data["content-type"])){
 								next(new CottaError("Invalid MIME type", `File type "${file.data["content-type"]}" is not supported`, 415));
+								eachCompleted = false;
 								return false; // Exit _.each
 							}else{
 								uploadUtils.processFileMetadata(file, req, limits);
@@ -131,6 +133,7 @@ router.post("/:collectionSlug", restrict.toAuthor, function(req, res, next){
 
 						if(!_.includes(limits.acceptedMIME, file.data["content-type"])){
 							next(new CottaError("Invalid MIME type", `File type "${file.data["content-type"]}" is not supported`, 415));
+							eachCompleted = false;
 							return false;
 						}else{
 							uploadUtils.processFileMetadata(file, req, limits);
@@ -150,9 +153,12 @@ router.post("/:collectionSlug", restrict.toAuthor, function(req, res, next){
 				}
 			});
 
-			return Promise.all(filePromises).then((files) => {
-				return Promise.resolve(model);
-			});
+			// Check if _.each exited prematurely
+			if(eachCompleted){
+				return Promise.all(filePromises).then((files) => {
+					return Promise.resolve(model);
+				});
+			}
 		}
 	}).then((model) => {
 		// Process data
