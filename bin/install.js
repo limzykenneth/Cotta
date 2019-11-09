@@ -189,27 +189,33 @@ try{
 
 			const bcryptCost = new Configs.Model({
 				"config_name": "bcrypt_hash_cost",
-				"config_value": answers.bcrypt_hash_cost.toString()
+				"config_value": answers.bcrypt_hash_cost,
+				"config_type": "number"
 			});
 			const allowAnonymous = new Configs.Model({
 				"config_name": "allow_anonymous_tokens",
-				"config_value": answers.allow_anonymous_tokens.toString()
+				"config_value": answers.allow_anonymous_tokens,
+				"config_type": "boolean"
 			});
 			const allowUnauthorised = new Configs.Model({
 				"config_name": "allow_unauthorised",
-				"config_value": answers.allow_unauthorised.toString()
+				"config_value": answers.allow_unauthorised,
+				"config_type": "boolean"
 			});
 			const allowSignup = new Configs.Model({
 				"config_name": "allow_signup",
-				"config_value": answers.allow_signup.toString()
+				"config_value": answers.allow_signup,
+				"config_type": "boolean"
 			});
 			const uploadFileMax = new Configs.Model({
 				"config_name": "upload_file_size_max",
-				"config_value": answers.upload_file_max.toString()
+				"config_value": answers.upload_file_max,
+				"config_type": "number"
 			});
 			const uploadFileTypes = new Configs.Model({
 				"config_name": "upload_file_accepted_MIME",
-				"config_value": answers.upload_file_types
+				"config_value": answers.upload_file_types,
+				"config_type": "array"
 			});
 			const collection = new DynamicRecord.DynamicCollection(Configs.Model);
 
