@@ -10,36 +10,17 @@ const sanitizeHtml = require("sanitize-html");
 const restrict = require("../../utils/middlewares/restrict.js");
 const CottaError = require("../../utils/CottaError.js");
 const uploadUtils = require("./uploadUtils.js");
+const configLimits = require("../../utils/configLimits.js");
 
 // Initial values for limits, to be overwritten by database entries
 const limits = {
 	fileSize: 0,
 	acceptedMIME: []
 };
-const Config = new DynamicRecord({
-	tableSlug: "_configurations"
-});
-
-let ready = Config.findBy({"config_name": "upload_file_size_max"}).then((m) => {
-	if(m !== null){
-		limits.fileSize = parseInt(m.data.config_value);
-	}
-	return Config.findBy({"config_name": "upload_file_accepted_MIME"});
-}).then((m) => {
-	if(m !== null){
-		limits.acceptedMIME = m.data.config_value;
-	}
-	return Promise.resolve(null);
-});
 
 const sanitizerAllowedTags = sanitizeHtml.defaults.allowedTags.concat(["h1", "h2", "u"]);
 
 // Route: {root}/api/collections/...
-
-router.use(async function(req, res, next){
-	await ready;
-	next();
-});
 
 // GET routes
 // GET collection with slug
@@ -76,6 +57,11 @@ router.get("/:collectionSlug/:modelID", function(req, res, next){
 
 
 // POST routes
+router.use(async function(req, res, next){
+	await configLimits(limits);
+	next();
+});
+
 // POST to specific collection (create new model)
 // Insert as is into database, just adding metadata and uid
 router.post("/:collectionSlug", restrict.toAuthor, function(req, res, next){

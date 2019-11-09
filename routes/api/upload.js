@@ -17,51 +17,38 @@ const router = express.Router();
 const CottaError = require("../../utils/CottaError.js");
 const restrict = require("../../utils/middlewares/restrict.js");
 const uploadUtils = require("./uploadUtils.js");
+const configLimits = require("../../utils/configLimits.js");
 
 // Initial values for limits, to be overwritten by database entries
 const limits = {
 	fileSize: 0,
 	acceptedMIME: []
 };
-const Config = new DynamicRecord({
-	tableSlug: "_configurations"
-});
 
 let Storage;
 let storage;
 
-let ready = Config.findBy({"config_name": "upload_file_size_max"}).then((m) => {
-	if(m !== null){
-		limits.fileSize = parseInt(m.data.config_value);
-	}
-
-	if(process.env.STORAGE_STRATEGY === "fs"){
-		Storage = require("./storage/fs.js");
-		storage = new Storage({
-			fileDir: "./uploads/",
-			limit: limits.fileSize
-		});
-	}else if(process.env.STORAGE_STRATEGY === "mongodb"){
-		Storage = require("./storage/mongodb.js");
-		storage = new Storage({
-			uri: `mongodb://${process.env.mongo_user}:${process.env.mongo_pass}@${process.env.mongo_server}/${process.env.mongo_db_name}`,
-			limit: limits.fileSize
-		});
-	}
-	return Config.findBy({"config_name": "upload_file_accepted_MIME"});
-}).then((m) => {
-	if(m !== null){
-		limits.acceptedMIME = m.data.config_value;
-	}
-	return Promise.resolve(null);
-});
+if(process.env.STORAGE_STRATEGY === "fs"){
+	Storage = require("./storage/fs.js");
+	storage = new Storage({
+		fileDir: "./uploads/",
+		limit: limits.fileSize
+	});
+}else if(process.env.STORAGE_STRATEGY === "mongodb"){
+	Storage = require("./storage/mongodb.js");
+	storage = new Storage({
+		uri: `mongodb://${process.env.mongo_user}:${process.env.mongo_pass}@${process.env.mongo_server}/${process.env.mongo_db_name}`,
+		limit: limits.fileSize
+	});
+}
 
 const Files = new DynamicRecord({
 	tableSlug: "files_upload"
 });
 
 router.use(async function(req, res, next){
-	await ready;
+	await configLimits(limits);
+	storage.limit = limits.fileSize;
 	next();
 });
 
