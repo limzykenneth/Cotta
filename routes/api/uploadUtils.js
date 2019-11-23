@@ -11,9 +11,9 @@ const utils = {
 		file.data.modified_at = moment().format();
 		file.data.file_owner = req.user.username;
 		file.data.uploadExpire = moment().add(1, "hours").format();
-		file.data.uid = nanoid(20);
 		const fileExt = path.extname(file.data.file_name) || "";
-		file.data.file_permalink = `${req.protocol}://${req.get("host")}/uploads/${file.data.uid}${fileExt}`;
+		file.data.uid = nanoid(20) + fileExt;
+		file.data.file_permalink = `${req.protocol}://${req.get("host")}/uploads/${file.data.uid}`;
 		file.data.saved_path = null;
 		if(!file.data.file_size){
 			file.data.file_size = limits.fileSize;

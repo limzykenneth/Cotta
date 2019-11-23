@@ -44,7 +44,7 @@ router.delete("/:id", function(req, res, next){
 	Files.findBy({"uid": req.params.id}).then((file) => {
 		if(file !== null){
 			return Promise.all([
-				storage.del("id"),
+				storage.del(req.params.id),
 				file.destroy()
 			]).then(() => {
 				res.json({"detail": `File "${req.params.id}" deleted.`});

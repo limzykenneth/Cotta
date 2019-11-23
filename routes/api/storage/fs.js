@@ -70,7 +70,6 @@ class FSStorage{
 				resolve();
 			});
 		});
-		// return Promise.resolve(fs.unlinkSync(path.join(this.dir, id)));
 	}
 
 	ping(){

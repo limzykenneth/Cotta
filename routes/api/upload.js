@@ -195,7 +195,7 @@ function saveFileLocal(fileMetadata, fileData){
 
 function setFileMetadata(file){
 	const fileExt = path.extname(file.data.file_name) || "";
-	file.data.saved_path = `${file.data.uid}${fileExt}`;
+	file.data.saved_path = `${file.data.uid}`;
 	file.data.modified_at = moment().format();
 	delete file.data.uploadExpire;
 	delete file.data.uploadLocation;
