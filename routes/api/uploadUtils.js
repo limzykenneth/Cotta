@@ -5,36 +5,6 @@ const nanoid = require("nanoid");
 const path = require("path");
 const DynamicRecord = require("dynamic-record");
 
-// const limits = {
-// 	// Change to some integer value to limit file size
-// 	fileSize: 1000000,
-// 	acceptedMIME: [
-// 		"audio/ogg",
-// 		"image/jpeg"
-// 	]
-// };
-
-// Initial values for limits, to be overwritten by database entries
-// const limits = {
-// 	fileSize: 0,
-// 	acceptedMIME: []
-// };
-// const Config = new DynamicRecord({
-// 	tableSlug: "_configurations"
-// });
-
-// let ready = Config.findBy({"config_name": "upload_file_size_max"}).then((m) => {
-// 	if(m !== null){
-// 		limits.fileSize = parseInt(m.data.config_value);
-// 	}
-// 	return Config.findBy({"config_name": "upload_file_accepted_MIME"});
-// }).then((m) => {
-// 	if(m !== null){
-// 		limits.acceptedMIME = m.data.config_value;
-// 	}
-// 	return Promise.resolve(null);
-// });
-
 const utils = {
 	processFileMetadata: function(file, req, limits){
 		file.data.created_at = moment().format();

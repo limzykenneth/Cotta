@@ -10,6 +10,7 @@ const tokens = require("./tokens.js");
 const signup = require("./signup.js");
 const upload = require("./upload.js");
 const config = require("./config.js");
+const files = require("./files.js");
 
 // Mount Token routes
 router.use("/tokens", tokens);
@@ -37,6 +38,9 @@ router.use("/upload", upload);
 
 // Mount config paths
 router.use("/config", config);
+
+// Mount files paths
+router.use("/files", files);
 
 // Default
 router.use("/", function(req, res){
