@@ -19,35 +19,15 @@ const restrict = require("../../utils/middlewares/restrict.js");
 const uploadUtils = require("./uploadUtils.js");
 const configLimits = require("../../utils/configLimits.js");
 
-// Initial values for limits, to be overwritten by database entries
-const limits = {
-	fileSize: 0,
-	acceptedMIME: []
-};
-
-let Storage;
-let storage;
-
-if(process.env.STORAGE_STRATEGY === "fs"){
-	Storage = require("./storage/fs.js");
-	storage = new Storage({
-		fileDir: "./uploads/",
-		limit: limits.fileSize
-	});
-}else if(process.env.STORAGE_STRATEGY === "mongodb"){
-	Storage = require("./storage/mongodb.js");
-	storage = new Storage({
-		uri: `mongodb://${process.env.mongo_user}:${process.env.mongo_pass}@${process.env.mongo_server}/${process.env.mongo_db_name}`,
-		limit: limits.fileSize
-	});
-}
+const storage = require("./storage");
 
 const Files = new DynamicRecord({
 	tableSlug: "files_upload"
 });
 
+let limits;
 router.use(async function(req, res, next){
-	await configLimits(limits);
+	limits = await configLimits();
 	storage.limit = limits.fileSize;
 	next();
 });

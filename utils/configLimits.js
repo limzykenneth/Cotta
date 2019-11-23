@@ -4,7 +4,11 @@ const Config = new DynamicRecord({
 	tableSlug: "_configurations"
 });
 
-function configLimits(limits){
+function configLimits(){
+	const limits = {
+		fileSize: 0,
+		acceptedMIME: []
+	};
 	const fileSize = Config.findBy({"config_name": "upload_file_size_max"});
 	const fileMIME = Config.findBy({"config_name": "upload_file_accepted_MIME"});
 
@@ -17,7 +21,7 @@ function configLimits(limits){
 			limits.acceptedMIME = result[1].data.config_value;
 		}
 
-		return Promise.resolve();
+		return Promise.resolve(limits);
 	});
 }
 
