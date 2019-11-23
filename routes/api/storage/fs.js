@@ -58,7 +58,19 @@ class FSStorage{
 	}
 
 	del(id){
-		return Promise.resolve(fs.unlinkSync(path.join(this.dir, id)));
+		return new Promise((resolve, reject) => {
+			fs.unlink(path.join(this.dir, id), (err) => {
+				if(err) {
+					if(err.code === "ENOENT"){
+						resolve();
+					}else{
+						reject(err);
+					}
+				}
+				resolve();
+			});
+		});
+		// return Promise.resolve(fs.unlinkSync(path.join(this.dir, id)));
 	}
 
 	ping(){

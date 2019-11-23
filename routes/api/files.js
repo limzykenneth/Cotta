@@ -7,6 +7,7 @@ const CottaError = require("../../utils/CottaError.js");
 const Files = new DynamicRecord({
 	tableSlug: "files_upload"
 });
+const storage = require("./storage");
 
 //-----------------------
 // Route: {root}/api/files/...
@@ -39,16 +40,21 @@ router.get("/:id", function(req, res, next){
 });
 
 // DELETE the metadata along with the file
-// router.delete("/:id", function(req, res, next){
-// 	Files.findBy({"uid": req.params.id}).then((file) => {
-// 		if(file !== null){
-// 			res.json(file.data);
-// 		}else{
-// 			next(new CottaError("File does not exist", `The requested file with ID ${req.params.id} does not exist.`, 404));
-// 		}
-// 	}).catch((err) => {
-// 		next(err);
-// 	});
-// });
+router.delete("/:id", function(req, res, next){
+	Files.findBy({"uid": req.params.id}).then((file) => {
+		if(file !== null){
+			return Promise.all([
+				storage.del("id"),
+				file.destroy()
+			]).then(() => {
+				res.json({"detail": `File "${req.params.id}" deleted.`});
+			});
+		}else{
+			next(new CottaError("File does not exist", `The requested file with ID "${req.params.id}" does not exist.`, 404));
+		}
+	}).catch((err) => {
+		next(err);
+	});
+});
 
 module.exports = router;

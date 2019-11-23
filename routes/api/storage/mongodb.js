@@ -74,6 +74,7 @@ class MongoDBStorage{
 	}
 
 	async del(id){
+		// NOTE: test whether it can handle non existing file
 		await this.connection;
 		const db = this.client.db();
 		const bucket = new mongodb.GridFSBucket(db);
