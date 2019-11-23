@@ -17,7 +17,7 @@ const Config = new DynamicRecord({
 router.use(function(req, res, next){
 	// Anonymous access to API
 	Config.findBy({"config_name": "allow_unauthorised"}).then((allowUnauthorised) => {
-		if(typeof req.token == "undefined" && allowUnauthorised.data.config_value === "true"){
+		if(typeof req.token == "undefined" && allowUnauthorised.data.config_value === true){
 			req.user = {
 				username: "Anonymous",
 				role: "anonymous"
