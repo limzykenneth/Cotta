@@ -15,6 +15,8 @@ const storage = require("./storage");
 // These routes works with the metadata of the uploaded files and can delete
 // the files from their storage.
 
+// NOTE: need refactor and testing
+
 router.use(restrict.toEditor);
 
 // GET all file metadata entries
