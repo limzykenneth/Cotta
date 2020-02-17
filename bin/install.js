@@ -10,7 +10,7 @@ try{
 	const nanoid = require("nanoid");
 	const _ = require("lodash");
 
-	if(_.every(["mongo_server", "mongo_db_name", "mongo_user", "mongo_pass", "JWT_SECRET", "STORAGE_STRATEGY"], _.partial(_.has, process.env))){
+	if(_.every(["mongo_server", "mongo_db_name", "mongo_user", "mongo_pass", "JWT_SECRET", "STORAGE_STRATEGY", "ROOT_URL"], _.partial(_.has, process.env))){
 		inquirer.prompt([
 			{
 				type: "confirm",
@@ -314,6 +314,17 @@ try{
 				name: "storage_strategy",
 				message: "What is the storage strategy you are going to use for storing uploaded files?",
 				choices: ["fs", "mongodb"]
+			},
+			{
+				type: "input",
+				name: "root_url",
+				message: "What is the root URL for your backend site? (eg. https://example.com)",
+				validate: function(value){
+					return value.trim().length > 0 ? true : "Invalid URL";
+				},
+				filter: function(value){
+					return value.trim();
+				}
 			}
 		]).then((answers) => {
 			const jwtSecret = nanoid();
@@ -331,6 +342,9 @@ JWT_SECRET=${jwtSecret}
 
 # File storage strategy
 STORAGE_STRATEGY=${answers.storage_strategy}
+
+# Root URL
+ROOT_URL=${answers.root_url}
 `;
 			console.log("\n🌱 Please set the following in your enviromental variables before running this script again:");
 			console.log(output);
