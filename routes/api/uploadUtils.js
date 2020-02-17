@@ -13,7 +13,7 @@ const utils = {
 		file.data.uploadExpire = moment().add(1, "hours").format();
 		const fileExt = path.extname(file.data.file_name) || "";
 		file.data.uid = nanoid(20) + fileExt;
-		file.data.file_permalink = `${req.protocol}://${req.get("host")}/uploads/${file.data.uid}`;
+		file.data.file_permalink = `<%= root %>/uploads/${file.data.uid}`;
 		file.data.saved_path = null;
 		if(!file.data.file_size){
 			file.data.file_size = limits.fileSize;

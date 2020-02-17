@@ -1,5 +1,6 @@
 const express = require("express");
 const DynamicRecord = require("dynamic-record");
+const _ = require("lodash");
 
 const router = express.Router();
 const restrict = require("../../utils/middlewares/restrict.js");
@@ -22,6 +23,10 @@ router.use(restrict.toEditor);
 // GET all file metadata entries
 router.get("/", function(req, res, next){
 	Files.all().then((col) => {
+		_.each(col.data, (data) => {
+			const t = _.template(data.file_permalink);
+			data.file_permalink = t({root: process.env.ROOT_URL});
+		});
 		res.json(col.data);
 	}).catch((err) => {
 		next(err);
@@ -32,6 +37,8 @@ router.get("/", function(req, res, next){
 router.get("/:id", function(req, res, next){
 	Files.findBy({"uid": req.params.id}).then((file) => {
 		if(file !== null){
+			const t = _.template(file.data.file_permalink);
+			file.data.file_permalink = t({root: process.env.ROOT_URL});
 			res.json(file.data);
 		}else{
 			next(new CottaError("File does not exist", `The requested file with ID ${req.params.id} does not exist.`, 404));

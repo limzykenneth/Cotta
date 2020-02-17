@@ -140,6 +140,8 @@ router.post("/:location", restrict.toAuthor, function(req, res, next){
 					// Save database entry of file
 					return file.save();
 				}).then(() => {
+					const t = _.template(file.data.file_permalink);
+					file.data.file_permalink = t({root: process.env.ROOT_URL});
 					res.json({
 						resource_path: file.data.file_permalink
 					});
@@ -178,6 +180,8 @@ router.post("/:location", restrict.toAuthor, function(req, res, next){
 					// Save database entry of file
 					return file.save();
 				}).then(() => {
+					const t = _.template(file.data.file_permalink);
+					file.data.file_permalink = t({root: process.env.ROOT_URL});
 					res.json({
 						resource_path: file.data.file_permalink
 					});
