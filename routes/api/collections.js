@@ -13,7 +13,7 @@ const uploadUtils = require("./uploadUtils.js");
 const configLimits = require("../../utils/configLimits.js");
 
 // Initial values for limits, to be overwritten by database entries
-const limits = {
+let limits = {
 	fileSize: 0,
 	acceptedMIME: []
 };
@@ -36,7 +36,31 @@ router.get("/:collectionSlug", function(req, res, next){
 		_.each(collection.data, (el) => {
 			delete el._id;
 		});
-		res.json(collection.data);
+
+		return AppCollections.findBy({"_$id": req.params.collectionSlug}).then((schema) => {
+			_.each(collection.data, (model) => {
+				console.log(model);
+				_.each(schema.data.fields, (field, slug) => {
+					if(field.app_type === "file"){
+						if(Array.isArray(model[slug])){
+							_.each(model[slug], (entry) => {
+								const t1 = _.template(entry.permalink);
+								const t2 = _.template(entry.upload_link);
+								entry.permalink = t1({root: process.env.ROOT_URL});
+								entry.upload_link = t2({root: process.env.ROOT_URL});
+							});
+						}else{
+							const t1 = _.template(model[slug].permalink);
+							const t2 = _.template(model[slug].upload_link);
+							model[slug].permalink = t1({root: process.env.ROOT_URL});
+							model[slug].upload_link = t2({root: process.env.ROOT_URL});
+						}
+					}
+				});
+			});
+
+			res.json(collection.data);
+		});
 	}).catch((err) => {
 		next(err);
 	});
@@ -47,31 +71,31 @@ router.get("/:collectionSlug/:modelID", function(req, res, next){
 	const Collection = new DynamicRecord({
 		tableSlug: req.params.collectionSlug
 	});
-	Collection.findBy({"_uid": parseInt(req.params.modelID)}).then((collection) => {
-		if(collection){
-			delete collection.data._id;
+	Collection.findBy({"_uid": parseInt(req.params.modelID)}).then((model) => {
+		if(model){
+			delete model.data._id;
 
 			// Populate file URLs with correct hostname
 			return AppCollections.findBy({"_$id": req.params.collectionSlug}).then((schema) => {
 				_.each(schema.data.fields, (field, slug) => {
 					if(field.app_type === "file"){
-						if(Array.isArray(collection.data[slug])){
-							_.each(collection.data[slug], (entry) => {
+						if(Array.isArray(model.data[slug])){
+							_.each(model.data[slug], (entry) => {
 								const t1 = _.template(entry.permalink);
 								const t2 = _.template(entry.upload_link);
 								entry.permalink = t1({root: process.env.ROOT_URL});
 								entry.upload_link = t2({root: process.env.ROOT_URL});
 							});
 						}else{
-							const t1 = _.template(collection.data[slug].permalink);
-							const t2 = _.template(collection.data[slug].upload_link);
-							collection.data[slug].permalink = t1({root: process.env.ROOT_URL});
-							collection.data[slug].upload_link = t2({root: process.env.ROOT_URL});
+							const t1 = _.template(model.data[slug].permalink);
+							const t2 = _.template(model.data[slug].upload_link);
+							model.data[slug].permalink = t1({root: process.env.ROOT_URL});
+							model.data[slug].upload_link = t2({root: process.env.ROOT_URL});
 						}
 					}
 				});
 
-				res.json(collection.data);
+				res.json(model.data);
 			});
 		}else{
 			next(new CottaError("Model does not exist", `The requested model with ID ${req.params.modelID} does not exist.`, 404));
@@ -84,7 +108,7 @@ router.get("/:collectionSlug/:modelID", function(req, res, next){
 
 // POST routes
 router.use(async function(req, res, next){
-	await configLimits(limits);
+	limits = await configLimits(limits);
 	next();
 });
 
@@ -140,7 +164,6 @@ router.post("/:collectionSlug", restrict.toAuthor, function(req, res, next){
 					if(Array.isArray(model.data[key])){
 						_.each(model.data[key], (entry) => {
 							const file = new Files.Model(_.cloneDeep(entry));
-
 							if(!_.includes(limits.acceptedMIME, file.data["content-type"])){
 								next(new CottaError("Invalid MIME type", `File type "${file.data["content-type"]}" is not supported`, 415));
 								eachCompleted = false;
@@ -156,7 +179,6 @@ router.post("/:collectionSlug", restrict.toAuthor, function(req, res, next){
 					// Uploading a single file
 					}else{
 						const file = new Files.Model(_.cloneDeep(model.data[key]));
-
 						if(!_.includes(limits.acceptedMIME, file.data["content-type"])){
 							next(new CottaError("Invalid MIME type", `File type "${file.data["content-type"]}" is not supported`, 415));
 							eachCompleted = false;
@@ -209,7 +231,27 @@ router.post("/:collectionSlug", restrict.toAuthor, function(req, res, next){
 		// 	});
 	}).then((data) => {
 		delete data._id;
-		res.json(data);
+		return AppCollections.findBy({"_$id": req.params.collectionSlug}).then((schema) => {
+			_.each(schema.data.fields, (field, slug) => {
+				if(field.app_type === "file"){
+					if(Array.isArray(data[slug])){
+						_.each(data[slug], (entry) => {
+							const t1 = _.template(entry.permalink);
+							const t2 = _.template(entry.upload_link);
+							entry.permalink = t1({root: process.env.ROOT_URL});
+							entry.upload_link = t2({root: process.env.ROOT_URL});
+						});
+					}else{
+						const t1 = _.template(data[slug].permalink);
+						const t2 = _.template(data[slug].upload_link);
+						data[slug].permalink = t1({root: process.env.ROOT_URL});
+						data[slug].upload_link = t2({root: process.env.ROOT_URL});
+					}
+				}
+			});
+
+			res.json(data);
+		});
 	}).catch((err) => {
 		next(err);
 	});
@@ -334,7 +376,27 @@ router.post("/:collectionSlug/:modelID", restrict.toAuthor, function(req, res, n
 				});
 			}).then((model) => {
 				// Return with updated model
-				res.json(model.data);
+				return AppCollections.findBy({"_$id": req.params.collectionSlug}).then((schema) => {
+					_.each(schema.data.fields, (field, slug) => {
+						if(field.app_type === "file"){
+							if(Array.isArray(model.data[slug])){
+								_.each(model.data[slug], (entry) => {
+									const t1 = _.template(entry.permalink);
+									const t2 = _.template(entry.upload_link);
+									entry.permalink = t1({root: process.env.ROOT_URL});
+									entry.upload_link = t2({root: process.env.ROOT_URL});
+								});
+							}else{
+								const t1 = _.template(model.data[slug].permalink);
+								const t2 = _.template(model.data[slug].upload_link);
+								model.data[slug].permalink = t1({root: process.env.ROOT_URL});
+								model.data[slug].upload_link = t2({root: process.env.ROOT_URL});
+							}
+						}
+					});
+
+					res.json(model.data);
+				});
 			}).catch((err) => {
 				next(err);
 			});
@@ -371,7 +433,27 @@ router.delete("/:collectionSlug/:modelID", restrict.toAuthor, function(req, res,
 		if(model !== null){
 			const retModel = _.cloneDeep(model.data);
 			model.destroy().then((col) => {
-				res.json(retModel);
+				return AppCollections.findBy({"_$id": req.params.collectionSlug}).then((schema) => {
+					_.each(schema.data.fields, (field, slug) => {
+						if(field.app_type === "file"){
+							if(Array.isArray(retModel[slug])){
+								_.each(retModel[slug], (entry) => {
+									const t1 = _.template(entry.permalink);
+									const t2 = _.template(entry.upload_link);
+									entry.permalink = t1({root: process.env.ROOT_URL});
+									entry.upload_link = t2({root: process.env.ROOT_URL});
+								});
+							}else{
+								const t1 = _.template(retModel[slug].permalink);
+								const t2 = _.template(retModel[slug].upload_link);
+								retModel[slug].permalink = t1({root: process.env.ROOT_URL});
+								retModel[slug].upload_link = t2({root: process.env.ROOT_URL});
+							}
+						}
+					});
+
+					res.json(retModel);
+				});
 			});
 		}else{
 			return next(new CottaError("Model does not exist", `The requested model with ID ${req.params.modelID} does not exist.`, 404));
