@@ -39,24 +39,7 @@ router.get("/:collectionSlug", function(req, res, next){
 
 		return AppCollections.findBy({"_$id": req.params.collectionSlug}).then((schema) => {
 			_.each(collection.data, (model) => {
-				console.log(model);
-				_.each(schema.data.fields, (field, slug) => {
-					if(field.app_type === "file"){
-						if(Array.isArray(model[slug])){
-							_.each(model[slug], (entry) => {
-								const t1 = _.template(entry.permalink);
-								const t2 = _.template(entry.upload_link);
-								entry.permalink = t1({root: process.env.ROOT_URL});
-								entry.upload_link = t2({root: process.env.ROOT_URL});
-							});
-						}else{
-							const t1 = _.template(model[slug].permalink);
-							const t2 = _.template(model[slug].upload_link);
-							model[slug].permalink = t1({root: process.env.ROOT_URL});
-							model[slug].upload_link = t2({root: process.env.ROOT_URL});
-						}
-					}
-				});
+				replaceModelFileURL(schema.data, model);
 			});
 
 			res.json(collection.data);
@@ -77,23 +60,7 @@ router.get("/:collectionSlug/:modelID", function(req, res, next){
 
 			// Populate file URLs with correct hostname
 			return AppCollections.findBy({"_$id": req.params.collectionSlug}).then((schema) => {
-				_.each(schema.data.fields, (field, slug) => {
-					if(field.app_type === "file"){
-						if(Array.isArray(model.data[slug])){
-							_.each(model.data[slug], (entry) => {
-								const t1 = _.template(entry.permalink);
-								const t2 = _.template(entry.upload_link);
-								entry.permalink = t1({root: process.env.ROOT_URL});
-								entry.upload_link = t2({root: process.env.ROOT_URL});
-							});
-						}else{
-							const t1 = _.template(model.data[slug].permalink);
-							const t2 = _.template(model.data[slug].upload_link);
-							model.data[slug].permalink = t1({root: process.env.ROOT_URL});
-							model.data[slug].upload_link = t2({root: process.env.ROOT_URL});
-						}
-					}
-				});
+				replaceModelFileURL(schema.data, model.data);
 
 				res.json(model.data);
 			});
@@ -232,23 +199,7 @@ router.post("/:collectionSlug", restrict.toAuthor, function(req, res, next){
 	}).then((data) => {
 		delete data._id;
 		return AppCollections.findBy({"_$id": req.params.collectionSlug}).then((schema) => {
-			_.each(schema.data.fields, (field, slug) => {
-				if(field.app_type === "file"){
-					if(Array.isArray(data[slug])){
-						_.each(data[slug], (entry) => {
-							const t1 = _.template(entry.permalink);
-							const t2 = _.template(entry.upload_link);
-							entry.permalink = t1({root: process.env.ROOT_URL});
-							entry.upload_link = t2({root: process.env.ROOT_URL});
-						});
-					}else{
-						const t1 = _.template(data[slug].permalink);
-						const t2 = _.template(data[slug].upload_link);
-						data[slug].permalink = t1({root: process.env.ROOT_URL});
-						data[slug].upload_link = t2({root: process.env.ROOT_URL});
-					}
-				}
-			});
+			replaceModelFileURL(schema.data, data);
 
 			res.json(data);
 		});
@@ -377,23 +328,7 @@ router.post("/:collectionSlug/:modelID", restrict.toAuthor, function(req, res, n
 			}).then((model) => {
 				// Return with updated model
 				return AppCollections.findBy({"_$id": req.params.collectionSlug}).then((schema) => {
-					_.each(schema.data.fields, (field, slug) => {
-						if(field.app_type === "file"){
-							if(Array.isArray(model.data[slug])){
-								_.each(model.data[slug], (entry) => {
-									const t1 = _.template(entry.permalink);
-									const t2 = _.template(entry.upload_link);
-									entry.permalink = t1({root: process.env.ROOT_URL});
-									entry.upload_link = t2({root: process.env.ROOT_URL});
-								});
-							}else{
-								const t1 = _.template(model.data[slug].permalink);
-								const t2 = _.template(model.data[slug].upload_link);
-								model.data[slug].permalink = t1({root: process.env.ROOT_URL});
-								model.data[slug].upload_link = t2({root: process.env.ROOT_URL});
-							}
-						}
-					});
+					replaceModelFileURL(schema.data, model.data);
 
 					res.json(model.data);
 				});
@@ -434,23 +369,7 @@ router.delete("/:collectionSlug/:modelID", restrict.toAuthor, function(req, res,
 			const retModel = _.cloneDeep(model.data);
 			model.destroy().then((col) => {
 				return AppCollections.findBy({"_$id": req.params.collectionSlug}).then((schema) => {
-					_.each(schema.data.fields, (field, slug) => {
-						if(field.app_type === "file"){
-							if(Array.isArray(retModel[slug])){
-								_.each(retModel[slug], (entry) => {
-									const t1 = _.template(entry.permalink);
-									const t2 = _.template(entry.upload_link);
-									entry.permalink = t1({root: process.env.ROOT_URL});
-									entry.upload_link = t2({root: process.env.ROOT_URL});
-								});
-							}else{
-								const t1 = _.template(retModel[slug].permalink);
-								const t2 = _.template(retModel[slug].upload_link);
-								retModel[slug].permalink = t1({root: process.env.ROOT_URL});
-								retModel[slug].upload_link = t2({root: process.env.ROOT_URL});
-							}
-						}
-					});
+					replaceModelFileURL(schema.data, retModel);
 
 					res.json(retModel);
 				});
@@ -485,6 +404,27 @@ function ownModel(username, collectionSlug, modelID){
 			return Promise.resolve();
 		}else{
 			return Promise.reject(new CottaError("Forbidden", "User not allowed to modify this resource", 403));
+		}
+	});
+}
+
+// Refactored function to replace root url in file links
+function replaceModelFileURL(schema, model){
+	_.each(schema.fields, (field, slug) => {
+		if(field.app_type === "file"){
+			if(Array.isArray(model[slug])){
+				_.each(model[slug], (entry) => {
+					const t1 = _.template(entry.permalink);
+					const t2 = _.template(entry.upload_link);
+					entry.permalink = t1({root: process.env.ROOT_URL});
+					entry.upload_link = t2({root: process.env.ROOT_URL});
+				});
+			}else{
+				const t1 = _.template(model[slug].permalink);
+				const t2 = _.template(model[slug].upload_link);
+				model[slug].permalink = t1({root: process.env.ROOT_URL});
+				model[slug].upload_link = t2({root: process.env.ROOT_URL});
+			}
 		}
 	});
 }
