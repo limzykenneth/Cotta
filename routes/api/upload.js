@@ -62,7 +62,7 @@ router.post("/", restrict.toAuthor, function(req, res, next){
 				// Get an array with relevant upload data of the collection
 				const reply = fileCollection.map((file) => {
 					return {
-						location: `${req.protocol}://${req.get("host")}/api/upload/${file.data.uid}`,
+						location: `${process.env.ROOT_URL}/api/upload/${file.data.uid}`,
 						uploadExpire: file.data.uploadExpire
 					};
 				});
@@ -85,7 +85,7 @@ router.post("/", restrict.toAuthor, function(req, res, next){
 			// Save entry into database
 			file.save().then(() => {
 				res.json({
-					location: `${req.protocol}://${req.get("host")}/api/upload/${file.data.uid}`,
+					location: `${process.env.ROOT_URL}/api/upload/${file.data.uid}`,
 					uploadExpire: file.data.uploadExpire,
 				});
 			}).catch((err) => {

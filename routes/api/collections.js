@@ -20,6 +20,10 @@ const limits = {
 
 const sanitizerAllowedTags = sanitizeHtml.defaults.allowedTags.concat(["h1", "h2", "u"]);
 
+const AppCollections = new DynamicRecord({
+	tableSlug: "_app_collections"
+});
+
 // Route: {root}/api/collections/...
 
 // GET routes
@@ -46,7 +50,29 @@ router.get("/:collectionSlug/:modelID", function(req, res, next){
 	Collection.findBy({"_uid": parseInt(req.params.modelID)}).then((collection) => {
 		if(collection){
 			delete collection.data._id;
-			res.json(collection.data);
+
+			// Populate file URLs with correct hostname
+			return AppCollections.findBy({"_$id": req.params.collectionSlug}).then((schema) => {
+				_.each(schema.data.fields, (field, slug) => {
+					if(field.app_type === "file"){
+						if(Array.isArray(collection.data[slug])){
+							_.each(collection.data[slug], (entry) => {
+								const t1 = _.template(entry.permalink);
+								const t2 = _.template(entry.upload_link);
+								entry.permalink = t1({root: process.env.ROOT_URL});
+								entry.upload_link = t2({root: process.env.ROOT_URL});
+							});
+						}else{
+							const t1 = _.template(collection.data[slug].permalink);
+							const t2 = _.template(collection.data[slug].upload_link);
+							collection.data[slug].permalink = t1({root: process.env.ROOT_URL});
+							collection.data[slug].upload_link = t2({root: process.env.ROOT_URL});
+						}
+					}
+				});
+
+				res.json(collection.data);
+			});
 		}else{
 			next(new CottaError("Model does not exist", `The requested model with ID ${req.params.modelID} does not exist.`, 404));
 		}

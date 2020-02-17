@@ -27,7 +27,7 @@ const utils = {
 		entry.uid = file.data.uid;
 		entry.permalink = file.data.file_permalink;
 		// File link will be write once only
-		entry.upload_link = `${req.protocol}://${req.get("host")}/api/upload/${file.data.uid}`;
+		entry.upload_link = `<%= root %>/api/upload/${file.data.uid}`;
 		entry.upload_expire = file.data.uploadExpire;
 		return Promise.resolve(file);
 	}

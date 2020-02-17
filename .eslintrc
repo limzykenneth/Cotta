@@ -30,9 +30,6 @@
 		"space-before-function-paren": "off",
 		"space-before-blocks": "off"
 	},
-	"plugins": [
-		"html"
-	],
 	"env": {
 		"browser": true,
         "commonjs": true,
