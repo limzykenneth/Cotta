@@ -202,7 +202,6 @@ function setFileMetadata(file){
 	file.data.saved_path = `${file.data.uid}`;
 	file.data.modified_at = moment().format();
 	delete file.data.uploadExpire;
-	delete file.data.uploadLocation;
 }
 
 module.exports = router;
