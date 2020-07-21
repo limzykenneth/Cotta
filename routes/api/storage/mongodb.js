@@ -7,7 +7,10 @@ const mongodb = require("mongodb");
 
 class MongoDBStorage{
 	constructor(config){
-		this.client = new mongodb.MongoClient(config.uri);
+		this.client = new mongodb.MongoClient(config.uri, {
+			useUnifiedTopology: true,
+			useNewUrlParser: true
+		});
 		this.connection = this.client.connect();
 		this.limit = config.limit;
 	}

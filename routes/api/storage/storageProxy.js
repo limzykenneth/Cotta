@@ -19,7 +19,7 @@ module.exports = function(strategy){
 	let storage;
 	if(strategy === "mongodb"){
 		storage = new Strategies.mongodb({
-			uri: `mongodb://${process.env.mongo_user}:${process.env.mongo_pass}@${process.env.mongo_server}/${process.env.mongo_db_name}`,
+			uri: process.env.database_host,
 			limit: limits.fileSize
 		});
 	}
