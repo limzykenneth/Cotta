@@ -6,7 +6,7 @@
     "server": "nodemon ./bin/www",
     "database": "mongod --auth --dbpath=./db",
     "pretest": "dynamic-record init -s mongodb://localhost:27017 -u test -p test -d tests",
-    "test": "mongo_db_name='tests' mongo_user='test' mongo_pass='test' mocha",
+    "test": "database_host=mongodb://test:test@localhost:27017/tests mocha",
     "postrelease": "node ./bin/build-release.js",
     "release": "np"
   },
