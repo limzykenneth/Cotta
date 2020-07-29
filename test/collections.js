@@ -113,6 +113,7 @@ describe("Collections Routes", function(){
 					assert.equal(res.body.title, "Invalid Schema", "returns with correct message");
 				});
 		});
+		it("should reponse to file upload fields with upload URL");
 	});
 
 	describe("POST /api/collections/:slug/:ID", function(){
@@ -151,7 +152,6 @@ describe("Collections Routes", function(){
 				.then((res) => {
 					const modifyModel = res.body;
 					modifyModel.field_2 = 24;
-					// console.log(res.body);
 
 					return chai.request(app)
 						.post("/api/collections/test_1/5")
@@ -163,6 +163,7 @@ describe("Collections Routes", function(){
 					assert.equal(res.body.title, "Invalid Schema", "returns with correct message");
 				});
 		});
+		it("should update the file entry if it was changed");
 	});
 
 	describe("DEL /api/collections/:slug/:ID", function(){
