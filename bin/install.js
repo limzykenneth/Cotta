@@ -15,6 +15,7 @@ async function install(){
 		{
 			type: "input",
 			name: "database_url",
+			prefix: "🌱",
 			message: "Please input the database connection URL (eg. mongodb://localhost/my_database):",
 			validate: function(response){
 				const regexResult = response.match(databaseRegex);
@@ -28,6 +29,7 @@ async function install(){
 		{
 			type: "input",
 			name: "database_username",
+			prefix: "🌱",
 			when: function(hash){
 				const regexResult = hash.database_url.match(databaseRegex);
 
@@ -37,6 +39,7 @@ async function install(){
 		{
 			type: "password",
 			name: "database_password",
+			prefix: "🌱",
 			when: function(hash){
 				const regexResult = hash.database_url.match(databaseRegex);
 
@@ -46,6 +49,7 @@ async function install(){
 		{
 			type: "input",
 			name: "database_name",
+			prefix: "🌱",
 			when: function(hash){
 				const regexResult = hash.database_url.match(databaseRegex);
 
@@ -110,30 +114,35 @@ async function install(){
 		{
 			type: "number",
 			name: "bcrypt_hash_cost",
+			prefix: "🌱",
 			message: "Please choose a cost factor for bcrypt:",
 			default: 10
 		},
 		{
 			type: "confirm",
 			name: "allow_anonymous_tokens",
+			prefix: "🌱",
 			message: "Do you want to allow anonymous tokens?",
 			default: false
 		},
 		{
 			type: "confirm",
 			name: "allow_unauthorised",
+			prefix: "🌱",
 			message: "Do you want to allow unauthorised access to the API? (Only GET routes)",
 			default: false
 		},
 		{
 			type: "confirm",
 			name: "allow_signup",
+			prefix: "🌱",
 			message: "Do you want to allow new user sign ups?",
 			default: false
 		},
 		{
 			type: "number",
 			name: "upload_file_max",
+			prefix: "🌱",
 			message: "What is the maximum allowed file size in bytes for uploads?",
 			default: 1000000,
 			validate: function(num){
@@ -143,6 +152,7 @@ async function install(){
 		{
 			type: "input",
 			name: "upload_file_types",
+			prefix: "🌱",
 			message: "What are the allowed file MIME types for uploads? (Please enter any MIME types seperated by a comma ',')",
 			default: "image/jpeg,image/png",
 			filter: function(input){
@@ -245,6 +255,7 @@ async function install(){
 		{
 			type: "input",
 			name: "username",
+			prefix: "🌱",
 			message: "Please choose an admin username for Cotta:",
 			validate: function(value){
 				return value.trim().length > 0 ? true : "Username cannot be empty";
@@ -256,6 +267,7 @@ async function install(){
 		{
 			type: "password",
 			name: "password",
+			prefix: "🌱",
 			message: "Please choose an admin password for Cotta:",
 			validate: function(value){
 				return value.trim().length > 0 ? true : "Password cannot be empty";
@@ -267,6 +279,7 @@ async function install(){
 		{
 			type: "password",
 			name: "password_confirm",
+			prefix: "🌱",
 			message: "Please confirm the password:",
 			validate: function(value){
 				return value.trim().length > 0 ? true : "Password cannot be empty";
@@ -288,7 +301,7 @@ async function install(){
 		const models = await Users.where({role: "administrator"});
 		let hash;
 		if(models.length === 0){
-			hash = await bcrypt.hash(answers.password, 10);
+			hash = await bcrypt.hash(answers.password, bcryptCost.data.config_value);
 		}else{
 			console.log("\n🌱 Refusing to create new admin user where at least one already exist.\n");
 		}
@@ -311,12 +324,14 @@ async function install(){
 		{
 			type: "list",
 			name: "storage_strategy",
+			prefix: "🌱",
 			message: "What is the storage strategy you are going to use for storing uploaded files?",
 			choices: ["fs", "mongodb"]
 		},
 		{
 			type: "input",
 			name: "root_url",
+			prefix: "🌱",
 			message: "What is the root URL for your backend site? (eg. https://example.com)",
 			validate: function(value){
 				return value.trim().length > 0 ? true : "Invalid URL";
@@ -328,6 +343,7 @@ async function install(){
 		{
 			type: "input",
 			name: "jwt_secret",
+			prefix: "🌱",
 			message: "JWT secret string, leave blank for random (recommended)",
 			validate: function(value){
 				return value.trim().length > 0 ? true : "Invalid URL";
