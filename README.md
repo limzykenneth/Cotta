@@ -18,7 +18,7 @@ Cotta is based on Express.js, using its route definitions and middlewares, Cotta
 - An Express server (if you know Express, you know Cotta)
 
 ## Features
-Cotta by default exposes an API under the `/api/` route and whatever is under the `public` directory under the `/` route (where you should put your static site if you wish to serve it with Cotta).
+Cotta by default exposes an API under the `/api/` route and whatever is under the `public` directory under the `/` route (where you can put your static site if you wish to serve it with Cotta).
 
 Cotta uses an ORM inspired by Ruby's Active Record called [DynamicRecord](https://dynamic-record.js.org/) that I wrote from scratch. It currently only works with MongoDB but there are plans to support other databases in the future.
 
@@ -31,7 +31,7 @@ Cotta uses a MVC-like structure inspired by [Backbone.js](https://backbonejs.org
 
 1. Run `npm install` to install dependencies.
 
-1. Run the install script with `node bin/install.js` and follow the prompts to setup your installation.
+1. Run the install script with `npx cotta install` and follow the prompts to setup your installation.
 
 1. Run `npm start` to start the production server or `npm run server` to run the development servers that automatically restarts the server on file change.
 
@@ -50,5 +50,5 @@ I made Cotta because I couldn't find something that met my needs, namely a frame
 - A framework that doesn't expect me to render my front end on the back end
 
 The aims of Cotta are:
-1. To be as easy to use as Wordpress but provide more flexibility without sacrificing too much of that usability.
+1. To be as easy to use as Wordpress but provide more flexibility out of the box without sacrificing too much of that usability.
 2. Must be a [Twelve-Factor App](https://12factor.net/) that doesn't rely on the local file system for any configurations.
