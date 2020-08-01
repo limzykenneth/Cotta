@@ -336,6 +336,53 @@ async function install(){
 			},
 			{
 				type: "input",
+				name: "mongodb_url",
+				prefix: "🌱",
+				message: "Please enter the full URL of the MongoDB database (eg. http://username@localhost/mydatabase):",
+				when: function(hash){
+					return hash.storage_strategy === "mongodb";
+				},
+				validate: function(val){
+					const regexResult = val.match(databaseRegex);
+					if(regexResult.groups.schema !== "mongodb" || regexResult.groups.schema !== "mongodb+srv"){
+						return true;
+					}
+
+					return "Invalid MongoDB URL";
+				},
+				filter: function(val){
+					return val.trim();
+				}
+			},
+			{
+				type: "username",
+				name: "mongodb_username",
+				prefix: "🌱",
+				message: "Please enter the MongoDB database user password:",
+				when: function(hash){
+					const regexResult = hash.mongodb_url.match(databaseRegex);
+
+					return regexResult.groups.username ? false : true;
+				},
+				filter: function(val){
+					return val.trim();
+				}
+			},
+			{
+				type: "input",
+				name: "mongodb_name",
+				prefix: "🌱",
+				when: function(hash){
+					const regexResult = hash.mongodb_url.match(databaseRegex);
+
+					return regexResult.groups.database ? false : true;
+				},
+				filter: function(value){
+					return value.trim();
+				}
+			},
+			{
+				type: "input",
 				name: "root_url",
 				prefix: "🌱",
 				message: "What is the root URL for your backend site? (eg. https://example.com)",
@@ -361,6 +408,17 @@ async function install(){
 			}
 		]);
 
+		let mongodbFS = "";
+		if(answers.storage_strategy === "mongodb"){
+			const mongoRegexResult = answers.mongodb_url.match(databaseRegex);
+			const mongoProtocol = mongoRegexResult.groups.schema;
+			const mongoUsername = mongoRegexResult.groups.username || answers.database_username;
+			const mongoPassword = mongoRegexResult.groups.password || answers.database_password;
+			const mongoHost = mongoRegexResult.groups.host;
+			const mongoPort = mongoRegexResult.groups.port ? `:${mongoRegexResult.groups.port}` : "";
+			const mongoDatabase = mongoRegexResult.groups.database || answers.database_name;
+			mongodbFS = `mongodb_url=${mongoProtocol}://${mongoUsername}:[MongoDB password]@${mongoHost}${mongoPort}/${mongoDatabase}?${mongoRegexResult.groups.options || ""}`;
+		}
 		const output =
 `
 # Database credentials
@@ -371,6 +429,7 @@ JWT_SECRET=${answers.jwt_secret}
 
 # File storage strategy
 STORAGE_STRATEGY=${answers.storage_strategy}
+${mongodbFS}
 
 # Root URL
 ROOT_URL=${answers.root_url}
@@ -384,7 +443,7 @@ ROOT_URL=${answers.root_url}
 		await DynamicRecord.closeConnection();
 
 	}catch(err){
-		console.error(e);
+		console.error(err);
 		process.exit(1);
 	}
 }

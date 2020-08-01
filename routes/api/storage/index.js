@@ -16,7 +16,7 @@ if(process.env.STORAGE_STRATEGY === "fs"){
 }else if(process.env.STORAGE_STRATEGY === "mongodb"){
 	Storage = require("./mongodb.js");
 	storage = new Storage({
-		uri: process.env.database_host,
+		uri: process.env.mongodb_url,
 		limit: limits.fileSize
 	});
 }
