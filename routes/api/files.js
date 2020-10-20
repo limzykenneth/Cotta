@@ -41,7 +41,7 @@ router.get("/:id", function(req, res, next){
 			file.data.file_permalink = t({root: process.env.ROOT_URL});
 			res.json(file.data);
 		}else{
-			next(new CottaError("File does not exist", `The requested file with ID ${req.params.id} does not exist.`, 404));
+			next(new CottaError("File does not exist", `The requested file with ID "${req.params.id}" does not exist.`, 404));
 		}
 	}).catch((err) => {
 		next(err);

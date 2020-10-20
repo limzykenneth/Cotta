@@ -79,7 +79,6 @@ router.post("/", restrict.toEditor, function(req, res, next){
 		const regex = /^app_/;
 
 		if(appCollection === null){
-			console.log("here?");
 			appCollection = new AppCollections.Model();
 			// Insert new schema
 			appCollection.data = {};

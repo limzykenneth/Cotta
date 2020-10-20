@@ -8,7 +8,6 @@ async function install(){
 	try{
 		const inquirer = require("inquirer");
 		const nanoid = require("nanoid");
-		const _ = require("lodash");
 		const databaseRegex = /^(?<schema>.+?):\/\/(?:(?<username>.+?)(?::(?<password>.+))?@)?(?<host>.+?)(?::(?<port>\d+?))?(?:\/(?<database>.+?))?(?:\?(?<options>.+?)?)?$/;
 
 		// Ask for database details
@@ -96,25 +95,23 @@ async function install(){
 		console.log("🌱 Creating default tables for Cotta...");
 
 		const DynamicRecord = require("dynamic-record");
+		const Bluebird = require("bluebird");
 		const tableSchemas = [
 			require("../schemas/_app_collections.schema.json"),
 			require("../schemas/_users_auth.schema.json"),
 			require("../schemas/file_upload.schema.json"),
 			require("../schemas/_configurations.schema.json")
 		];
-		const schema = new DynamicRecord.DynamicSchema();
 
-		const promises = _.map(tableSchemas, (tableSchema) => {
+		Bluebird.mapSeries(tableSchemas, async (tableSchema) => {
 			const existing = new DynamicRecord.DynamicSchema();
-			return existing.read(tableSchema.$id).then(() => {
-				if(existing.tableName){
-					console.log(`🌱 Table ${tableSchema.$id} already exist, skipping...`);
-				}else{
-					return schema.createTable(tableSchema);
-				}
-			});
+			await existing.read(tableSchema.$id);
+			if(existing.tableName){
+				console.log(`🌱 Table ${tableSchema.$id} already exist, skipping...`);
+			}else{
+				return existing.createTable(tableSchema);
+			}
 		});
-		await Promise.all(promises);
 
 		console.log("🌱 Successfully created default tables for Cotta\n");
 
@@ -360,9 +357,13 @@ async function install(){
 				prefix: "🌱",
 				message: "Please enter the MongoDB database user password:",
 				when: function(hash){
-					const regexResult = hash.mongodb_url.match(databaseRegex);
+					if(hash.storage_strategy === "mongodb"){
+						const regexResult = hash.mongodb_url.match(databaseRegex);
 
-					return regexResult.groups.username ? false : true;
+						return regexResult.groups.username ? false : true;
+					}else{
+						return false;
+					}
 				},
 				filter: function(val){
 					return val.trim();
@@ -373,9 +374,13 @@ async function install(){
 				name: "mongodb_name",
 				prefix: "🌱",
 				when: function(hash){
-					const regexResult = hash.mongodb_url.match(databaseRegex);
+					if(hash.storage_strategy === "mongodb"){
+						const regexResult = hash.mongodb_url.match(databaseRegex);
 
-					return regexResult.groups.database ? false : true;
+						return regexResult.groups.database ? false : true;
+					}else{
+						return false;
+					}
 				},
 				filter: function(value){
 					return value.trim();
@@ -413,7 +418,6 @@ async function install(){
 			const mongoRegexResult = answers.mongodb_url.match(databaseRegex);
 			const mongoProtocol = mongoRegexResult.groups.schema;
 			const mongoUsername = mongoRegexResult.groups.username || answers.database_username;
-			const mongoPassword = mongoRegexResult.groups.password || answers.database_password;
 			const mongoHost = mongoRegexResult.groups.host;
 			const mongoPort = mongoRegexResult.groups.port ? `:${mongoRegexResult.groups.port}` : "";
 			const mongoDatabase = mongoRegexResult.groups.database || answers.database_name;

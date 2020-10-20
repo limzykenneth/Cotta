@@ -1,7 +1,7 @@
 {
 	"extends": "eslint:recommended",
 	"parserOptions": {
-	    "ecmaVersion": 2020,
+	    "ecmaVersion": 2020
     },
 	"rules": {
 		"indent": [
@@ -23,7 +23,9 @@
 			"warn",
 			"always"
 		],
-		"no-unused-vars": "off",
+		"no-unused-vars": [ "warn", {
+			"args": "none"
+		}],
 		"no-console": "off",
 		"no-undef": "off",
 		"no-new": "off",
