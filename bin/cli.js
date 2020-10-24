@@ -1,6 +1,6 @@
 const { program } = require("commander");
 const update = require("./update.js");
-const install = require("./install.js");
+const {install} = require("./install.js");
 
 program
 	.command("install")

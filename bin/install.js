@@ -68,7 +68,6 @@ async function install(){
 		]);
 
 		// Init database
-		const initDB = require("../node_modules/dynamic-record/tools/init.js").init;
 		const regexResult = answers.database_url.match(databaseRegex);
 		const dbschema = regexResult.groups.schema;
 		const username = regexResult.groups.username || answers.database_username;
@@ -78,42 +77,7 @@ async function install(){
 		const database = regexResult.groups.database || answers.database_name;
 		let url = `${dbschema}://${username}:${password}@${host}${port}/${database}?${regexResult.groups.options || ""}`;
 
-		try{
-			await initDB(url);
-			process.env.database_host = url;
-		}catch(err){
-			// NOTE: This catches mongodb only
-			if(err.code === 11000){
-				console.log("\n🌱 Duplicate entries of initalization tables exist. It may be because database has already been initialized or old tables in the database is causing a conflict. Exiting\n");
-				process.exit(1);
-			}else{
-				console.error(err);
-				process.exit(1);
-			}
-		}
-
-		console.log("🌱 Creating default tables for Cotta...");
-
-		const DynamicRecord = require("dynamic-record");
-		const Bluebird = require("bluebird");
-		const tableSchemas = [
-			require("../schemas/_app_collections.schema.json"),
-			require("../schemas/_users_auth.schema.json"),
-			require("../schemas/file_upload.schema.json"),
-			require("../schemas/_configurations.schema.json")
-		];
-
-		Bluebird.mapSeries(tableSchemas, async (tableSchema) => {
-			const existing = new DynamicRecord.DynamicSchema();
-			await existing.read(tableSchema.$id);
-			if(existing.tableName){
-				console.log(`🌱 Table ${tableSchema.$id} already exist, skipping...`);
-			}else{
-				return existing.createTable(tableSchema);
-			}
-		});
-
-		console.log("🌱 Successfully created default tables for Cotta\n");
+		await createDefaultTables(url);
 
 		// Initial configs
 		answers = await inquirer.prompt([
@@ -171,85 +135,8 @@ async function install(){
 			}
 		]);
 
-		const Configs = new DynamicRecord({
-			tableSlug: "_configurations"
-		});
-
-		const bcryptCost = new Configs.Model({
-			"config_name": "bcrypt_hash_cost",
-			"config_value": answers.bcrypt_hash_cost,
-			"config_type": "number"
-		});
-		const allowAnonymous = new Configs.Model({
-			"config_name": "allow_anonymous_tokens",
-			"config_value": answers.allow_anonymous_tokens,
-			"config_type": "boolean"
-		});
-		const allowUnauthorised = new Configs.Model({
-			"config_name": "allow_unauthorised",
-			"config_value": answers.allow_unauthorised,
-			"config_type": "boolean"
-		});
-		const allowSignup = new Configs.Model({
-			"config_name": "allow_signup",
-			"config_value": answers.allow_signup,
-			"config_type": "boolean"
-		});
-		const uploadFileMax = new Configs.Model({
-			"config_name": "upload_file_size_max",
-			"config_value": answers.upload_file_max,
-			"config_type": "number"
-		});
-		const uploadFileTypes = new Configs.Model({
-			"config_name": "upload_file_accepted_MIME",
-			"config_value": answers.upload_file_types,
-			"config_type": "array"
-		});
-		const collection = new DynamicRecord.DynamicCollection(Configs.Model);
-
-		let m = await Configs.findBy({"config_name": "bcrypt_hash_cost"});
-		if(m === null){
-			collection.push(bcryptCost);
-		}else{
-			console.log("🌱 Config \"bcrypt_hash_cost\" already exist, skipping...");
-		}
-
-		m = await Configs.findBy({"config_name": "allow_anonymous_tokens"});
-		if(m === null){
-			collection.push(allowAnonymous);
-		}else{
-			console.log("🌱 Config \"allow_anonymous_tokens\" already exist, skipping...");
-		}
-
-		m = await Configs.findBy({"config_name": "allow_unauthorised"});
-		if(m === null){
-			collection.push(allowUnauthorised);
-		}else{
-			console.log("🌱 Config \"allow_unauthorised\" already exist, skipping...");
-		}
-
-		m = await Configs.findBy({"config_name": "allow_signup"});
-		if(m === null){
-			collection.push(allowSignup);
-		}else{
-			console.log("🌱 Config \"allow_signup\" already exist, skipping...");
-		}
-
-		m = await Configs.findBy({"config_name": "upload_file_size_max"});
-		if(m === null){
-			collection.push(uploadFileMax);
-		}else{
-			console.log("🌱 Config \"upload_file_size_max\" already exist, skipping...");
-		}
-
-		m = await Configs.findBy({"config_name": "upload_file_accepted_MIME"});
-		if(m === null){
-			collection.push(uploadFileTypes);
-		}else{
-			console.log("🌱 Config \"upload_file_accepted_MIME\" already exist, skipping...");
-		}
-
-		await collection.saveAll();
+		await setConfigs(answers);
+		const bcryptCost = answers.bcrypt_hash_cost;
 
 		// Create admin user
 		answers = await inquirer.prompt([
@@ -271,10 +158,10 @@ async function install(){
 				prefix: "🌱",
 				message: "Please choose an admin password for Cotta:",
 				validate: function(value){
-					return value.trim().length > 0 ? true : "Password cannot be empty";
+					return value.length > 0 ? true : "Password cannot be empty";
 				},
 				filter: function(value){
-					return value.trim();
+					return value;
 				}
 			},
 			{
@@ -282,43 +169,22 @@ async function install(){
 				name: "password_confirm",
 				prefix: "🌱",
 				message: "Please confirm the password:",
-				validate: function(value){
-					return value.trim().length > 0 ? true : "Password cannot be empty";
+				validate: function(value, hash){
+					if(value.length <= 0){
+						return "Password cannot be empty";
+					}else if(value !== hash.password){
+						return "Passwords do not match";
+					}else{
+						return true;
+					}
 				},
 				filter: function(value){
-					return value.trim();
+					return value;
 				}
 			}
 		]);
 
-		if(answers.password === answers.password_confirm){
-			const bcrypt = require("bcrypt");
-			const moment = require("moment");
-
-			const Users = new DynamicRecord({
-				tableSlug: "_users_auth"
-			});
-
-			const models = await Users.where({role: "administrator"});
-			let hash;
-			if(models.length === 0){
-				hash = await bcrypt.hash(answers.password, bcryptCost.data.config_value);
-			}else{
-				console.log("\n🌱 Refusing to create new admin user where at least one already exist.\n");
-			}
-
-			if(hash){
-				const user = new Users.Model({
-					"username": answers.username,
-					"hash": hash,
-					"role": "administrator",
-					"date_created": moment.utc().format()
-				});
-				await user.save();
-			}
-		}else{
-			throw new Error("Passwords do not match");
-		}
+		await createDefaultUser(answers.username, answers.password, bcryptCost);
 
 		// Add cotta field to package.json
 
@@ -444,7 +310,7 @@ ROOT_URL=${answers.root_url}
 
 		console.log("\n🌱 Cotta is all setup and ready to go!\n");
 
-		await DynamicRecord.closeConnection();
+		await closeConnection();
 
 	}catch(err){
 		console.error(err);
@@ -452,8 +318,175 @@ ROOT_URL=${answers.root_url}
 	}
 }
 
+async function createDefaultTables(url, silent=false){
+	// Initialize database
+	const initDB = require("../node_modules/dynamic-record/tools/init.js").init;
+
+	try{
+		await initDB(url);
+		process.env.database_host = url;
+	}catch(err){
+		// NOTE: This catches mongodb only
+		if(err.code === 11000){
+			if(!silent) console.log("\n🌱 Duplicate entries of initalization tables exist. It may be because database has already been initialized or old tables in the database is causing a conflict. Exiting\n");
+			process.exit(1);
+		}else{
+			console.error(err);
+			process.exit(1);
+		}
+	}
+
+	// Create Cotta specific default tables
+	const DynamicRecord = require("dynamic-record");
+	const Bluebird = require("bluebird");
+	const tableSchemas = [
+		require("../schemas/_app_collections.schema.json"),
+		require("../schemas/_users_auth.schema.json"),
+		require("../schemas/file_upload.schema.json"),
+		require("../schemas/_configurations.schema.json")
+	];
+
+	if(!silent) console.log("🌱 Creating default tables for Cotta...");
+
+	await Bluebird.mapSeries(tableSchemas, async (tableSchema) => {
+		const existing = new DynamicRecord.DynamicSchema();
+		await existing.read(tableSchema.$id);
+		if(existing.tableName){
+			if(!silent) console.log(`🌱 Table ${tableSchema.$id} already exist, skipping...`);
+		}else{
+			return existing.createTable(tableSchema);
+		}
+	});
+
+	if(!silent) console.log("🌱 Successfully created default tables for Cotta\n");
+}
+
+async function setConfigs(configs, silent=false){
+	const DynamicRecord = require("dynamic-record");
+	const _ = require("lodash");
+
+	const Configs = new DynamicRecord({
+		tableSlug: "_configurations"
+	});
+
+	const bcryptCost = new Configs.Model({
+		"config_name": "bcrypt_hash_cost",
+		"config_value": _.isNumber(configs.bcrypt_hash_cost) ? configs.bcrypt_hash_cost : 10,
+		"config_type": "number"
+	});
+	const allowAnonymous = new Configs.Model({
+		"config_name": "allow_anonymous_tokens",
+		"config_value": _.isBoolean(configs.allow_anonymous_tokens) ? configs.allow_anonymous_tokens : false,
+		"config_type": "boolean"
+	});
+	const allowUnauthorised = new Configs.Model({
+		"config_name": "allow_unauthorised",
+		"config_value": _.isBoolean(configs.allow_unauthorised) ? configs.allow_unauthorised : false,
+		"config_type": "boolean"
+	});
+	const allowSignup = new Configs.Model({
+		"config_name": "allow_signup",
+		"config_value": _.isBoolean(configs.allow_signup) ? configs.allow_signup : false,
+		"config_type": "boolean"
+	});
+	const uploadFileMax = new Configs.Model({
+		"config_name": "upload_file_size_max",
+		"config_value": _.isNumber(configs.upload_file_max) ? configs.upload_file_max : 1000000,
+		"config_type": "number"
+	});
+	const uploadFileTypes = new Configs.Model({
+		"config_name": "upload_file_accepted_MIME",
+		"config_value": Array.isArray(configs.upload_file_types) ? configs.upload_file_types : [],
+		"config_type": "array"
+	});
+	const collection = new DynamicRecord.DynamicCollection(Configs.Model);
+
+	let m = await Configs.findBy({"config_name": "bcrypt_hash_cost"});
+	if(m === null){
+		collection.push(bcryptCost);
+	}else{
+		if(!silent) console.log("🌱 Config \"bcrypt_hash_cost\" already exist, skipping...");
+	}
+
+	m = await Configs.findBy({"config_name": "allow_anonymous_tokens"});
+	if(m === null){
+		collection.push(allowAnonymous);
+	}else{
+		if(!silent) console.log("🌱 Config \"allow_anonymous_tokens\" already exist, skipping...");
+	}
+
+	m = await Configs.findBy({"config_name": "allow_unauthorised"});
+	if(m === null){
+		collection.push(allowUnauthorised);
+	}else{
+		if(!silent) console.log("🌱 Config \"allow_unauthorised\" already exist, skipping...");
+	}
+
+	m = await Configs.findBy({"config_name": "allow_signup"});
+	if(m === null){
+		collection.push(allowSignup);
+	}else{
+		if(!silent) console.log("🌱 Config \"allow_signup\" already exist, skipping...");
+	}
+
+	m = await Configs.findBy({"config_name": "upload_file_size_max"});
+	if(m === null){
+		collection.push(uploadFileMax);
+	}else{
+		if(!silent) console.log("🌱 Config \"upload_file_size_max\" already exist, skipping...");
+	}
+
+	m = await Configs.findBy({"config_name": "upload_file_accepted_MIME"});
+	if(m === null){
+		collection.push(uploadFileTypes);
+	}else{
+		if(!silent) console.log("🌱 Config \"upload_file_accepted_MIME\" already exist, skipping...");
+	}
+
+	await collection.saveAll();
+}
+
+async function createDefaultUser(username, password, bcryptCost, silent=false){
+	const DynamicRecord = require("dynamic-record");
+	const bcrypt = require("bcrypt");
+	const moment = require("moment");
+
+	const Users = new DynamicRecord({
+		tableSlug: "_users_auth"
+	});
+
+	const models = await Users.where({role: "administrator"});
+	let hash;
+	if(models.length === 0){
+		hash = await bcrypt.hash(password, bcryptCost);
+	}else{
+		if(!silent) console.log("\n🌱 Refusing to create new admin user where at least one already exist.\n");
+	}
+
+	if(hash){
+		const user = new Users.Model({
+			"username": username,
+			"hash": hash,
+			"role": "administrator",
+			"date_created": moment.utc().format()
+		});
+		await user.save();
+	}
+}
+
+async function closeConnection(){
+	const DynamicRecord = require("dynamic-record");
+	await DynamicRecord.closeConnection();
+}
+
 if(require.main === module){
 	install();
 }else{
-	module.exports = install;
+	module.exports = {
+		createDefaultTables,
+		setConfigs,
+		createDefaultUser,
+		closeConnection,
+		install
+	};
 }

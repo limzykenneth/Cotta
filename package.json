@@ -5,8 +5,7 @@
     "start": "node ./bin/www",
     "server": "nodemon ./bin/www",
     "database": "mongod --auth --dbpath=./db",
-    "pretest": "dynamic-record init -s mongodb://localhost:27017 -u test -p test -d tests",
-    "test": "database_host=mongodb://test:test@localhost:27017/tests mocha",
+    "test": "database_host=mongodb://test:test@localhost:27017/tests mocha --timeout 5000",
     "postrelease": "node ./bin/build-release.js",
     "release": "np"
   },

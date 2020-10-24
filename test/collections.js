@@ -4,8 +4,6 @@ const _ = require("lodash");
 const chaiHttp = require("chai-http");
 chai.use(chaiHttp);
 const assert = chai.assert;
-const testSchema = require("./json/test_1.schema.json");
-const testAppCollection = require("./json/test_1_AppCollection.json");
 const testData = Object.freeze(_.cloneDeep(require("./json/test_1_data.json")));
 const newModel = Object.freeze({
 	"field_1": "<p>Fish cake coleslaw roe, chicken burger skate battered roe roe roe jacket potato gravy beef burger. </p>",

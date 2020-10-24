@@ -5,9 +5,7 @@ const chaiHttp = require("chai-http");
 chai.use(chaiHttp);
 const assert = chai.assert;
 const testSchema = require("./json/test_1.schema.json");
-const testAppCollection = require("./json/test_1_AppCollection.json");
 const test3Schema = require("./json/test_3.schema.json");
-const test3AppCollection = require("./json/test_3_AppCollection.json");
 
 const app = require("../app.js");
 
@@ -96,10 +94,6 @@ describe("Schema Routes", function(){
 	//             Test suites             //
 	/////////////////////////////////////////
 	describe("GET /api/schema", function() {
-		const AppCollections = new DynamicRecord({
-			tableSlug: "_app_collections"
-		});
-
 		beforeEach(function() {
 			const promises = [];
 			return Promise.all(promises);
@@ -119,10 +113,6 @@ describe("Schema Routes", function(){
 	});
 
 	describe("GET /api/schema/:slug", function(){
-		const AppCollections = new DynamicRecord({
-			tableSlug: "_app_collections"
-		});
-
 		beforeEach(function() {
 			const promises = [];
 			return Promise.all(promises);
