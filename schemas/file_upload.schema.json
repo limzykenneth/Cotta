@@ -27,6 +27,22 @@
         "file_permalink": {
             "type": "string",
             "description": "Templated permalink of the file"
+        },
+        "file_size": {
+            "type": "integer",
+            "description": "Size of file in bytes"
+        },
+        "uploadExpire": {
+            "type": "string",
+            "description": "Timestamp for when upload link expire"
+        },
+        "modified_at": {
+            "type": "string",
+            "description": "Timestamp for last modified time"
+        },
+        "saved_path": {
+            "type": "string",
+            "description": "Local path to file"
         }
     }
 }
