@@ -5,6 +5,13 @@
     "description": "Metadata of uploaded files",
     "type": "object",
     "properties": {
+        "uid": {
+            "type": "string",
+            "description": "Unique ID identifying the file",
+            "isIndex": true,
+            "isUnique": true,
+            "isAutoincrement": false
+        },
         "content-type": {
             "type": "string",
             "description": "MIME type of the file"
@@ -16,6 +23,10 @@
         "file_description": {
             "type": "string",
             "description": "Description of the file"
+        },
+        "file_permalink": {
+            "type": "string",
+            "description": "Templated permalink of the file"
         }
     }
 }
