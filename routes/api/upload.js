@@ -1,7 +1,6 @@
 // Main entry point for API uploading routes
 require("dotenv").config();
 const Promise = require("bluebird");
-const fs = Promise.promisifyAll(require("fs"));
 const path = require("path");
 const _ = require("lodash");
 const moment = require("moment");
@@ -37,7 +36,6 @@ router.post("/", restrict.toAuthor, function(req, res, next){
 	// If given an array of images to process
 	if(Array.isArray(req.body)){
 		const fileCollection = new DynamicCollection(Files.Model, ...req.body);
-		const promises = [];
 		let err;
 
 		// Iterate over each model in collection
@@ -198,7 +196,6 @@ function saveFileLocal(fileMetadata, fileData){
 }
 
 function setFileMetadata(file){
-	const fileExt = path.extname(file.data.file_name) || "";
 	file.data.saved_path = `${file.data.uid}`;
 	file.data.modified_at = moment().format();
 	delete file.data.uploadExpire;
