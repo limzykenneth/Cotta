@@ -21,36 +21,39 @@ const storage = require("./storage");
 router.use(restrict.toEditor);
 
 // GET all file metadata entries
-router.get("/", function(req, res, next){
-	Files.all().then((col) => {
+router.get("/", async function(req, res, next){
+	try{
+		const col = await Files.all();
 		_.each(col.data, (data) => {
 			const t = _.template(data.file_permalink);
 			data.file_permalink = t({root: process.env.ROOT_URL});
 		});
 		res.json(col.data);
-	}).catch((err) => {
+	}catch(err){
 		next(err);
-	});
+	}
 });
 
 // GET metadata entries specified by id
-router.get("/:id", function(req, res, next){
-	Files.findBy({"uid": req.params.id}).then((file) => {
+router.get("/:id", async function(req, res, next){
+	try{
+		const file = await Files.findBy({"uid": req.params.id});
 		if(file !== null){
 			const t = _.template(file.data.file_permalink);
 			file.data.file_permalink = t({root: process.env.ROOT_URL});
 			res.json(file.data);
 		}else{
-			next(new CottaError("File does not exist", `The requested file with ID "${req.params.id}" does not exist.`, 404));
+			throw new CottaError("File does not exist", `The requested file with ID "${req.params.id}" does not exist.`, 404);
 		}
-	}).catch((err) => {
+	}catch(err){
 		next(err);
-	});
+	}
 });
 
 // DELETE the metadata along with the file
-router.delete("/:id", function(req, res, next){
-	Files.findBy({"uid": req.params.id}).then((file) => {
+router.delete("/:id", async function(req, res, next){
+	try{
+		const file = await Files.findBy({"uid": req.params.id});
 		if(file !== null){
 			return Promise.all([
 				storage.del(req.params.id),
@@ -61,9 +64,9 @@ router.delete("/:id", function(req, res, next){
 		}else{
 			next(new CottaError("File does not exist", `The requested file with ID "${req.params.id}" does not exist.`, 404));
 		}
-	}).catch((err) => {
+	}catch(err){
 		next(err);
-	});
+	}
 });
 
 module.exports = router;
