@@ -39,7 +39,9 @@ if(process.env.STORAGE_STRATEGY === "fs"){
 	app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 }else if(process.env.STORAGE_STRATEGY === "mongodb"){
 	// Use mongodb as file storage
-	app.use("/uploads", storageProxy("mongodb"));
+	storageProxy("mongodb").then((router) => {
+		app.use("/uploads", router);
+	});
 }
 
 

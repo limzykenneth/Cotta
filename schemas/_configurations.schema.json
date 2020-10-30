@@ -7,13 +7,18 @@
     "properties" : {
         "config_name": {
             "type": "string",
-            "isUnique": true
+            "description": "Name of the configuration",
+            "isUnique": true,
+            "isIndex": true,
+            "isAutoincrement": false
         },
         "config_value": {
-            "type": ["string", "object", "array", "number", "boolean"]
+            "type": ["string", "object", "array", "number", "boolean"],
+            "description": "Value of the configuration"
         },
         "config_type": {
-            "type": "string"
+            "type": "string",
+            "description": "Value type of the configuration"
         }
     }
 }

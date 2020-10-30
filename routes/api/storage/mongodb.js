@@ -1,7 +1,6 @@
 // Use mongodb as a file store
-// Implementation pending
 // https://medium.com/@dineshuthakota/how-to-save-file-in-mongodb-using-node-js-1a9d09b019c1
-// https://mongodb.github.io/node-mongodb-native/3.3/api/GridFSBucket.html
+// https://mongodb.github.io/node-mongodb-native/3.5/api/GridFSBucket.html
 
 const mongodb = require("mongodb");
 

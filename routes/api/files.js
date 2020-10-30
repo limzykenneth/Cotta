@@ -55,17 +55,21 @@ router.delete("/:id", async function(req, res, next){
 	try{
 		const file = await Files.findBy({"uid": req.params.id});
 		if(file !== null){
-			return Promise.all([
+			await Promise.all([
 				storage.del(req.params.id),
 				file.destroy()
-			]).then(() => {
-				res.json({"detail": `File "${req.params.id}" deleted.`});
-			});
+			]);
+
+			res.json({"detail": `File "${req.params.id}" deleted.`});
 		}else{
 			next(new CottaError("File does not exist", `The requested file with ID "${req.params.id}" does not exist.`, 404));
 		}
 	}catch(err){
-		next(err);
+		if(err.message.includes("FileNotFound")){
+			res.json({"detail": `File "${req.params.id}" deleted.`});
+		}else{
+			next(err);
+		}
 	}
 });
 

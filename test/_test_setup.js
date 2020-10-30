@@ -80,16 +80,13 @@ after(function(){
 });
 
 // Reset database state after each test
-afterEach(function(){
+afterEach(async function(){
 	const Test1 = new DynamicRecord({
 		tableSlug: "test_1"
 	});
 
-	return Test1.findBy({"_uid": 3}).then((model) => {
-		if(model !== null){
-			return model.destroy();
-		}else{
-			return Promise.resolve();
-		}
-	});
+	const model = await Test1.findBy({"_uid": 3});
+	if(model !== null){
+		await model.destroy();
+	}
 });

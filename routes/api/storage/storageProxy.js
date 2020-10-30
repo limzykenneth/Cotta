@@ -4,23 +4,17 @@ const CottaError = require("../../../utils/CottaError.js");
 const Strategies = {
 	mongodb: require("./mongodb.js")
 };
+const DynamicRecord = require("dynamic-record");
+const Config = new DynamicRecord({tableSlug: "_configurations"});
 
-// Configurations (hardcoded for now, should remove in the future)
-const limits = {
-	// Change to some integer value to limit file size
-	fileSize: 1000000,
-	acceptedMIME: [
-		"audio/ogg",
-		"image/jpeg"
-	]
-};
+module.exports = async function(strategy){
+	const fileSize = await Config.findBy({config_name: "upload_file_size_max"});
 
-module.exports = function(strategy){
 	let storage;
 	if(strategy === "mongodb"){
 		storage = new Strategies.mongodb({
 			uri: process.env.database_host,
-			limit: limits.fileSize
+			limit: fileSize
 		});
 	}
 
