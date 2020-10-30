@@ -6,46 +6,50 @@ const DynamicRecord = require("dynamic-record");
 const router = express.Router();
 const auth = require("../../utils/auth.js");
 const CottaError = require("../../utils/CottaError.js");
-const Users = new DynamicRecord({
-	tableSlug: "_users_auth"
-});
 const Config = new DynamicRecord({
 	tableSlug: "_configurations"
 });
 
 // GET whether the server allows signups
-router.get("/", function(req, res, next){
-	Config.findBy({"config_name": "allow_signup"}).then((allowSignup) => {
+router.get("/", async function(req, res, next){
+	try{
+		const allowSignup = await Config.findBy({"config_name": "allow_signup"});
 		res.json({
 			allow_signup: allowSignup.data.config_value
 		});
-	});
+	}catch(err){
+		next(err);
+	}
 });
 
 // Only allow signups if app setting allows it
-router.use(function(req, res, next){
-	Config.findBy({"config_name": "allow_signup"}).then((allowSignup) => {
+router.use(async function(req, res, next){
+	try{
+		const allowSignup = await Config.findBy({"config_name": "allow_signup"});
 		if(allowSignup.data.config_value === "true"){
 			next();
 		}else{
-			next(new CottaError("Not Found", "Cannot find resource", 404));
+			throw new CottaError("Not Found", "Cannot find resource", 404);
 		}
-	});
+	}catch(err){
+		next(err);
+	}
 });
 
-router.post("/", function(req, res, next){
-	auth.signup(req.body.username, req.body.password, "unverified").then((result) => {
+router.post("/", async function(req, res, next){
+	try{
+		const result = await auth.signup(req.body.username, req.body.password, "unverified");
 		res.json({
 			"message": `User ${result} created`
 		});
-	}).catch((err) => {
+	}catch(err){
 		if(err.name == "MongoError" && err.code == 11000){
 			// Duplicate username
 			next(new CottaError("Username not available", `Username "${req.body.username}" is already registered`));
 		}else{
-			next(new CottaError());
+			next(err);
 		}
-	});
+	}
 });
 
 module.exports = router;
