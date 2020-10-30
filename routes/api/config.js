@@ -15,28 +15,26 @@ router.use(restrict.toAdministrator);
 
 // GET routes
 // GET all configs
-router.get("/", function(req, res, next) {
-	Config.all().then((configs) => {
-		res.json(configs.data);
-	});
+router.get("/", async function(req, res, next) {
+	const configs = await Config.all();
+	res.json(configs.data);
 });
 
 // GET specified config
-router.get("/:config_name", function(req, res, next) {
-	Config.findBy({config_name: req.params.config_name}).then((config) => {
-		res.json(config.data);
-	});
+router.get("/:config_name", async function(req, res, next) {
+	const config = await Config.findBy({config_name: req.params.config_name});
+	res.json(config.data);
 });
 
 // POST routes
 // POST specific config (edit only)
-router.post("/:config_name", function(req, res, next) {
-	Config.findBy({config_name: req.params.config_name}).then((config) => {
-		config.data.config_value = req.body.config_value;
-		return config.save();
-	}).then((config) => {
-		res.json(config.data);
-	});
+router.post("/:config_name", async function(req, res, next) {
+	const config = await Config.findBy({config_name: req.params.config_name});
+
+	config.data.config_value = req.body.config_value;
+	await config.save();
+
+	res.json(config.data);
 });
 
 module.exports = router;
