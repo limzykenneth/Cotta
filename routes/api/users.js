@@ -18,95 +18,107 @@ const Users = new DynamicRecord({
 
 // Everything else should be restricted
 // GET all users
-router.get("/", restrict.toAdministrator, function(req, res){
-	Users.all().then((users) => {
+router.get("/", restrict.toAdministrator, async function(req, res){
+	try{
+		const users = await Users.all();
 		_.each(users, function(el, i){
 			delete el.data._id;
 			delete el.data.hash;
 		});
 
 		res.json(users.data);
-	});
+	}catch(err){
+		next(err);
+	}
 });
 
 // GET specific user
-router.get("/:username", restrict.toAdministrator, function(req, res){
-	Users.findBy({username: req.params.username}).then((user) => {
+router.get("/:username", restrict.toAdministrator, async function(req, res){
+	try{
+		const user = await Users.findBy({username: req.params.username});
 		// Remove internal ID and password hash, maybe split the db later
 		delete user.data._id;
 		delete user.data.hash;
 		res.json(user.data);
-	});
+	}catch(err){
+		next(err);
+	}
 });
 
 
 // POST routes
 // POST to create a new user
-router.post("/", restrict.toAdministrator, function(req, res, next){
-	const reservedUsernames = ["anonymous"];
-	if(_.includes(reservedUsernames, req.body.username.toLowerCase())){
-		next(new CottaError("Username not available", `"${req.body.username}" is a reserved username and cannot be registered`));
-		return;
-	}
+router.post("/", restrict.toAdministrator, async function(req, res, next){
+	try{
+		const reservedUsernames = ["anonymous"];
+		if(_.includes(reservedUsernames, req.body.username.toLowerCase())){
+			throw new CottaError("Username not available", `"${req.body.username}" is a reserved username and cannot be registered`);
+		}
 
-	const data = req.body;
-	auth.signup(data.username, data.password, "author").then((result) => {
+		const data = req.body;
+		const result = await auth.signup(data.username, data.password, "author");
 		res.json({
 			"message": `User "${result}" created`
 		});
-	}).catch((err) => {
+
+	}catch(err){
 		if(err.name == "MongoError" && err.code == 11000){
 			// Duplicate username
 			next(new CottaError("Username not available", `Username "${req.body.username}" is already registered`, 409));
 		}else{
-			next(new CottaError());
+			next(err);
 		}
-	});
+	}
 });
 
 // POST to a user (edit existing user)
-router.post("/:username", restrict.toAdministrator, function(req, res, next){
-	if(req.params.username === req.body.username){
-		if(req.body.role){
-			const username = req.body.username;
-			const newRole = req.body.role;
-			Users.findBy({"username": username}).then((user) => {
-				user.data.role = newRole;
-				user.save().then((result) => {
-					res.json({
-						"message": `User "${user.data.username}" changed`
-					});
-				});
-			});
-		}else{
-			next(new CottaError("Request body missing field"));
+router.post("/:username", restrict.toAdministrator, async function(req, res, next){
+	try{
+		if(req.params.username !== req.body.username){
+			throw new CottaError("Request body does not match route");
 		}
-	}else{
-		next(new CottaError("Request body does not match route"));
+
+		if(!req.body.role){
+			throw new CottaError("Request body missing field");
+		}
+
+		const username = req.body.username;
+		const newRole = req.body.role;
+		const user = await Users.findBy({"username": username});
+		user.data.role = newRole;
+		user.save().then((result) => {
+			res.json({
+				"message": `User "${user.data.username}" changed`
+			});
+		});
+
+	}catch(err){
+		next(err);
 	}
 });
 
 
 // DELETE routes
 // DELETE specific user
-router.delete("/:username", restrict.toAdministrator, function(req, res, next){
-	const User = new DynamicRecord({
-		tableSlug: "_users_auth"
-	});
+router.delete("/:username", restrict.toAdministrator, async function(req, res, next){
+	try{
+		const User = new DynamicRecord({
+			tableSlug: "_users_auth"
+		});
 
-	User.findBy({"username": req.params.username}).then((user) => {
-		return user.destroy();
-	}).then((col) => {
+		const user = await User.findBy({"username": req.params.username});
+		await user.destroy();
 		res.json({
 			message: `User "${req.params.username}" deleted`
 		});
-	}).catch((err) => {
+
+	}catch(err){
 		if(err.message === "Model not saved in database yet."){
 			next(new CottaError("User does not exist", "The user to be deleted does not exist.", 404));
 		}else{
 			next(err);
 		}
-	});
+	}
 });
 
 module.exports = router;
