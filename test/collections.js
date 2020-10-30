@@ -112,6 +112,7 @@ describe("Collections Routes", function(){
 				});
 		});
 		it("should reponse to file upload fields with upload URL");
+		it("should create file upload metadata entry given file upload fields");
 	});
 
 	describe("POST /api/collections/:slug/:ID", function(){

@@ -23,7 +23,7 @@
     "cors": "^2.8.5",
     "debug": "^4.1.1",
     "dotenv": "^4.0.0",
-    "dynamic-record": "^0.6.7",
+    "dynamic-record": "^0.6.10",
     "express": "^4.17.1",
     "inquirer": "^7.0.0",
     "jsonwebtoken": "^8.5.1",
