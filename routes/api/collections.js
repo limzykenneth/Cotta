@@ -28,48 +28,48 @@ const AppCollections = new DynamicRecord({
 
 // GET routes
 // GET collection with slug
-router.get("/:collectionSlug", function(req, res, next){
-	const Collection = new DynamicRecord({
-		tableSlug: req.params.collectionSlug
-	});
-	Collection.all().then((collection) => {
+router.get("/:collectionSlug", async function(req, res, next){
+	try{
+		const Collection = new DynamicRecord({
+			tableSlug: req.params.collectionSlug
+		});
+		const collection = await Collection.all();
 		_.each(collection.data, (el) => {
 			delete el._id;
 		});
 
-		return AppCollections.findBy({"_$id": req.params.collectionSlug}).then((schema) => {
-			_.each(collection.data, (model) => {
-				replaceModelFileURL(schema.data, model);
-			});
-
-			res.json(collection.data);
+		const schema = await AppCollections.findBy({"_$id": req.params.collectionSlug});
+		_.each(collection.data, (model) => {
+			replaceModelFileURL(schema.data, model);
 		});
-	}).catch((err) => {
+
+		res.json(collection.data);
+	}catch(err){
 		next(err);
-	});
+	}
 });
 
 // GET specific model from a collection
-router.get("/:collectionSlug/:modelID", function(req, res, next){
-	const Collection = new DynamicRecord({
-		tableSlug: req.params.collectionSlug
-	});
-	Collection.findBy({"_uid": parseInt(req.params.modelID)}).then((model) => {
+router.get("/:collectionSlug/:modelID", async function(req, res, next){
+	try{
+		const Collection = new DynamicRecord({
+			tableSlug: req.params.collectionSlug
+		});
+		const model = await Collection.findBy({"_uid": parseInt(req.params.modelID)});
 		if(model){
 			delete model.data._id;
 
 			// Populate file URLs with correct hostname
-			return AppCollections.findBy({"_$id": req.params.collectionSlug}).then((schema) => {
-				replaceModelFileURL(schema.data, model.data);
+			const schema = await AppCollections.findBy({"_$id": req.params.collectionSlug});
+			replaceModelFileURL(schema.data, model.data);
 
-				res.json(model.data);
-			});
+			res.json(model.data);
 		}else{
 			next(new CottaError("Model does not exist", `The requested model with ID ${req.params.modelID} does not exist.`, 404));
 		}
-	}).catch((err) => {
+	}catch(err){
 		next(err);
-	});
+	}
 });
 
 
@@ -209,136 +209,129 @@ router.post("/:collectionSlug", restrict.toAuthor, function(req, res, next){
 });
 
 // POST to specific model in a collection (edit existing model)
-router.post("/:collectionSlug/:modelID", restrict.toAuthor, function(req, res, next){
-	const promises = [];
-	if(req.user.role != "administrator" && req.user.role != "editor"){
-		promises.push(ownModel(req.user.username, req.params.collectionSlug, req.params.modelID));
-	}
+router.post("/:collectionSlug/:modelID", restrict.toAuthor, async function(req, res, next){
+	try{
+		const promises = [];
+		if(req.user.role != "administrator" && req.user.role != "editor"){
+			promises.push(ownModel(req.user.username, req.params.collectionSlug, req.params.modelID));
+		}
 
-	const data = req.body;
+		const data = req.body;
 
-	const Collection = new DynamicRecord({
-		tableSlug: req.params.collectionSlug
-	});
-	const schema = new DynamicRecord.DynamicSchema();
-	const AppCollections = new DynamicRecord({
-		tableSlug: "_app_collections"
-	});
+		const Collection = new DynamicRecord({
+			tableSlug: req.params.collectionSlug
+		});
+		const Schema = new DynamicRecord.DynamicSchema();
+		const AppCollections = new DynamicRecord({
+			tableSlug: "_app_collections"
+		});
 
-	Promise.all(promises).then(function(){
-		let appCollection;
-		AppCollections.findBy({"_$id": req.params.collectionSlug}).then((result) => {
-			appCollection = result;
-			return schema.read(req.params.collectionSlug);
-		}).then(() => {
-			const fields = appCollection.data.fields;
-			const fieldsLength = _.size(appCollection.data.fields);
-			let count = 0;
+		await Promise.all(promises);
+		const appCollection = await AppCollections.findBy({"_$id": req.params.collectionSlug});
 
-			// Comparing the schema with the provided data fields
-			_.each(fields, (el, key) => {
-				const slug = key;
-				_.each(req.body, (el, i) => {
-					if(slug === i){
-						count++;
-					}
-				});
+		await Schema.read(req.params.collectionSlug);
+		const fields = appCollection.data.fields;
+		const fieldsLength = _.size(appCollection.data.fields);
+		let count = 0;
+
+		// Comparing the schema with the provided data fields
+		_.each(fields, (el, key) => {
+			const slug = key;
+			_.each(req.body, (el, i) => {
+				if(slug === i){
+					count++;
+				}
+			});
+		});
+
+		if(count !== fieldsLength){
+			// Schema mismatched
+			return Promise.reject(new CottaError("Invalid Schema", `The provided fields does not match schema entry of ${req.params.collectionSlug} in the database`, 400));
+		}else{
+			// Schema matched continue processing
+			const Files = new DynamicRecord({
+				tableSlug: "files_upload"
 			});
 
-			if(count !== fieldsLength){
-				// Schema mismatched
-				return Promise.reject(new CottaError("Invalid Schema", `The provided fields does not match schema entry of ${req.params.collectionSlug} in the database`, 400));
-			}else{
-				// Schema matched continue processing
-				const Files = new DynamicRecord({
-					tableSlug: "files_upload"
-				});
+			const model = new Collection.Model(req.body);
+			const filePromises = [];
 
-				const model = new Collection.Model(req.body);
-				const filePromises = [];
+			// Check for file upload field
+			_.each(fields, function(el, key){
+				if(el.app_type == "file"){
+					// File upload field found
 
-				// Check for file upload field
-				_.each(fields, function(el, key){
-					if(el.app_type == "file"){
-						// File upload field found
+					if(Array.isArray(model.data[key])){
+						// Uploading multiple files
 
-						if(Array.isArray(model.data[key])){
-							// Uploading multiple files
-
-							_.each(model.data[key], (entry) => {
-								if(!entry.permalink){
-									const file = new Files.Model(_.cloneDeep(entry));
-
-									if(!_.includes(limits.acceptedMIME, file.data["content-type"])){
-										next(new CottaError("Invalid MIME type", `File type "${file.data["content-type"]}" is not supported`, 415));
-										return false; // Exit _.each
-									}else{
-										uploadUtils.processFileMetadata(file, req, limits);
-										filePromises.push(file.save().then(() => {
-											return uploadUtils.setFileEntryMetadata(entry, file, req, limits);
-										}));
-									}
-								}
-							});
-						}else{
-							// Uploading a single file
-
-							// Check if incoming entries has `permalink` field
-							if(!model.data[key].permalink){
-								// Incoming file entry changed
-								const file = new Files.Model(_.cloneDeep(model.data[key]));
+						_.each(model.data[key], (entry) => {
+							if(!entry.permalink){
+								const file = new Files.Model(_.cloneDeep(entry));
 
 								if(!_.includes(limits.acceptedMIME, file.data["content-type"])){
-									next(new CottaError("Invalid MIME type", `File type "${file.data["content-type"]}" is not supported`, 415));
-									return false;
+									throw new CottaError("Invalid MIME type", `File type "${file.data["content-type"]}" is not supported`, 415);
 								}else{
 									uploadUtils.processFileMetadata(file, req, limits);
 									filePromises.push(
 										file.save().then(() => {
-											return uploadUtils.setFileEntryMetadata(model.data[key], file, req, limits);
+											return uploadUtils.setFileEntryMetadata(entry, file, req, limits);
 										})
 									);
 								}
 							}
+						});
+					}else{
+						// Uploading a single file
+
+						// Check if incoming entries has `permalink` field
+						if(!model.data[key].permalink){
+							// Incoming file entry changed
+							const file = new Files.Model(_.cloneDeep(model.data[key]));
+
+							if(!_.includes(limits.acceptedMIME, file.data["content-type"])){
+								throw new CottaError("Invalid MIME type", `File type "${file.data["content-type"]}" is not supported`, 415);
+							}else{
+								uploadUtils.processFileMetadata(file, req, limits);
+								filePromises.push(
+									file.save().then(() => {
+										return uploadUtils.setFileEntryMetadata(model.data[key], file, req, limits);
+									})
+								);
+							}
 						}
 					}
-				});
-
-				return Promise.all(filePromises).then((files) => {
-					return Promise.resolve(model);
-				});
-			}
-		}).then(() => {
-			Collection.findBy({"_uid": parseInt(req.params.modelID)}).then((model) => {
-				if(model.data == null){
-					res.json(model.data);
-					return Promise.reject(new CottaError("Model not found", `Cannot edit model with ID: ${req.prarams.modelID}, model does not exist in the collection ${req.params.collectionSlug}`, 404));
 				}
-
-				// Set metadata
-				model.data._metadata.date_modified = moment.utc().format();
-				// Set new data into model
-				for(let key in data){
-					model.data[key] = data[key];
-				}
-				// Insert into database
-				return model.save().catch((err) => {
-					return Promise.reject(new CottaError("Invalid Schema", `The provided fields does not match schema entry of ${req.params.collectionSlug} in the database`, 400));
-				});
-			}).then((model) => {
-				// Return with updated model
-				return AppCollections.findBy({"_$id": req.params.collectionSlug}).then((schema) => {
-					replaceModelFileURL(schema.data, model.data);
-
-					res.json(model.data);
-				});
-			}).catch((err) => {
-				next(err);
 			});
+
+			await Promise.all(filePromises);
+		}
+
+		const model = await Collection.findBy({"_uid": parseInt(req.params.modelID)});
+		if(model.data == null){
+			res.json(model.data);
+			throw new CottaError("Model not found", `Cannot edit model with ID: ${req.prarams.modelID}, model does not exist in the collection ${req.params.collectionSlug}`, 404);
+		}
+
+		// Set metadata
+		model.data._metadata.date_modified = moment.utc().format();
+		// Set new data into model
+		for(let key in data){
+			model.data[key] = data[key];
+		}
+		// Insert into database
+		await model.save().catch((err) => {
+			throw new CottaError("Invalid Schema", `The provided fields does not match schema entry of ${req.params.collectionSlug} in the database`, 400);
 		});
-	}).catch((err) => {
+
+		// Return with updated model
+		const schema = await AppCollections.findBy({"_$id": req.params.collectionSlug});
+		replaceModelFileURL(schema.data, model.data);
+
+		res.json(model.data);
+
+	}catch(err){
 		next(err);
-	});
+	}
 });
 
 
@@ -352,34 +345,32 @@ router.delete("/:collectionSlug", restrict.toAuthor, function(req, res){
 });
 
 // DELETE specific model in a collection
-router.delete("/:collectionSlug/:modelID", restrict.toAuthor, function(req, res, next){
-	const promises = [];
-	if(req.user.role != "administrator" && req.user.role != "editor"){
-		promises.push(ownModel(req.user.username, req.params.collectionSlug, req.params.modelID));
-	}
+router.delete("/:collectionSlug/:modelID", restrict.toAuthor, async function(req, res, next){
+	try{
+		const promises = [];
+		if(req.user.role != "administrator" && req.user.role != "editor"){
+			promises.push(ownModel(req.user.username, req.params.collectionSlug, req.params.modelID));
+		}
 
-	let data;
-	Promise.all(promises).then(() => {
+		await Promise.all(promises);
 		const Collection = new DynamicRecord({
 			tableSlug: req.params.collectionSlug
 		});
-		return Collection.findBy({"_uid": parseInt(req.params.modelID)});
-	}).then((model) => {
+
+		const model = await Collection.findBy({"_uid": parseInt(req.params.modelID)});
 		if(model !== null){
 			const retModel = _.cloneDeep(model.data);
-			model.destroy().then((col) => {
-				return AppCollections.findBy({"_$id": req.params.collectionSlug}).then((schema) => {
-					replaceModelFileURL(schema.data, retModel);
+			await model.destroy();
+			const schema = await AppCollections.findBy({"_$id": req.params.collectionSlug});
+			replaceModelFileURL(schema.data, retModel);
 
-					res.json(retModel);
-				});
-			});
+			res.json(retModel);
 		}else{
-			return next(new CottaError("Model does not exist", `The requested model with ID ${req.params.modelID} does not exist.`, 404));
+			throw new CottaError("Model does not exist", `The requested model with ID ${req.params.modelID} does not exist.`, 404);
 		}
-	}).catch((err) => {
+	}catch(err){
 		next(err);
-	});
+	}
 });
 
 
@@ -395,17 +386,14 @@ module.exports = router;
 
 // Utils
 // Checks if the model belongs to the user, returns Promise
-function ownModel(username, collectionSlug, modelID){
+async function ownModel(username, collectionSlug, modelID){
 	const Collection = new DynamicRecord({
 		tableSlug: collectionSlug
 	});
-	return Collection.findBy({"username": username}).then((user) => {
-		if(_.includes(user.models, `${collectionSlug}.${modelID}`)){
-			return Promise.resolve();
-		}else{
-			return Promise.reject(new CottaError("Forbidden", "User not allowed to modify this resource", 403));
-		}
-	});
+	const user = await Collection.findBy({"username": username});
+	if(!_.includes(user.models, `${collectionSlug}.${modelID}`)){
+		return Promise.reject(new CottaError("Forbidden", "User not allowed to modify this resource", 403));
+	}
 }
 
 // Refactored function to replace root url in file links
