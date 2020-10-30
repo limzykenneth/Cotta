@@ -14,9 +14,10 @@ const Config = new DynamicRecord({
 });
 
 // Catch all for authentication (temporary)
-router.use(function(req, res, next){
-	// Anonymous access to API
-	Config.findBy({"config_name": "allow_unauthorised"}).then((allowUnauthorised) => {
+router.use(async function(req, res, next){
+	try{
+		// Anonymous access to API
+		const allowUnauthorised = await Config.findBy({"config_name": "allow_unauthorised"});
 		if(typeof req.token == "undefined" && allowUnauthorised.data.config_value === true){
 			req.user = {
 				username: "Anonymous",
@@ -28,18 +29,19 @@ router.use(function(req, res, next){
 
 		// Authenticate here and also set the logged in users role accordingly
 		// Verify auth token
-		return jwt.verifyAsync(req.token, secret);
-	}).then((payload) => {
+		const payload = await jwt.verifyAsync(req.token, secret);
 		req.user = {
 			username: payload.username,
 			role: payload.role
 		};
 		next();
-	}).catch(function(err){
+	}catch(err){
 		if(err.message !== "Canceling promise"){
 			next(new CottaError("Auth Token Invalid", err.message, 403));
+		}else{
+			next(err);
 		}
-	});
+	}
 });
 
 module.exports = router;
