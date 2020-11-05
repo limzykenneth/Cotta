@@ -4,7 +4,11 @@ const _ = require("lodash");
 const chaiHttp = require("chai-http");
 chai.use(chaiHttp);
 const assert = chai.assert;
-const testImageData = _.cloneDeep(require("./json/file_data.json"));
+const testImageData = _.cloneDeep(require("./json/file_data_complete.json"));
+const FileUpload = new DynamicRecord({
+	tableSlug: "files_upload"
+});
+
 testImageData.file_permalink = "http://localhost:3000/testpath";
 
 const app = require("../app.js");
@@ -21,10 +25,15 @@ describe("Files Routes", function(){
 		});
 
 		token = res.body.access_token;
+
+		const files = new FileUpload.Model(testImageData);
+		await files.save();
 	});
 
 	// Cleanup
 	after(async function() {
+		const files = await FileUpload.all();
+		await files.dropAll();
 	});
 
 	/////////////////////////////////////////

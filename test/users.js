@@ -146,7 +146,7 @@ describe("Users Routes", function(){
 				.set("Authorization", `Bearer ${token}`)
 				.send(newUser);
 
-			const res = await chai.request(app)
+			await chai.request(app)
 				.delete(`/api/users/${newUser.username}`)
 				.set("Content-Type", "application/json")
 				.set("Authorization", `Bearer ${token}`);

@@ -1,7 +1,6 @@
 // Main entry point for API uploading routes
 require("dotenv").config();
 const Promise = require("bluebird");
-const path = require("path");
 const _ = require("lodash");
 const moment = require("moment");
 const DynamicRecord = require("dynamic-record");

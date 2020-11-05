@@ -30,7 +30,7 @@ const defaultConfig = Object.freeze([
 	},
 	{
 		config_name: "upload_file_size_max",
-		config_value: 1000000,
+		config_value: 400000,
 		config_type: "number"
 	},
 	{

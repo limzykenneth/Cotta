@@ -32,6 +32,10 @@
             "type": "integer",
             "description": "Size of file in bytes"
         },
+        "file_owner": {
+            "type": "string",
+            "description": "Username of the file's owner"
+        },
         "uploadExpire": {
             "type": "string",
             "description": "Timestamp for when upload link expire"
@@ -41,7 +45,7 @@
             "description": "Timestamp for last modified time"
         },
         "saved_path": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "Local path to file"
         }
     }

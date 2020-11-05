@@ -1,7 +1,15 @@
-{
-	"uid": "test_id",
+[{
 	"content-type": "image/png",
-	"file_name": "test.png",
-	"file_description": "Test image",
-	"file_permalink": "<%= root %>/testpath"
-}
+	"file_name": "test1.png",
+	"file_description": "Test image 1"
+},
+{
+	"content-type": "image/jpeg",
+	"file_name": "test2.jpg",
+	"file_description": "Test image 2"
+},
+{
+	"content-type": "image/png",
+	"file_name": "test3.png",
+	"file_description": "Test image 3"
+}]

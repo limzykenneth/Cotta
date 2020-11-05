@@ -10,9 +10,6 @@ const router = express.Router();
 const CottaError = require("../../utils/CottaError.js");
 const auth = require("../../utils/auth.js");
 Promise.promisifyAll(jwt);
-const Users = new DynamicRecord({
-	tableSlug: "_users_auth"
-});
 const Config = new DynamicRecord({
 	tableSlug: "_configurations"
 });

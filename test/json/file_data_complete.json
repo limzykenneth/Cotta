@@ -1,0 +1,13 @@
+{
+  "content-type": "image/png",
+  "file_name": "test.png",
+  "file_description": "Test image",
+  "created_at": "2020-11-04T15:02:03+00:00",
+  "modified_at": "2020-11-04T15:02:03+00:00",
+  "file_owner": "admin",
+  "uploadExpire": "2020-11-04T16:02:03+00:00",
+  "uid": "test_id",
+  "file_permalink": "<%= root %>/uploads/test_id",
+  "saved_path": null,
+  "file_size": 1000000
+}
