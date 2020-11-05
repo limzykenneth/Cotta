@@ -99,94 +99,62 @@ router.post("/:location", restrict.toAuthor, function(req, res, next){
 	}else{
 		next();
 	}
-}, function(req, res, next){
-	if(req.headers["content-type"] === "application/json"){
-		// Upload with URL
-		Files.findBy({uid: req.params.location}).then((file) => {
-			// Do checks on the database entry
-			if(file === null){
-				return Promise.reject(new CottaError("Invalid upload URL", "Upload URL is invalid", 400));
-			}else if(moment(file.data.uploadExpire).isBefore(moment())){
-				file.destroy();
-				return Promise.reject(new CottaError("Upload Link Expired", "This upload link has expired", 400));
-			}else if(file.data.saved_path !== null){
-				// File already exist
-				return Promise.reject(new CottaError("Invalid upload URL", "Upload URL is invalid", 400));
-			}else{
-				// All tests passed
-				return Promise.resolve(file);
-			}
-		}).then((file) => {
-			// Fetch the file from remote URL
-			return fetch(req.body.url).then((response) => {
-				// Checks against fetched data
-				const contentType = response.headers.get("content-type");
-				if(!response.ok){
-					return Promise.reject(new CottaError("Non-OK response code returned", `Request for resource at ${req.body.url} returned a non-OK response code.`, 400));
-				}else if(file.data["content-type"] !== contentType){
-					return Promise.reject(new CottaError("MIME Type Mismatch", `File type "${contentType}" does not match metadata entry`, 400));
-				}
+}, async function(req, res, next){
+	try{
+		const file = await Files.findBy({uid: req.params.location});
+		let receivedFile;
 
-				// Set file path, and last modified timestamp
-				setFileMetadata(file);
-
-				// Save uploaded file
-				return saveFileLocal(file.data, response.body).then((savedSize) => {
-					// Update file size in database entry
-					file.data.file_size = savedSize;
-					// Save database entry of file
-					return file.save();
-				}).then(() => {
-					const t = _.template(file.data.file_permalink);
-					file.data.file_permalink = t({root: process.env.ROOT_URL});
-					res.json({
-						resource_path: file.data.file_permalink
-					});
-				});
-			});
-		}).catch((err) => {
-			next(err);
-		});
-
-	}else{
-		// Upload raw image
-		if(!_.includes(limits.acceptedMIME, req.headers["content-type"])){
-			return Promise.reject(new CottaError("Invalid MIME type", `File type "${req.headers["content-type"]}" is not supported`, 415));
+		// Do checks on the database entry
+		if(file === null){
+			throw new CottaError("Invalid upload URL", "Upload URL is invalid", 400);
+		}else if(moment(file.data.uploadExpire).isBefore(moment())){
+			file.destroy();
+			throw new CottaError("Upload Link Expired", "This upload link has expired", 400);
+		}else if(file.data.saved_path !== null){
+			// File already exist
+			throw new CottaError("Invalid upload URL", "Upload URL is invalid", 400);
 		}
 
-		return Files.findBy({uid: req.params.location}).then((file) => {
-			if(file === null){
-				return Promise.reject(new CottaError("Invalid upload URL", "Upload URL is invalid", 400));
-			}else if(file.data["content-type"] !== req.headers["content-type"]){
-				return Promise.reject(new CottaError("MIME Type Mismatch", `File type "${req.headers["content-type"]}" does not match metadata entry`, 400));
-			}else if(moment(file.data.uploadExpire).isBefore(moment())){
-				file.destroy();
-				return Promise.reject(new CottaError("Upload Link Expired", "This upload link has expired", 400));
-			}else if(file.data.saved_path !== null){
-				// File already exist
-				return Promise.reject(new CottaError("Invalid upload URL", "Upload URL is invalid", 400));
-
-			}else{
-				// Set file path, and last modified timestamp
-				setFileMetadata(file);
-
-				// Save uploaded file
-				return saveFileLocal(file.data, req).then((savedSize) => {
-					// Update file size in database entry
-					file.data.file_size = savedSize;
-					// Save database entry of file
-					return file.save();
-				}).then(() => {
-					const t = _.template(file.data.file_permalink);
-					file.data.file_permalink = t({root: process.env.ROOT_URL});
-					res.json({
-						resource_path: file.data.file_permalink
-					});
-				});
+		if(req.headers["content-type"] === "application/json"){
+			// Upload with URL
+			// Fetch the file from remote URL
+			const response = await fetch(req.body.url);
+			// Checks against fetched data
+			const contentType = response.headers.get("content-type");
+			if(!response.ok){
+				throw new CottaError("Non-OK response code returned", `Request for resource at ${req.body.url} returned a non-OK response code.`, 400);
+			}else if(file.data["content-type"] !== contentType){
+				throw new CottaError("MIME Type Mismatch", `File type "${contentType}" does not match metadata entry`, 400);
 			}
-		}).catch((err) => {
-			next(err);
+
+			receivedFile = response.body;
+
+		}else{
+			// Upload raw image
+			if(file.data["content-type"] !== req.headers["content-type"]){
+				throw new CottaError("MIME Type Mismatch", `File type "${req.headers["content-type"]}" does not match metadata entry`, 400);
+			}
+
+			receivedFile = req;
+		}
+
+		// Set file path, and last modified timestamp
+		setFileMetadata(file);
+
+		// Save uploaded file
+		const savedSize = await saveFileLocal(file.data, receivedFile);
+		// Update file size in database entry
+		file.data.file_size = savedSize;
+		// Save database entry of file
+		await file.save();
+
+		const t = _.template(file.data.file_permalink);
+		file.data.file_permalink = t({root: process.env.ROOT_URL});
+		res.json({
+			resource_path: file.data.file_permalink
 		});
+	}catch(err){
+		next(err);
 	}
 });
 
