@@ -80,7 +80,13 @@ describe("Files Routes", function(){
 				"content-type": "image/jpeg",
 				"file_name": "test.jpg",
 				"file_description": "Test delete image",
-				"file_permalink": "<%= root %>/deletepath"
+				"file_permalink": "<%= root %>/deletepath",
+				"file_size": 40000,
+				"created_at": "2020-11-04T15:02:03+00:00",
+				"modified_at": "2020-11-04T15:02:03+00:00",
+				"saved_path": "nothing_here",
+				"file_owner": "admin",
+				"uploadExpire": "2020-11-04T16:02:03+00:00",
 			});
 
 			await newFile.save();

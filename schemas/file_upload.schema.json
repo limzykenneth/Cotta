@@ -30,7 +30,8 @@
         },
         "file_size": {
             "type": "integer",
-            "description": "Size of file in bytes"
+            "description": "Size of file in bytes",
+            "minimum": 1
         },
         "file_owner": {
             "type": "string",
@@ -38,15 +39,23 @@
         },
         "uploadExpire": {
             "type": "string",
-            "description": "Timestamp for when upload link expire"
+            "description": "Timestamp for when upload link expire",
+            "format": "date-time"
+        },
+        "created_at": {
+            "type": "string",
+            "description": "Timestamp for creation time",
+            "format": "date-time"
         },
         "modified_at": {
             "type": "string",
-            "description": "Timestamp for last modified time"
+            "description": "Timestamp for last modified time",
+            "format": "date-time"
         },
         "saved_path": {
             "type": ["string", "null"],
             "description": "Local path to file"
         }
-    }
+    },
+    "required": ["uid", "content-type", "file_name", "file_description", "file_size", "file_owner", "uploadExpire", "modified_at", "saved_path"]
 }

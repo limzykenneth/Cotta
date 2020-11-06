@@ -165,7 +165,6 @@ function saveFileLocal(fileMetadata, fileData){
 function setFileMetadata(file){
 	file.data.saved_path = `${file.data.uid}`;
 	file.data.modified_at = moment().format();
-	delete file.data.uploadExpire;
 }
 
 module.exports = router;
