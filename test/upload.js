@@ -229,14 +229,13 @@ describe("Upload Routes", function(){
 							});
 
 						requester.close();
+						savedFiles.push(uploadID);
 
 						assert.property(res.body, "resource_path", "uploaded resource URL is returned");
 						assert.isOk(await fs.stat(path.join(__dirname, "../uploads", uploadID)), "file exist in file system");
 
 						const uploadedFile = readFile(path.join(__dirname, "../uploads", uploadID));
 						assert.deepEqual(file, uploadedFile, "uploaded file match original");
-
-						savedFiles.push(uploadID);
 					});
 			});
 			it("should respond with error if the file size is over the limit", async function(){
