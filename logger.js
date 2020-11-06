@@ -1,12 +1,12 @@
 const winston = require("winston");
-const moment = require("moment");
 
 const logger = winston.createLogger({
 	transports: [
 		new winston.transports.Console({
 			format: winston.format.combine(
 				winston.format.simple()
-			)
+			),
+			silent: process.env.NODE_ENV === "production" || process.env.SILENT === "true"
 		})
 	]
 });
