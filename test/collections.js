@@ -19,6 +19,9 @@ const app = require("../app.js");
 
 describe("Collections Routes", function(){
 	let token;
+	const Test1 = new DynamicRecord({
+		tableSlug: "test_1"
+	});
 
 	// Setup
 	before(function() {
@@ -68,48 +71,46 @@ describe("Collections Routes", function(){
 	});
 
 	describe("POST /api/collections/:slug", function(){
-		it("should create a new model under the specified collection", function(){
-			return chai.request(app)
+		afterEach(async function(){
+			const model = await Test1.findBy({"_uid": 3});
+			if(model !== null){
+				await model.destroy();
+			}
+		});
+		it("should create a new model under the specified collection", async function(){
+			const res = await chai.request(app)
 				.post("/api/collections/test_1")
 				.set("Content-Type", "application/json")
 				.set("Authorization", `Bearer ${token}`)
-				.send(newModel)
-				.then((res) => {
-					// Check the returned data
-					assert.equal(res.body._uid, 3, "returns the correct uid");
-					assert.equal(res.body.field_1, newModel.field_1, "returns the correct WYSIWYG field data");
-					assert.equal(res.body.field_2, newModel.field_2, "returns the correct text field data");
-					assert.equal(res.body.field_3, newModel.field_3, "returns the correct email field data");
-					assert.deepEqual(res.body.field_4, newModel.field_4, "returns the correct checkbox field data");
-					assert.equal(res.body.field_5, newModel.field_5, "returns the correct radiobox field data");
-				}).then(() => {
-					// Check the database entry manually
-					const Test1 = new DynamicRecord({
-						tableSlug: "test_1"
-					});
+				.send(newModel);
 
-					return Test1.findBy({_uid: 3}).then((model) => {
-						assert.equal(model.data.field_1, newModel.field_1, "database has the correct WYSIWYG field data");
-						assert.equal(model.data.field_2, newModel.field_2, "database has the correct text field data");
-						assert.equal(model.data.field_3, newModel.field_3, "database has the correct email field data");
-						assert.deepEqual(model.data.field_4, newModel.field_4, "database has the correct checkbox field data");
-						assert.equal(model.data.field_5, newModel.field_5, "database has the correct radiobox field data");
-					});
-				});
+			// Check the returned data
+			assert.equal(res.body._uid, 3, "returns the correct uid");
+			assert.equal(res.body.field_1, newModel.field_1, "returns the correct WYSIWYG field data");
+			assert.equal(res.body.field_2, newModel.field_2, "returns the correct text field data");
+			assert.equal(res.body.field_3, newModel.field_3, "returns the correct email field data");
+			assert.deepEqual(res.body.field_4, newModel.field_4, "returns the correct checkbox field data");
+			assert.equal(res.body.field_5, newModel.field_5, "returns the correct radiobox field data");
+
+			const model = await Test1.findBy({_uid: 3});
+			assert.equal(model.data.field_1, newModel.field_1, "database has the correct WYSIWYG field data");
+			assert.equal(model.data.field_2, newModel.field_2, "database has the correct text field data");
+			assert.equal(model.data.field_3, newModel.field_3, "database has the correct email field data");
+			assert.deepEqual(model.data.field_4, newModel.field_4, "database has the correct checkbox field data");
+			assert.equal(model.data.field_5, newModel.field_5, "database has the correct radiobox field data");
 		});
-		it("should reject a model with the wrong schema with a 400 response", function(){
+		it("should reject a model with the wrong schema with a 400 response", async function(){
 			const rejectModel = {
 				field_1: 12
 			};
-			return chai.request(app)
+			const res = await chai.request(app)
 				.post("/api/collections/test_1")
 				.set("Content-Type", "application/json")
 				.set("Authorization", `Bearer ${token}`)
-				.send(rejectModel)
-				.then((res) => {
-					assert.equal(res.status, 400, "returns with status code 400");
-					assert.equal(res.body.title, "Invalid Schema", "returns with correct message");
-				});
+				.send(rejectModel);
+
+			assert.equal(res.status, 400, "returns with status code 400");
+			assert.equal(res.body.title, "Invalid Schema", "returns with correct message");
 		});
 		it("should reponse to file upload fields with upload URL");
 		it("should create file upload metadata entry given file upload fields");

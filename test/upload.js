@@ -13,6 +13,8 @@ const testImageData = _.cloneDeep(require("./json/file_data.json"));
 const FileUpload = new DynamicRecord({
 	tableSlug: "files_upload"
 });
+const testImagePath = path.join(__dirname, "./assets/test-image.jpg");
+const testImagePathLarge = path.join(__dirname, "./assets/test-image-large.jpg");
 
 const app = require("../app.js");
 
@@ -124,7 +126,7 @@ describe("Upload Routes", function(){
 				});
 			const uploadID = path.basename(res.body.location);
 
-			const file = readFile(path.join(__dirname, "./test-image.jpg"));
+			const file = readFile(testImagePath);
 			res = await requester
 				.post(`/api/upload/${uploadID}`)
 				.set("Content-Type", "application/json")
@@ -153,7 +155,7 @@ describe("Upload Routes", function(){
 				});
 			const uploadID = path.basename(res.body.location);
 
-			const file = readFile(path.join(__dirname, "./test-image.jpg"));
+			const file = readFile(testImagePath);
 			res = await requester
 				.post(`/api/upload/${uploadID}`)
 				.set("Content-Type", "application/json")
@@ -182,7 +184,7 @@ describe("Upload Routes", function(){
 					});
 				const uploadID = path.basename(res.body.location);
 
-				const file = readFile(path.join(__dirname, "./test-image.jpg"));
+				const file = readFile(testImagePath);
 				res = await requester
 					.post(`/api/upload/${uploadID}`)
 					.set("Content-Type", "application/json")
@@ -251,7 +253,7 @@ describe("Upload Routes", function(){
 					});
 				const uploadID = path.basename(res.body.location);
 
-				const file = readFile(path.join(__dirname, "./test-image-large.jpg"));
+				const file = readFile(testImagePathLarge);
 				res = await requester
 					.post(`/api/upload/${uploadID}`)
 					.set("Content-Type", "application/json")
@@ -278,7 +280,7 @@ describe("Upload Routes", function(){
 		}
 
 		it("should respond with error if the upload URL doesn't exist in the database", async function(){
-			const file = readFile(path.join(__dirname, "./test-image.jpg"));
+			const file = readFile(testImagePath);
 			const res = await chai.request(app)
 				.post("/api/upload/invalid")
 				.set("Content-Type", "application/json")
@@ -305,7 +307,7 @@ describe("Upload Routes", function(){
 			fileEntry.data.uploadExpire = moment().subtract(1, "day").format();
 			await fileEntry.save();
 
-			const file = readFile(path.join(__dirname, "./test-image.jpg"));
+			const file = readFile(testImagePath);
 			res = await requester
 				.post(`/api/upload/${uploadID}`)
 				.set("Content-Type", "application/json")
@@ -330,7 +332,7 @@ describe("Upload Routes", function(){
 				});
 			const uploadID = path.basename(res.body.location);
 
-			const file = readFile(path.join(__dirname, "./test-image.jpg"));
+			const file = readFile(testImagePath);
 			res = await requester
 				.post(`/api/upload/${uploadID}`)
 				.set("Content-Type", "application/json")
@@ -421,7 +423,7 @@ describe("Upload Routes", function(){
 				});
 			const uploadID = path.basename(res.body.location);
 
-			const file = readFile(path.join(__dirname, "./test-image.jpg"));
+			const file = readFile(testImagePath);
 			res = await requester
 				.post(`/api/upload/${uploadID}`)
 				.set("Content-Type", "application/json")

@@ -62,15 +62,3 @@ after(function(){
 		DynamicRecord.closeConnection();
 	});
 });
-
-// Reset database state after each test
-afterEach(async function(){
-	const Test1 = new DynamicRecord({
-		tableSlug: "test_1"
-	});
-
-	const model = await Test1.findBy({"_uid": 3});
-	if(model !== null){
-		await model.destroy();
-	}
-});
