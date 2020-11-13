@@ -4,8 +4,16 @@ const _ = require("lodash");
 const chaiHttp = require("chai-http");
 chai.use(chaiHttp);
 const assert = chai.assert;
+
 const testData = Object.freeze(_.cloneDeep(require("./json/test_1_data.json")));
 const testAppCollection = require("./json/test_1_AppCollection.json");
+const testSchema = require("./json/test_1.schema.json");
+const TestSchema = new DynamicRecord.DynamicSchema();
+
+const fileAppCollection = require("./json/test_2_AppCollection.json");
+const fileSchema = require("./json/test_2.schema.json");
+const FileSchema = new DynamicRecord.DynamicSchema();
+
 const newModel = Object.freeze({
 	"field_1": "<p>Fish cake coleslaw roe, chicken burger skate battered roe roe roe jacket potato gravy beef burger. </p>",
 	"field_2": "chicken burger peas fish cake",
@@ -23,37 +31,54 @@ describe("Collections Routes", function(){
 
 	// Setup
 	before(async function() {
+		// Create test collections' schemas
+		await Promise.all([
+			TestSchema.createTable(testSchema),
+			FileSchema.createTable(fileSchema)
+		]);
+
 		const res = await chai.request(app).post("/api/tokens/generate_new_token").send({
 			"username": "admin",
 			"password": "admin"
 		});
-
 		token = res.body.access_token;
 
+		// Populate test_1 table with data
 		Test1 = new DynamicRecord({
 			tableSlug: "test_1"
 		});
-
 		const col = new DynamicRecord.DynamicCollection(Test1.Model, ..._.cloneDeep(testData));
 		await col.saveAll();
 
+		// Create app collection entries
 		AppCollections = new DynamicRecord({
 			tableSlug: "_app_collections"
 		});
 		const Test1AppCollection = new AppCollections.Model(testAppCollection);
 		await Test1AppCollection.save();
+
+		const FileAppCollection = new AppCollections.Model(fileAppCollection);
+		await FileAppCollection.save();
 	});
 
 	// Cleanup
 	after(async function() {
+		// Clean out test data
 		const cols = await Test1.all();
 		await cols.dropAll();
 
+		// Remove all app collection entries
 		const col = await AppCollections.all();
 		const promises = col.map((el) => {
 			return el.destroy();
 		});
 		await Promise.all(promises);
+
+		// Clean out test collections' schemas
+		await Promise.all([
+			TestSchema.dropTable(),
+			FileSchema.dropTable()
+		]);
 	});
 
 	/////////////////////////////////////////
@@ -131,8 +156,62 @@ describe("Collections Routes", function(){
 			assert.equal(res.status, 400, "returns with status code 400");
 			assert.equal(res.body.title, "Invalid Schema", "returns with correct message");
 		});
-		it("should reponse to file upload fields with upload URL");
-		it("should create file upload metadata entry given file upload fields");
+
+		describe("File upload fields", function(){
+			let FilesUpload;
+			const fileModel = Object.freeze({
+				"field_1": "Roe battered skate nuggets chips battered cod",
+				"field_2": [{
+					"file_name": "image-1.jpg",
+					"file_description": "Test image 1",
+					"content-type": "image/jpeg"
+				}]
+			});
+
+			before(async function(){
+				FilesUpload = new DynamicRecord({
+					tableSlug: "files_upload"
+				});
+			});
+
+			after(async function(){
+				const filesMetadata = await FilesUpload.all();
+				filesMetadata.dropAll();
+			});
+
+			afterEach(async function(){
+				const Test2 = new DynamicRecord({
+					tableSlug: "test_2"
+				});
+
+				const col = await Test2.all();
+				await col.dropAll();
+			});
+
+			it("should reponse to file upload fields with upload URL", async function(){
+				const res = await chai.request(app)
+					.post("/api/collections/test_2")
+					.set("Content-Type", "application/json")
+					.set("Authorization", `Bearer ${token}`)
+					.send(fileModel);
+
+				assert.equal(res.status, 200, "return with status code 200");
+				assert.exists(res.body.field_2[0].permalink, "file permalink is returned");
+				assert.exists(res.body.field_2[0].upload_link, "file upload link is returned");
+				assert.exists(res.body.field_2[0].upload_expire, "file expire timestamp is returned");
+			});
+			it("should create file upload metadata entry given file upload fields", async function(){
+				const res = await chai.request(app)
+					.post("/api/collections/test_2")
+					.set("Content-Type", "application/json")
+					.set("Authorization", `Bearer ${token}`)
+					.send(fileModel);
+
+				const id = res.body.field_2[0].uid;
+				const file = await FilesUpload.findBy({uid: id});
+				assert.isNotNull(file, "file metadata entry found in database");
+			});
+		});
 	});
 
 	describe("POST /api/collections/:slug/:ID", function(){

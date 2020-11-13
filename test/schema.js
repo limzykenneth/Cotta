@@ -5,6 +5,7 @@ const chaiHttp = require("chai-http");
 chai.use(chaiHttp);
 const assert = chai.assert;
 const testSchema = require("./json/test_1.schema.json");
+const TestSchema = new DynamicRecord.DynamicSchema();
 const test3Schema = require("./json/test_3.schema.json");
 const testAppCollection = require("./json/test_1_AppCollection.json");
 
@@ -15,6 +16,8 @@ describe("Schema Routes", function(){
 
 	// Setup
 	before(async function() {
+		await TestSchema.createTable(testSchema);
+
 		const res = await chai.request(app).post("/api/tokens/generate_new_token").send({
 			"username": "admin",
 			"password": "admin"
@@ -35,6 +38,8 @@ describe("Schema Routes", function(){
 			return el.destroy();
 		});
 		await Promise.all(promises);
+
+		await TestSchema.dropTable();
 	});
 
 	// Data definitions (module specific)

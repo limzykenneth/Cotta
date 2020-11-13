@@ -1,0 +1,13 @@
+{
+    "_$id" : "test_2",
+    "fields" : {
+        "field_1" : {
+            "app_type" : "text",
+            "app_title" : "Field 1"
+        },
+        "field_2" : {
+            "app_type" : "file",
+            "app_title" : "Field 2"
+        }
+    }
+}
