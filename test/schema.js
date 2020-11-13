@@ -6,24 +6,35 @@ chai.use(chaiHttp);
 const assert = chai.assert;
 const testSchema = require("./json/test_1.schema.json");
 const test3Schema = require("./json/test_3.schema.json");
+const testAppCollection = require("./json/test_1_AppCollection.json");
 
 const app = require("../app.js");
 
 describe("Schema Routes", function(){
-	let token;
+	let token, AppCollections;
 
 	// Setup
-	before(function() {
-		return chai.request(app).post("/api/tokens/generate_new_token").send({
+	before(async function() {
+		const res = await chai.request(app).post("/api/tokens/generate_new_token").send({
 			"username": "admin",
 			"password": "admin"
-		}).then((res) => {
-			token = res.body.access_token;
 		});
+		token = res.body.access_token;
+
+		AppCollections = new DynamicRecord({
+			tableSlug: "_app_collections"
+		});
+		const Test1AppCollection = new AppCollections.Model(testAppCollection);
+		await Test1AppCollection.save();
 	});
 
 	// Cleanup
-	after(function() {
+	after(async function() {
+		const col = await AppCollections.all();
+		const promises = col.map((el) => {
+			return el.destroy();
+		});
+		await Promise.all(promises);
 	});
 
 	// Data definitions (module specific)

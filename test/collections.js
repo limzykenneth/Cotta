@@ -5,6 +5,7 @@ const chaiHttp = require("chai-http");
 chai.use(chaiHttp);
 const assert = chai.assert;
 const testData = Object.freeze(_.cloneDeep(require("./json/test_1_data.json")));
+const testAppCollection = require("./json/test_1_AppCollection.json");
 const newModel = Object.freeze({
 	"field_1": "<p>Fish cake coleslaw roe, chicken burger skate battered roe roe roe jacket potato gravy beef burger. </p>",
 	"field_2": "chicken burger peas fish cake",
@@ -18,23 +19,41 @@ const newModel = Object.freeze({
 const app = require("../app.js");
 
 describe("Collections Routes", function(){
-	let token;
-	const Test1 = new DynamicRecord({
-		tableSlug: "test_1"
-	});
+	let token, Test1, AppCollections;
 
 	// Setup
-	before(function() {
-		return chai.request(app).post("/api/tokens/generate_new_token").send({
+	before(async function() {
+		const res = await chai.request(app).post("/api/tokens/generate_new_token").send({
 			"username": "admin",
 			"password": "admin"
-		}).then((res) => {
-			token = res.body.access_token;
 		});
+
+		token = res.body.access_token;
+
+		Test1 = new DynamicRecord({
+			tableSlug: "test_1"
+		});
+
+		const col = new DynamicRecord.DynamicCollection(Test1.Model, ..._.cloneDeep(testData));
+		await col.saveAll();
+
+		AppCollections = new DynamicRecord({
+			tableSlug: "_app_collections"
+		});
+		const Test1AppCollection = new AppCollections.Model(testAppCollection);
+		await Test1AppCollection.save();
 	});
 
 	// Cleanup
-	after(function() {
+	after(async function() {
+		const cols = await Test1.all();
+		await cols.dropAll();
+
+		const col = await AppCollections.all();
+		const promises = col.map((el) => {
+			return el.destroy();
+		});
+		await Promise.all(promises);
 	});
 
 	/////////////////////////////////////////
