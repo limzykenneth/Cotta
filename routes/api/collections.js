@@ -81,20 +81,18 @@ router.use(async function(req, res, next){
 
 // POST to specific collection (create new model)
 // Insert as is into database, just adding metadata and uid
-router.post("/:collectionSlug", restrict.toAuthor, function(req, res, next){
-	const Collection = new DynamicRecord({
-		tableSlug: req.params.collectionSlug
-	});
-	const schema = new DynamicRecord.DynamicSchema();
-	const AppCollections = new DynamicRecord({
-		tableSlug: "_app_collections"
-	});
+router.post("/:collectionSlug", restrict.toAuthor, async function(req, res, next){
+	try{
+		const Collection = new DynamicRecord({
+			tableSlug: req.params.collectionSlug
+		});
+		const schema = new DynamicRecord.DynamicSchema();
+		const AppCollections = new DynamicRecord({
+			tableSlug: "_app_collections"
+		});
 
-	let appCollection;
-	AppCollections.findBy({"_$id": req.params.collectionSlug}).then((result) => {
-		appCollection = result;
-		return schema.read(req.params.collectionSlug);
-	}).then(() => {
+		const appCollection = await AppCollections.findBy({"_$id": req.params.collectionSlug});
+		await schema.read(req.params.collectionSlug);
 		const fields = appCollection.data.fields;
 		const fieldsLength = _.size(appCollection.data.fields);
 		let count = 0;
@@ -111,7 +109,7 @@ router.post("/:collectionSlug", restrict.toAuthor, function(req, res, next){
 
 		if(count !== fieldsLength){
 			// Schema mismatched
-			return Promise.reject(new CottaError("Invalid Schema", `The provided fields does not match schema entry of ${req.params.collectionSlug} in the database`, 400));
+			throw new CottaError("Invalid Schema", `The provided fields does not match schema entry of ${req.params.collectionSlug} in the database`, 400);
 		}else{
 			// Schema matched continue processing
 			const Files = new DynamicRecord({
@@ -121,46 +119,40 @@ router.post("/:collectionSlug", restrict.toAuthor, function(req, res, next){
 			const model = new Collection.Model(req.body);
 			const filePromises = [];
 
-			let eachCompleted = true;
 			// Individual field's operation
-			_.each(fields, function(el, key){
+			_.each(fields, (el, key) => {
 
 				// File upload field found
 				if(el.app_type == "file"){
 					// Check if uploading multiple files
 					if(Array.isArray(model.data[key])){
-						_.each(model.data[key], (entry) => {
-							const file = new Files.Model(_.cloneDeep(entry));
-							if(!_.includes(limits.acceptedMIME, file.data["content-type"])){
-								next(new CottaError("Invalid MIME type", `File type "${file.data["content-type"]}" is not supported`, 415));
-								eachCompleted = false;
-								return false; // Exit _.each
-							}else{
-								uploadUtils.processFileMetadata(file, req, limits);
-								filePromises.push(file.save().then(() => {
-									return uploadUtils.setFileEntryMetadata(entry, file, req, limits);
-								}));
+						for(const entry of model.data[key]){
+							if(!_.includes(limits.acceptedMIME, entry["content-type"])){
+								throw new CottaError("Invalid MIME type", `File type "${entry["content-type"]}" is not supported`, 415);
 							}
-						});
 
-					// Uploading a single file
-					}else{
-						const file = new Files.Model(_.cloneDeep(model.data[key]));
-						if(!_.includes(limits.acceptedMIME, file.data["content-type"])){
-							next(new CottaError("Invalid MIME type", `File type "${file.data["content-type"]}" is not supported`, 415));
-							eachCompleted = false;
-							return false;
-						}else{
+							const file = new Files.Model(_.cloneDeep(entry));
 							uploadUtils.processFileMetadata(file, req, limits);
-							filePromises.push(file.save().then((m) => {
-								return uploadUtils.setFileEntryMetadata(model.data[key], file, req, limits);
+							filePromises.push(file.save().then(() => {
+								return uploadUtils.setFileEntryMetadata(entry, file, req, limits);
 							}));
 						}
-					}
-				}
 
-				// WYSIWYG field found
-				if(el.app_type == "wysiwyg"){
+					// Uploading a single file (Deprecated)
+					}else{
+						if(!_.includes(limits.acceptedMIME, model.data[key]["content-type"])){
+							throw new CottaError("Invalid MIME type", `File type "${model.data[key]["content-type"]}" is not supported`, 415);
+						}
+
+						const file = new Files.Model(_.cloneDeep(model.data[key]));
+						uploadUtils.processFileMetadata(file, req, limits);
+						filePromises.push(file.save().then((m) => {
+							return uploadUtils.setFileEntryMetadata(model.data[key], file, req, limits);
+						}));
+					}
+
+				}else if(el.app_type == "wysiwyg"){
+					// WYSIWYG field found
 					// Sanitize HTML input
 					model.data[key] = sanitizeHtml(model.data[key], {
 						allowedTags: sanitizerAllowedTags
@@ -168,44 +160,28 @@ router.post("/:collectionSlug", restrict.toAuthor, function(req, res, next){
 				}
 			});
 
-			// Check if _.each exited prematurely
-			if(eachCompleted){
-				return Promise.all(filePromises).then((files) => {
-					return Promise.resolve(model);
-				});
-			}
+			await Promise.all(filePromises);
+
+			// Process data
+			// Create metadata
+			model.data._metadata = {
+				created_by: req.user.username,
+				date_created: moment.utc().format(),
+				date_modified: moment.utc().format()
+			};
+
+			// Insert data
+			await model.save();
+
+			// PENDING: update user model to relfect ownership of model
+			delete model.data._id;
+			const appSchema = await AppCollections.findBy({"_$id": req.params.collectionSlug});
+			replaceModelFileURL(appSchema.data, model.data);
+			res.json(model.data);
 		}
-	}).then((model) => {
-		// Process data
-		// Create metadata
-		model.data._metadata = {
-			created_by: req.user.username,
-			date_created: moment.utc().format(),
-			date_modified: moment.utc().format()
-		};
-
-		// Insert data
-		return model.save().then(() => {
-			return Promise.resolve(model.data);
-		});
-
-		// PENDING: update user model to relfect ownership of model
-		// 	// Update user schema
-		// 	db.collection("_users_auth").updateOne({"username": req.user.username}, {
-		// 		$addToSet:{
-		// 			models: `${req.params.collectionSlug}.${data._uid}`
-		// 		}
-		// 	});
-	}).then((data) => {
-		delete data._id;
-		return AppCollections.findBy({"_$id": req.params.collectionSlug}).then((schema) => {
-			replaceModelFileURL(schema.data, data);
-
-			res.json(data);
-		});
-	}).catch((err) => {
+	}catch(err){
 		next(err);
-	});
+	}
 });
 
 // POST to specific model in a collection (edit existing model)

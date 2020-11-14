@@ -211,6 +211,18 @@ describe("Collections Routes", function(){
 				const file = await FilesUpload.findBy({uid: id});
 				assert.isNotNull(file, "file metadata entry found in database");
 			});
+			it("should return an error if provided file metadata does not have acceptable MIME type", async function(){
+				const rejectModel = _.cloneDeep(fileModel);
+				rejectModel.field_2[0]["content-type"] = "application/json";
+
+				const res = await chai.request(app)
+					.post("/api/collections/test_2")
+					.set("Content-Type", "application/json")
+					.set("Authorization", `Bearer ${token}`)
+					.send(rejectModel);
+
+				assert.equal(res.status, 415, "return with status code 415");
+			});
 		});
 	});
 
@@ -261,7 +273,39 @@ describe("Collections Routes", function(){
 					assert.equal(res.body.title, "Invalid Schema", "returns with correct message");
 				});
 		});
-		it("should update the file entry if it was changed");
+
+		describe("File upload fields", function(){
+			let FilesUpload, Test2;
+			const fileModel = Object.freeze({
+				"field_1": "Roe battered skate nuggets chips battered cod",
+				"field_2": [{
+					"file_name": "image-1.jpg",
+					"file_description": "Test image 1",
+					"content-type": "image/jpeg"
+				}]
+			});
+
+			before(async function(){
+				FilesUpload = new DynamicRecord({
+					tableSlug: "files_upload"
+				});
+				Test2 = new DynamicRecord({
+					tableSlug: "test_2"
+				});
+			});
+
+			after(async function(){
+				const filesMetadata = await FilesUpload.all();
+				filesMetadata.dropAll();
+			});
+
+			afterEach(async function(){
+				const col = await Test2.all();
+				await col.dropAll();
+			});
+
+			it("should update the file entry if it was changed");
+		});
 	});
 
 	describe("DEL /api/collections/:slug/:ID", function(){
