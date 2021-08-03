@@ -1,7 +1,9 @@
-const DynamicRecord = require("dynamic-record");
-const _ = require("lodash");
-const {createDefaultTables, setConfigs, createDefaultUser} = require("../bin/install.js");
+// A .env file need to be in the test folder containing database_host key
+const path = require("path");
+require("dotenv").config({path: path.join(__dirname, ".env")});
 
+const DynamicRecord = require("dynamic-record");
+const {createDefaultTables, setConfigs, createDefaultUser} = require("../bin/install.js");
 
 before(async function(){
 	await createDefaultTables(process.env.database_host, true);
