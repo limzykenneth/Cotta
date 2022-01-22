@@ -32,7 +32,7 @@
     "moment": "^2.24.0",
     "mongodb": "^3.3.3",
     "morgan": "^1.9.1",
-    "nanoid": "^2.1.6",
+    "nanoid": "^3.1.31",
     "node-fetch": "^2.6.1",
     "sanitize-html": "^2.3.2",
     "winston": "^3.2.1"
