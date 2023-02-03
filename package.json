@@ -26,7 +26,7 @@
     "dynamic-record": "^0.6.10",
     "express": "^4.17.1",
     "inquirer": "^7.0.0",
-    "jsonwebtoken": "^8.5.1",
+    "jsonwebtoken": "^9.0.0",
     "lodash": "^4.17.21",
     "mkdirp": "^0.5.1",
     "moment": "^2.29.4",
